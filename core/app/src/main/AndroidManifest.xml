@@ -21,8 +21,6 @@
     tools:ignore="ScopedStorage" />
   <uses-permission android:name="android.permission.READ_LOGS" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-  <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-  <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
 
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -77,17 +75,11 @@
     <activity android:name=".activities.PreferencesActivity" />
     <activity android:name=".activities.AboutActivity" />
     <activity android:name=".activities.ContributorsActivity" />
-    <activity android:name=".activities.IDEConfigurations" />
     <activity android:name=".activities.ActivityM3Icons" />
 
     <activity
       android:name=".activities.TerminalActivity"
       android:windowSoftInputMode="adjustResize" />
-
-    <activity
-      android:name=".activities.AssetStudioActivity"
-      android:exported="false"
-      android:theme="@style/Theme.AndroidIDE" />
 
     <activity
       android:name=".activities.MaterialIconsWebActivity"
@@ -139,16 +131,6 @@
         android:name="android.support.FILE_PROVIDER_PATHS"
         android:resource="@xml/file_paths" />
     </provider>
-
-    <receiver
-      android:enabled="true"
-      android:exported="true"
-      android:name=".services.InstallationResultReceiver"
-      tools:ignore="ExportedReceiver">
-      <intent-filter>
-        <action android:name="com.pickaxe.jcode.installer.INSTALL_PACKAGE" />
-      </intent-filter>
-    </receiver>
 
     <service
       android:exported="false"

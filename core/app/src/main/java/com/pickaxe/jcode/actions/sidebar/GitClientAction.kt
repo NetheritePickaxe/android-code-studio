@@ -24,8 +24,6 @@ import androidx.fragment.app.Fragment
 import com.pickaxe.jcode.R
 import com.pickaxe.jcode.actions.ActionData
 import com.pickaxe.jcode.actions.requireContext
-import com.pickaxe.jcode.activities.AssetStudioActivity
-import com.pickaxe.jcode.fragments.sidebar.AssetStudioFragment
 import com.pickaxe.jcode.fragments.sidebar.GitClientFragment
 import kotlin.reflect.KClass
 

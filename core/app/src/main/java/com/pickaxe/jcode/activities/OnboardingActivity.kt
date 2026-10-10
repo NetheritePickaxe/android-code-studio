@@ -19,8 +19,6 @@ package com.pickaxe.jcode.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.github.appintro.AppIntro2
@@ -33,7 +31,6 @@ import com.pickaxe.jcode.R.string
 import com.pickaxe.jcode.app.configuration.IDEBuildConfigProvider
 import com.pickaxe.jcode.app.configuration.IJdkDistributionProvider
 import com.pickaxe.jcode.fragments.onboarding.GreetingFragment
-import com.pickaxe.jcode.fragments.onboarding.IdeSetupConfigurationFragment
 import com.pickaxe.jcode.fragments.onboarding.OnboardingInfoFragment
 import com.pickaxe.jcode.fragments.onboarding.PermissionsFragment
 import com.pickaxe.jcode.fragments.onboarding.StatisticsFragment
@@ -42,7 +39,6 @@ import com.pickaxe.jcode.preferences.internal.StatPreferences
 import com.pickaxe.jcode.preferences.internal.prefManager
 import com.pickaxe.jcode.tasks.launchAsyncWithProgress
 import com.pickaxe.jcode.ui.themes.IThemeManager
-import com.pickaxe.jcode.utils.Environment
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,14 +47,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext
 
 class OnboardingActivity : AppIntro2() {
-
-  private val terminalActivityCallback =
-      registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        Log.d(TAG, "TerminalActivity: resultCode=${it.resultCode}")
-        if (!isFinishing) {
-          reloadJdkDistInfo { tryNavigateToMainIfSetupIsCompleted() }
-        }
-      }
 
   private val activityScope = CoroutineScope(Dispatchers.Main + CoroutineName("OnboardingActivity"))
 
@@ -134,10 +122,6 @@ class OnboardingActivity : AppIntro2() {
     if (!PermissionsFragment.areAllPermissionsGranted(this)) {
       addSlide(PermissionsFragment.newInstance(this))
     }
-
-    if (!checkToolsIsInstalled()) {
-      addSlide(IdeSetupConfigurationFragment.newInstance(this))
-    }
   }
 
   override fun onResume() {
@@ -162,25 +146,11 @@ class OnboardingActivity : AppIntro2() {
       return
     }
 
-    if (!checkToolsIsInstalled() && currentFragment is IdeSetupConfigurationFragment) {
-      val intent = Intent(this, TerminalActivity::class.java)
-      if (currentFragment.isAutoInstall()) {
-        intent.putExtra(TerminalActivity.EXTRA_ONBOARDING_RUN_IDESETUP, true)
-        intent.putExtra(
-            TerminalActivity.EXTRA_ONBOARDING_RUN_IDESETUP_ARGS,
-            currentFragment.buildIdeSetupArguments(),
-        )
-      }
-      terminalActivityCallback.launch(intent)
-      return
-    }
-
     tryNavigateToMainIfSetupIsCompleted()
   }
 
   private fun checkToolsIsInstalled(): Boolean {
-    return IJdkDistributionProvider.getInstance().installedDistributions.isNotEmpty() &&
-        Environment.ANDROID_HOME.exists()
+    return IJdkDistributionProvider.getInstance().installedDistributions.isNotEmpty()
   }
 
   private fun isSetupCompleted(): Boolean {

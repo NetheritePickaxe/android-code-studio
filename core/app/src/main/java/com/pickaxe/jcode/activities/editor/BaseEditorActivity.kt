@@ -19,7 +19,6 @@ package com.pickaxe.jcode.activities.editor
 
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageInstaller.SessionCallback
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
@@ -78,7 +77,6 @@ import com.pickaxe.jcode.app.EdgeToEdgeIDEActivity
 import com.pickaxe.jcode.databinding.ActivityEditorBinding
 import com.pickaxe.jcode.databinding.ContentEditorBinding
 import com.pickaxe.jcode.databinding.LayoutDiagnosticInfoBinding
-import com.pickaxe.jcode.events.InstallationResultEvent
 import com.pickaxe.jcode.fragments.SearchResultFragment
 import com.pickaxe.jcode.fragments.sidebar.EditorSidebarFragment
 import com.pickaxe.jcode.fragments.sidebar.FileTreeFragment
@@ -103,10 +101,8 @@ import com.pickaxe.jcode.ui.ContentTranslatingDrawerLayout
 import com.pickaxe.jcode.ui.SwipeRevealLayout
 import com.pickaxe.jcode.uidesigner.UIDesignerActivity
 import com.pickaxe.jcode.utils.ActionMenuUtils.createMenu
-import com.pickaxe.jcode.utils.ApkInstallationSessionCallback
 import com.pickaxe.jcode.utils.DialogUtils.newMaterialDialogBuilder
 import com.pickaxe.jcode.utils.Environment
-import com.pickaxe.jcode.utils.InstallationResultHandler.onResult
 import com.pickaxe.jcode.utils.IntentUtils
 import com.pickaxe.jcode.utils.MemoryUsageWatcher
 import com.pickaxe.jcode.utils.flashError
@@ -174,8 +170,6 @@ abstract class BaseEditorActivity :
 
   /** Editor activity's [CoroutineScope] for executing tasks in the background. */
   protected val editorActivityScope = CoroutineScope(Dispatchers.Default)
-
-  internal var installationCallback: ApkInstallationSessionCallback? = null
 
   var uiDesignerResultLauncher: ActivityResultLauncher<Intent>? = null
   val editorViewModel by viewModels<EditorViewModel>()
@@ -583,8 +577,6 @@ abstract class BaseEditorActivity :
 
     optionsMenuInvalidator = null
 
-    installationCallback?.destroy()
-    installationCallback = null
     SeasonalEffects.setSnowflakeCount(20)
 
     if (isDestroying) {
@@ -659,25 +651,6 @@ override fun onApplySystemBarInsets(insets: Insets) {
       }
     }
 }
-
-  @Subscribe(threadMode = MAIN)
-  open fun onInstallationResult(event: InstallationResultEvent) {
-    val intent = event.intent
-    if (isDestroying) {
-      return
-    }
-
-    val packageName = onResult(this, intent) ?: return
-
-    if (BuildPreferences.launchAppAfterInstall) {
-      IntentUtils.launchApp(this, packageName)
-      return
-    }
-
-    Snackbar.make(content.realContainer, string.msg_action_open_application, Snackbar.LENGTH_LONG)
-        .setAction(string.yes) { IntentUtils.launchApp(this, packageName) }
-        .show()
-  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -1475,9 +1448,5 @@ override fun onApplySystemBarInsets(insets: Insets) {
     builder.setMessage(string.msg_need_help)
     builder.setPositiveButton(android.R.string.ok, null)
     builder.create().show()
-  }
-
-  open fun installationSessionCallback(): SessionCallback {
-    return ApkInstallationSessionCallback(this).also { installationCallback = it }
   }
 }

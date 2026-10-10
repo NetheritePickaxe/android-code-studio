@@ -18,12 +18,9 @@ import com.pickaxe.jcode.actions.ActionsRegistry
 import com.pickaxe.jcode.actions.SidebarActionItem
 import com.pickaxe.jcode.actions.internal.DefaultActionsRegistry
 import com.pickaxe.jcode.actions.sidebar.AIAgentSidebarAction
-import com.pickaxe.jcode.actions.sidebar.AssetStudioSidebarAction
-import com.pickaxe.jcode.actions.sidebar.BuildVariantsSidebarAction
 import com.pickaxe.jcode.actions.sidebar.CloseProjectSidebarAction
 import com.pickaxe.jcode.actions.sidebar.FileTreeSidebarAction
 import com.pickaxe.jcode.actions.sidebar.PreferencesSidebarAction
-import com.pickaxe.jcode.actions.sidebar.SubModuleSidebarAction
 import com.pickaxe.jcode.actions.sidebar.GitClientAction
 import com.pickaxe.jcode.actions.sidebar.TerminalSidebarAction
 import com.pickaxe.jcode.fragments.sidebar.EditorSidebarFragment
@@ -41,11 +38,8 @@ internal object EditorSidebarActions {
 
     @Suppress("KotlinConstantConditions")
     registry.registerAction(FileTreeSidebarAction(context, ++order))
-    registry.registerAction(BuildVariantsSidebarAction(context, ++order))
     registry.registerAction(GitClientAction(context, ++order))
     registry.registerAction(AIAgentSidebarAction(context, ++order))
-    registry.registerAction(AssetStudioSidebarAction(context, ++order))
-    registry.registerAction(SubModuleSidebarAction(context, ++order))
     registry.registerAction(PreferencesSidebarAction(context, ++order))
     registry.registerAction(CloseProjectSidebarAction(context, ++order))
   }

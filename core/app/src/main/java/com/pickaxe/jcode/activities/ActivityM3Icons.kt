@@ -18,7 +18,6 @@ import com.pickaxe.jcode.viewmodel.MainViewModel
 import com.pickaxe.jcode.viewmodel.MainViewModel.Companion.SCREEN_MAIN
 import com.pickaxe.jcode.app.BaseApplication
 import com.pickaxe.jcode.app.EdgeToEdgeIDEActivity
-import com.pickaxe.jcode.handlers.ConfigHandlerRegistry
 import com.pickaxe.jcode.managers.PreferenceManager
 
 class ActivityM3Icons : EdgeToEdgeIDEActivity() {
@@ -43,12 +42,6 @@ class ActivityM3Icons : EdgeToEdgeIDEActivity() {
             resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
                 Configuration.UI_MODE_NIGHT_YES
     
-        ConfigHandlerRegistry.registerHandlers(this, prefManager, lifecycleScope, isDarkTheme)
-    
-        ConfigHandlerRegistry.getHandlers().forEach { handler ->
-          handler.initialize()
-        }
-            
         setupRecyclerView()
         setupSearch()
         loadIcons()
@@ -121,7 +114,6 @@ class ActivityM3Icons : EdgeToEdgeIDEActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        ConfigHandlerRegistry.getHandlers().forEach { it.cleanup() }
         _binding = null
     }
 }

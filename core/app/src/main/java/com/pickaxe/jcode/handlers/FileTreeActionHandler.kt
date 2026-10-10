@@ -32,8 +32,6 @@ import com.pickaxe.jcode.events.FileContextMenuItemClickEvent
 import com.pickaxe.jcode.events.ListProjectFilesRequestEvent
 import com.pickaxe.jcode.fragments.sheets.OptionsListFragment
 import com.pickaxe.jcode.models.SheetOption
-import com.pickaxe.jcode.utils.ApkInstaller
-import com.pickaxe.jcode.utils.InstallationResultHandler
 import com.pickaxe.jcode.utils.flashError
 import com.unnamed.b.atv.model.TreeNode
 import java.io.File
@@ -70,15 +68,6 @@ class FileTreeActionHandler : BaseEventHandler() {
 
     val context = event[Context::class.java]!! as EditorHandlerActivity
     context.binding.root.closeDrawer(GravityCompat.START)
-    if (event.file.name.endsWith(".apk")) {
-      ApkInstaller.installApk(
-          context,
-          InstallationResultHandler.createEditorActivitySender(context),
-          event.file,
-          context.installationSessionCallback(),
-      )
-      return
-    }
 
     if (MB_10 < event.file.length()) {
       flashError("File is too big!")

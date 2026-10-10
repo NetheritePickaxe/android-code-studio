@@ -22,7 +22,6 @@ import com.pickaxe.jcode.actions.ActionItem.Location.EDITOR_FILE_TREE
 import com.pickaxe.jcode.actions.ActionItem.Location.EDITOR_TOOLBAR
 import com.pickaxe.jcode.actions.ActionsRegistry
 import com.pickaxe.jcode.actions.build.ProjectSyncAction
-import com.pickaxe.jcode.actions.build.QuickRunWithCancellationAction
 import com.pickaxe.jcode.actions.build.RunTasksAction
 import com.pickaxe.jcode.actions.editor.CopyAction
 import com.pickaxe.jcode.actions.editor.CutAction
@@ -34,10 +33,7 @@ import com.pickaxe.jcode.actions.editor.SelectAllAction
 import com.pickaxe.jcode.actions.etc.DisconnectLogSendersAction
 import com.pickaxe.jcode.actions.etc.FindActionMenu
 import com.pickaxe.jcode.actions.etc.ColorSchemeMenu
-import com.pickaxe.jcode.actions.etc.IdeConfigurationsAction
 import com.pickaxe.jcode.actions.etc.TextActionMenuAction
-import com.pickaxe.jcode.actions.etc.LaunchAppAction
-import com.pickaxe.jcode.actions.etc.PreviewLayoutAction
 import com.pickaxe.jcode.actions.etc.ReloadColorSchemesAction
 import com.pickaxe.jcode.actions.file.CloseAllFilesAction
 import com.pickaxe.jcode.actions.file.CloseFileAction
@@ -71,20 +67,16 @@ class EditorActivityActions {
       // Toolbar actions
       registry.registerAction(UndoAction(context, order++))
       registry.registerAction(RedoAction(context, order++))
-      registry.registerAction(QuickRunWithCancellationAction(context, order++))
       registry.registerAction(ColorSchemeMenu(context, order++))
       
       registry.registerAction(RunTasksAction(context, order++))
       registry.registerAction(TextActionMenuAction(context, order++))
       registry.registerAction(SaveFileAction(context, order++))
-      registry.registerAction(PreviewLayoutAction(context, order++))
       registry.registerAction(FindActionMenu(context, order++))
       registry.registerAction(ProjectSyncAction(context, order++))
       
       // registry.registerAction(ReloadColorSchemesAction(context, order++))
       registry.registerAction(DisconnectLogSendersAction(context, order++))
-      registry.registerAction(LaunchAppAction(context, order++))
-      registry.registerAction(IdeConfigurationsAction(context, order++))
 
       // editor text actions
       registry.registerAction(ExtractAction(context, order++))

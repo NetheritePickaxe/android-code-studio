@@ -49,9 +49,8 @@ import java.io.File
 
 class MainActivity : EdgeToEdgeIDEActivity() {
 
-  private lateinit var tomIDEUpdater: TomIDEUpdater
-  private val viewModel by viewModels<MainViewModel>()
   private var _binding: ActivityMainBinding? = null
+  private val viewModel by viewModels<MainViewModel>()
 
   private val onBackPressedCallback =
       object : OnBackPressedCallback(true) {
@@ -81,8 +80,6 @@ class MainActivity : EdgeToEdgeIDEActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    tomIDEUpdater = TomIDEUpdater(this)
-    tomIDEUpdater.checkForUpdates()
 
     openLastProject()
 
@@ -207,7 +204,6 @@ class MainActivity : EdgeToEdgeIDEActivity() {
   }
 
   override fun onDestroy() {
-    tomIDEUpdater.cancelDownload()
     ITemplateProvider.getInstance().release()
     super.onDestroy()
     _binding = null

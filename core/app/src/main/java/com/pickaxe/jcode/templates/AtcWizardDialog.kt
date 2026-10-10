@@ -26,7 +26,6 @@ import com.google.android.material.transition.MaterialSharedAxis
 import com.pickaxe.jcode.atc.project.manager.builder.LanguageType
 import com.pickaxe.jcode.R
 import com.pickaxe.jcode.activities.FolderPickerActivity
-import com.pickaxe.jcode.activities.IDEConfigurations
 import com.pickaxe.jcode.databinding.DialogAtcWizardBinding
 import com.pickaxe.jcode.templates.android.Template
 import com.pickaxe.jcode.templates.android.TemplateOptions
@@ -187,9 +186,9 @@ class AtcWizardDialog : BottomSheetDialogFragment() {
     if (cmakeVersions.isEmpty()) {
       showAlert(
           "CMake Not Found",
-          "No CMake installation found. Please install CMake from IDE Settings.",
+          "No CMake installation found.",
       ) {
-        startActivity(Intent(requireContext(), IDEConfigurations::class.java))
+        // IDE Settings no longer host CMake installation
       }
       binding.useCMakeSwitch.isChecked = false
     } else {
@@ -227,7 +226,7 @@ class AtcWizardDialog : BottomSheetDialogFragment() {
 
   private fun showNdkError(ctx: Context, message: String) {
     showAlert(getString(R.string.native_error_title), message) {
-      startActivity(Intent(ctx, IDEConfigurations::class.java))
+      // NDK installation via IDE Settings is no longer available
     }
   }
 

@@ -45,7 +45,6 @@ constructor(
     const val ACTION_CLONE_REPO = 2
     const val ACTION_OPEN_TERMINAL = 3
     const val ACTION_PREFERENCES = 4
-    const val ACTION_DONATE = 5
     const val ACTION_DOCS = 6
 
     /** Get all main screen actions. */
@@ -71,8 +70,6 @@ constructor(
         val preferences =
             MainScreenAction(ACTION_PREFERENCES, R.string.msg_preferences, R.drawable.ic_settings)
 
-        val donate = MainScreenAction(ACTION_DONATE, R.string.btn_idecfg, R.drawable.ic_cfg_main)
-
         val docs = MainScreenAction(ACTION_DOCS, R.string.btn_docs, R.drawable.ic_docs)
 
         Collections.addAll(
@@ -82,7 +79,6 @@ constructor(
             cloneGitRepository,
             openTerminal,
             preferences,
-            donate,
             docs,
         )
       }

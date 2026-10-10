@@ -34,7 +34,6 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY
 import com.pickaxe.jcode.R
-import com.pickaxe.jcode.activities.IDEConfigurations
 import com.pickaxe.jcode.activities.MainActivity
 import com.pickaxe.jcode.activities.PreferencesActivity
 import com.pickaxe.jcode.activities.TerminalActivity
@@ -117,9 +116,6 @@ class MainFragment : BaseFragment() {
                   startActivity(Intent(requireActivity(), TerminalActivity::class.java))
 
               MainScreenAction.ACTION_PREFERENCES -> gotoPreferences()
-              MainScreenAction.ACTION_DONATE -> {
-                startActivity(Intent(requireActivity(), IDEConfigurations::class.java))
-              }
               MainScreenAction.ACTION_DOCS -> BaseApplication.getBaseInstance().openDocs()
             }
           }
