@@ -607,6 +607,7 @@
   <string name="replace">替换</string>
   <string name="replaceAll">全部替换</string>
   <string name="title_run_tasks">运行任务</string>
+  <string name="title_run_java">运行 Java</string>
   <string name="hint_search_tasks">搜索任务…</string>
   <string name="msg_err_select_tasks">请选择要运行的任务</string>
   <string name="title_confirmation">确认</string>

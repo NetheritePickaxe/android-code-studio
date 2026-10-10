@@ -22,6 +22,7 @@ import com.pickaxe.jcode.actions.ActionItem.Location.EDITOR_FILE_TREE
 import com.pickaxe.jcode.actions.ActionItem.Location.EDITOR_TOOLBAR
 import com.pickaxe.jcode.actions.ActionsRegistry
 import com.pickaxe.jcode.actions.build.ProjectSyncAction
+import com.pickaxe.jcode.actions.build.RunJavaAction
 import com.pickaxe.jcode.actions.build.RunTasksAction
 import com.pickaxe.jcode.actions.editor.CopyAction
 import com.pickaxe.jcode.actions.editor.CutAction
@@ -67,6 +68,7 @@ class EditorActivityActions {
       // Toolbar actions
       registry.registerAction(UndoAction(context, order++))
       registry.registerAction(RedoAction(context, order++))
+      registry.registerAction(RunJavaAction(context, order++))
       registry.registerAction(ColorSchemeMenu(context, order++))
       
       registry.registerAction(RunTasksAction(context, order++))
