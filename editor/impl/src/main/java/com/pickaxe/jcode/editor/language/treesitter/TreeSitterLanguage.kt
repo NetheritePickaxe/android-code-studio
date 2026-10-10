@@ -26,7 +26,7 @@ import com.pickaxe.jcode.editor.schemes.LanguageScheme
 import com.pickaxe.jcode.editor.schemes.LanguageSpecProvider.getLanguageSpec
 import com.pickaxe.jcode.editor.schemes.LocalCaptureSpecProvider.newLocalCaptureSpec
 import com.pickaxe.jcode.editor.utils.isNonBlankLine
-import com.pickaxe.jcode.treesitter.TSLanguage
+import com.tom.rv2ide.treesitter.TSLanguage
 import com.pickaxe.jcode.utils.IntPair
 import io.github.rosemoe.sora.editor.ts.TsTheme
 import io.github.rosemoe.sora.lang.Language.INTERRUPTION_LEVEL_STRONG

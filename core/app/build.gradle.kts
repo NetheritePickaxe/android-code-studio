@@ -42,12 +42,6 @@ buildscript {
   }
 }
 
-tasks.configureEach {
-    if (name.contains("desugar", ignoreCase = true)) {
-        enabled = false
-    }
-}
-
 configurations.all {
   resolutionStrategy {
     force("com.google.guava:guava:32.1.3-android")
@@ -75,16 +69,25 @@ android {
 
   signingConfigs {
       create("custom") {
-          val keyStorePath = "${rootProject.projectDir}/signing/signing-key.jks"
-          val keyStoreFile = file(keyStorePath)
-          
-          val signing_storePassword = System.getenv("SIGNING_STORE_PASSWORD") ?: ""
-          val signing_keyPassword = System.getenv("SIGNING_KEY_PASSWORD") ?: ""
-          
-          storeFile = keyStoreFile
-          storePassword = signing_storePassword
-          keyAlias = "androidcs"
-          keyPassword = signing_keyPassword
+          val keyStoreFile = file("${rootProject.projectDir}/signing/signing-key.jks")
+
+          val signing_storePassword = System.getenv("SIGNING_STORE_PASSWORD")
+          val signing_keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+
+          if (signing_storePassword != null && signing_keyPassword != null && keyStoreFile.exists()) {
+              // CI: sign with the committed release keystore using the GitHub Secrets.
+              storeFile = keyStoreFile
+              storePassword = signing_storePassword
+              keyAlias = "androidcs"
+              keyPassword = signing_keyPassword
+          } else {
+              // Local builds: fall back to the standard Android debug keystore so
+              // `assembleDebug` works without the CI signing secrets.
+              storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+              storePassword = "android"
+              keyAlias = "androiddebugkey"
+              keyPassword = "android"
+          }
       }
   }
 
@@ -300,5 +303,4 @@ dependencies {
   // This is to build the tooling-api-impl project before the app is built
   // So we always copy the latest JAR file to assets
   compileOnly(projects.tooling.impl)
-  
 }

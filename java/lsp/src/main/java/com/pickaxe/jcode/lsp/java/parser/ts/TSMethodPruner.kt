@@ -17,11 +17,11 @@
 
 package com.pickaxe.jcode.lsp.java.parser.ts
 
-import com.pickaxe.jcode.treesitter.TSQuery
-import com.pickaxe.jcode.treesitter.TSQueryCursor
-import com.pickaxe.jcode.treesitter.TSQueryMatch
-import com.pickaxe.jcode.treesitter.TSTree
-import com.pickaxe.jcode.treesitter.java.TSLanguageJava
+import com.tom.rv2ide.treesitter.TSQuery
+import com.tom.rv2ide.treesitter.TSQueryCursor
+import com.tom.rv2ide.treesitter.TSQueryMatch
+import com.tom.rv2ide.treesitter.TSTree
+import com.tom.rv2ide.treesitter.java.TSLanguageJava
 
 /**
  * Helper class to prune method bodies in Java source code using.

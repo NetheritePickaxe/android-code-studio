@@ -26,7 +26,7 @@ enum class PredicateResult {
 
   /**
    * The given predicate is not handled by this [TsPredicate]. The
-   * [com.pickaxe.jcode.treesitter.TSQueryMatch] object will be passed to other [TsPredicate].
+   * [com.tom.rv2ide.treesitter.TSQueryMatch] object will be passed to other [TsPredicate].
    */
   UNHANDLED,
 

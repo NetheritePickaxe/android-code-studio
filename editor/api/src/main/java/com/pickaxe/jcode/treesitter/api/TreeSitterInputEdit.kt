@@ -17,8 +17,8 @@
 
 package com.pickaxe.jcode.treesitter.api
 
-import com.pickaxe.jcode.treesitter.TSInputEdit
-import com.pickaxe.jcode.treesitter.TSPoint
+import com.tom.rv2ide.treesitter.TSInputEdit
+import com.tom.rv2ide.treesitter.TSPoint
 import com.pickaxe.jcode.utils.DefaultRecyclable
 import com.pickaxe.jcode.utils.RecyclableObjectPool
 

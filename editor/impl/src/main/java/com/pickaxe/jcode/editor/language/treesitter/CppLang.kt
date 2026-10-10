@@ -23,7 +23,7 @@ import com.pickaxe.jcode.lsp.api.ILanguageServer
 import com.pickaxe.jcode.lsp.api.ILanguageServerRegistry
 import com.pickaxe.jcode.lsp.clang.ClangLanguageServer
 import io.github.rosemoe.sora.util.MyCharacter
-import com.pickaxe.jcode.treesitter.cpp.TSLanguageCpp
+import com.tom.rv2ide.treesitter.cpp.TSLanguageCpp
 import io.github.rosemoe.sora.lang.Language.INTERRUPTION_LEVEL_STRONG
 
 /**

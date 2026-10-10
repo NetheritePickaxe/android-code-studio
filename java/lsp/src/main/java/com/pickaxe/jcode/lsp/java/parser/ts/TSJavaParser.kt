@@ -20,8 +20,8 @@ package com.pickaxe.jcode.lsp.java.parser.ts
 import com.pickaxe.jcode.eventbus.events.file.FileDeletionEvent
 import com.pickaxe.jcode.eventbus.events.file.FileRenameEvent
 import com.pickaxe.jcode.lsp.java.parser.IJavaParser
-import com.pickaxe.jcode.treesitter.TSParser
-import com.pickaxe.jcode.treesitter.java.TSLanguageJava
+import com.tom.rv2ide.treesitter.TSParser
+import com.tom.rv2ide.treesitter.java.TSLanguageJava
 import com.pickaxe.jcode.utils.StopWatch
 import jdkx.tools.JavaFileObject
 import org.greenrobot.eventbus.EventBus

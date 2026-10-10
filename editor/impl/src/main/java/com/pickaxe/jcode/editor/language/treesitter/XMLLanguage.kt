@@ -22,7 +22,7 @@ import com.pickaxe.jcode.editor.language.treesitter.TreeSitterLanguage.Factory
 import com.pickaxe.jcode.lsp.api.ILanguageServer
 import com.pickaxe.jcode.lsp.api.ILanguageServerRegistry
 import com.pickaxe.jcode.lsp.xml.XMLLanguageServer
-import com.pickaxe.jcode.treesitter.xml.TSLanguageXml
+import com.tom.rv2ide.treesitter.xml.TSLanguageXml
 import io.github.rosemoe.sora.lang.Language.INTERRUPTION_LEVEL_STRONG
 import io.github.rosemoe.sora.util.MyCharacter
 

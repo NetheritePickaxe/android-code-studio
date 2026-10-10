@@ -21,6 +21,6 @@
  */
 package io.github.rosemoe.sora.editor.ts.predicate
 
-import com.pickaxe.jcode.treesitter.TSQueryPredicateStep
+import com.tom.rv2ide.treesitter.TSQueryPredicateStep
 
 data class TsClientPredicateStep(val predicateType: TSQueryPredicateStep.Type, val content: String)

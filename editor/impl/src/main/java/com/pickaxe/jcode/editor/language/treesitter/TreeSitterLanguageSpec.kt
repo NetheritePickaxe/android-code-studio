@@ -17,9 +17,9 @@
 
 package com.pickaxe.jcode.editor.language.treesitter
 
-import com.pickaxe.jcode.treesitter.TSLanguage
-import com.pickaxe.jcode.treesitter.TSQuery
-import com.pickaxe.jcode.treesitter.TSQueryError
+import com.tom.rv2ide.treesitter.TSLanguage
+import com.tom.rv2ide.treesitter.TSQuery
+import com.tom.rv2ide.treesitter.TSQueryError
 import io.github.rosemoe.sora.editor.ts.TsLanguageSpec
 import java.io.Closeable
 

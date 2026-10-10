@@ -17,8 +17,8 @@
 
 package com.pickaxe.jcode.treesitter.api
 
-import com.pickaxe.jcode.treesitter.TSNode
-import com.pickaxe.jcode.treesitter.TSQueryCapture
+import com.tom.rv2ide.treesitter.TSNode
+import com.tom.rv2ide.treesitter.TSQueryCapture
 import com.pickaxe.jcode.utils.DefaultRecyclable
 import com.pickaxe.jcode.utils.RecyclableObjectPool
 

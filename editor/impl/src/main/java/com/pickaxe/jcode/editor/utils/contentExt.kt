@@ -17,9 +17,9 @@
 
 package com.pickaxe.jcode.editor.utils
 
-import com.pickaxe.jcode.treesitter.TSNode
-import com.pickaxe.jcode.treesitter.TSTree
-import com.pickaxe.jcode.treesitter.getNodeAt
+import com.tom.rv2ide.treesitter.TSNode
+import com.tom.rv2ide.treesitter.TSTree
+import com.tom.rv2ide.treesitter.getNodeAt
 import io.github.rosemoe.sora.text.Content
 import io.github.rosemoe.sora.text.TextUtils
 import io.github.rosemoe.sora.util.IntPair

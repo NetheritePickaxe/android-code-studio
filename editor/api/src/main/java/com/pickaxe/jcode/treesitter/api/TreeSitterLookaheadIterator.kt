@@ -17,7 +17,7 @@
 
 package com.pickaxe.jcode.treesitter.api
 
-import com.pickaxe.jcode.treesitter.TSLookaheadIterator
+import com.tom.rv2ide.treesitter.TSLookaheadIterator
 import com.pickaxe.jcode.utils.DefaultRecyclable
 import com.pickaxe.jcode.utils.RecyclableObjectPool
 

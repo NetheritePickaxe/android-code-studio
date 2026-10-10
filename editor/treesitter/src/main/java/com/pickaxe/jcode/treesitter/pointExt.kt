@@ -15,7 +15,7 @@
  *   along with AndroidIDE.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.pickaxe.jcode.treesitter
+package com.tom.rv2ide.treesitter
 
 /** The 0-based start line number. */
 val TSRange.startLine: Int

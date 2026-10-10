@@ -17,7 +17,7 @@
 
 package com.pickaxe.jcode.treesitter.api
 
-import com.pickaxe.jcode.treesitter.TSQueryPredicateStep
+import com.tom.rv2ide.treesitter.TSQueryPredicateStep
 import com.pickaxe.jcode.utils.DefaultRecyclable
 import com.pickaxe.jcode.utils.RecyclableObjectPool
 

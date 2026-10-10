@@ -17,8 +17,8 @@
 
 package com.pickaxe.jcode.editor.language.treesitter.predicates
 
-import com.pickaxe.jcode.treesitter.TSQuery
-import com.pickaxe.jcode.treesitter.TSQueryMatch
+import com.tom.rv2ide.treesitter.TSQuery
+import com.tom.rv2ide.treesitter.TSQueryMatch
 import io.github.rosemoe.sora.editor.ts.predicate.PredicateResult
 import io.github.rosemoe.sora.editor.ts.predicate.TsClientPredicateStep
 import io.github.rosemoe.sora.editor.ts.predicate.TsSyntheticCaptureContainer

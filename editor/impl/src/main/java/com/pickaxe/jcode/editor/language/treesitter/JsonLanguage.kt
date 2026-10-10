@@ -19,7 +19,7 @@ package com.pickaxe.jcode.editor.language.treesitter
 
 import android.content.Context
 import com.pickaxe.jcode.editor.language.treesitter.TreeSitterLanguage.Factory
-import com.pickaxe.jcode.treesitter.json.TSLanguageJson
+import com.tom.rv2ide.treesitter.json.TSLanguageJson
 import io.github.rosemoe.sora.lang.Language.INTERRUPTION_LEVEL_STRONG
 
 /**

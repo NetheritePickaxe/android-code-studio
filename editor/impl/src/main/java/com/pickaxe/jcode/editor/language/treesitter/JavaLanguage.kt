@@ -25,7 +25,7 @@ import com.pickaxe.jcode.editor.language.utils.CommonSymbolPairs
 import com.pickaxe.jcode.lsp.api.ILanguageServer
 import com.pickaxe.jcode.lsp.api.ILanguageServerRegistry
 import com.pickaxe.jcode.lsp.java.JavaLanguageServer
-import com.pickaxe.jcode.treesitter.java.TSLanguageJava
+import com.tom.rv2ide.treesitter.java.TSLanguageJava
 import io.github.rosemoe.sora.lang.Language.INTERRUPTION_LEVEL_SLIGHT
 import io.github.rosemoe.sora.util.MyCharacter
 import io.github.rosemoe.sora.widget.SymbolPairMatch

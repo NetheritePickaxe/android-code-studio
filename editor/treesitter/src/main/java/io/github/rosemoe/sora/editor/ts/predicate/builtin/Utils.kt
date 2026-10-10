@@ -21,10 +21,10 @@
  */
 package io.github.rosemoe.sora.editor.ts.predicate.builtin
 
-import com.pickaxe.jcode.treesitter.TSQuery
-import com.pickaxe.jcode.treesitter.TSQueryMatch
-import com.pickaxe.jcode.treesitter.TSQueryPredicateStep.Type
-import com.pickaxe.jcode.treesitter.string.UTF16String
+import com.tom.rv2ide.treesitter.TSQuery
+import com.tom.rv2ide.treesitter.TSQueryMatch
+import com.tom.rv2ide.treesitter.TSQueryPredicateStep.Type
+import com.tom.rv2ide.treesitter.string.UTF16String
 import io.github.rosemoe.sora.editor.ts.predicate.TsClientPredicateStep
 import io.github.rosemoe.sora.text.Content
 

@@ -53,7 +53,7 @@ import com.pickaxe.jcode.resources.localization.LocaleProvider
 import com.pickaxe.jcode.stats.AndroidIDEStats
 import com.pickaxe.jcode.stats.StatUploadWorker
 import com.pickaxe.jcode.syntax.colorschemes.SchemeAndroidIDE
-import com.pickaxe.jcode.treesitter.TreeSitter
+import com.tom.rv2ide.treesitter.TreeSitter
 import com.pickaxe.jcode.ui.themes.IDETheme
 import com.pickaxe.jcode.ui.themes.IThemeManager
 import com.pickaxe.jcode.utils.ChartMemoryCleanupTask

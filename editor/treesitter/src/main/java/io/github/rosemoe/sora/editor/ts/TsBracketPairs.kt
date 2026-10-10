@@ -21,8 +21,8 @@
  */
 package io.github.rosemoe.sora.editor.ts
 
-import com.pickaxe.jcode.treesitter.TSQueryCursor
-import com.pickaxe.jcode.treesitter.TSTree
+import com.tom.rv2ide.treesitter.TSQueryCursor
+import com.tom.rv2ide.treesitter.TSTree
 import com.pickaxe.jcode.treesitter.api.TreeSitterQueryCapture
 import com.pickaxe.jcode.treesitter.api.safeExecQueryCursor
 import io.github.rosemoe.sora.lang.brackets.BracketsProvider

@@ -17,7 +17,7 @@
 
 package com.pickaxe.jcode.lsp.java.parser.ts
 
-import com.pickaxe.jcode.treesitter.TSTree
+import com.tom.rv2ide.treesitter.TSTree
 import java.net.URI
 import jdkx.tools.JavaFileObject
 

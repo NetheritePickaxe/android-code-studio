@@ -19,7 +19,7 @@ package com.pickaxe.jcode.editor.language.treesitter
 
 import android.content.Context
 import com.pickaxe.jcode.editor.language.treesitter.TreeSitterLanguage.Factory
-import com.pickaxe.jcode.treesitter.log.TSLanguageLog
+import com.tom.rv2ide.treesitter.log.TSLanguageLog
 
 /**
  * Tree Sitter language implementation for logs.

@@ -32,13 +32,20 @@ tasks.withType<Jar> {
   manifest { attributes("Main-Class" to "${BuildConfig.packageName}.tooling.impl.Main") }
 }
 
-tasks.register("deleteExistingJarFiles") {
-  delete {
-    delete(project.layout.buildDirectory.dir("libs"))
-  }
+// The Shadow plugin (8.x) makes the shaded jar the default `jar` output, which
+// on this Gradle version leaves no plain-named artifact for project consumers
+// (kapt `compileOnly(projects.tooling.impl)` resolves the plain name). Keep the
+// plain name on `jar` and the `-all` name on `shadowJar` so both artifacts exist
+// and `copyJar` still picks up `*-all.jar` for the app assets.
+tasks.named<Jar>("jar") {
+  archiveClassifier.set("")
+}
+tasks.named<Jar>("shadowJar") {
+  archiveClassifier.set("all")
 }
 
 tasks.register("copyJar") {
+  dependsOn("shadowJar")
   doLast {
     val libsDir = project.layout.buildDirectory.dir("libs")
 
@@ -46,13 +53,16 @@ tasks.register("copyJar") {
       from(libsDir)
       into(libsDir)
       include("*-all.jar")
+      exclude("tooling-api-all.jar")
       rename { "tooling-api-all.jar" }
     }
   }
 }
 
+// Chain `jar -> shadowJar -> copyJar`. The libs dir is never deleted mid-build:
+// consumers such as kapt read the plain `jar` output while the build runs, and a
+// delete task wiping the shared dir would race with them.
 project.tasks.getByName("jar") {
-  dependsOn("deleteExistingJarFiles")
   finalizedBy("shadowJar")
 }
 

@@ -28,14 +28,14 @@ import com.pickaxe.jcode.lsp.models.TextEdit
 import com.pickaxe.jcode.lsp.xml.XMLLanguageServer
 import com.pickaxe.jcode.models.Range
 import com.pickaxe.jcode.projects.FileManager
-import com.pickaxe.jcode.treesitter.TSParser
-import com.pickaxe.jcode.treesitter.TSQuery
-import com.pickaxe.jcode.treesitter.TSQueryCapture
-import com.pickaxe.jcode.treesitter.TSQueryCursor
-import com.pickaxe.jcode.treesitter.TSQueryError
-import com.pickaxe.jcode.treesitter.TSQueryMatch
-import com.pickaxe.jcode.treesitter.TSTree
-import com.pickaxe.jcode.treesitter.xml.TSLanguageXml
+import com.tom.rv2ide.treesitter.TSParser
+import com.tom.rv2ide.treesitter.TSQuery
+import com.tom.rv2ide.treesitter.TSQueryCapture
+import com.tom.rv2ide.treesitter.TSQueryCursor
+import com.tom.rv2ide.treesitter.TSQueryError
+import com.tom.rv2ide.treesitter.TSQueryMatch
+import com.tom.rv2ide.treesitter.TSTree
+import com.tom.rv2ide.treesitter.xml.TSLanguageXml
 
 /** @author Akash Yadav */
 object AdvancedEditProvider {

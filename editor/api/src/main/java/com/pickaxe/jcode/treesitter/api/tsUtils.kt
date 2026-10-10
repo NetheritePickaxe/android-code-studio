@@ -17,11 +17,11 @@
 
 package com.pickaxe.jcode.treesitter.api
 
-import com.pickaxe.jcode.treesitter.TSNode
-import com.pickaxe.jcode.treesitter.TSQuery
-import com.pickaxe.jcode.treesitter.TSQueryCursor
-import com.pickaxe.jcode.treesitter.TSQueryMatch
-import com.pickaxe.jcode.treesitter.TSTree
+import com.tom.rv2ide.treesitter.TSNode
+import com.tom.rv2ide.treesitter.TSQuery
+import com.tom.rv2ide.treesitter.TSQueryCursor
+import com.tom.rv2ide.treesitter.TSQueryMatch
+import com.tom.rv2ide.treesitter.TSTree
 import org.slf4j.LoggerFactory
 
 @PublishedApi internal val log = LoggerFactory.getLogger("TsUtilsKt")

@@ -134,10 +134,18 @@ public class IDEWrapperGenerator {
           throw new UncheckedIOException(String.format(DISTRIBUTION_URL_EXCEPTION_MESSAGE, url));
         }
       } else if (uri.getScheme().startsWith("http") && !isOffline) {
+        // The URL validation is best-effort. Some networks (and many mobile
+        // networks, which is where this IDE runs) return no response for HEAD
+        // requests while allowing the actual GET download. Failing the build
+        // here makes wrapper generation unnecessarily brittle.
         try {
           new Download(new Logger(true), "gradlew", Download.UNKNOWN_VERSION).sendHeadRequest(uri);
         } catch (Exception e) {
-          throw new UncheckedIOException(String.format(DISTRIBUTION_URL_EXCEPTION_MESSAGE, url), e);
+          System.out.println(
+              String.format(
+                  "jcode: unable to validate Gradle distribution url '%s' (%s). "
+                      + "Continuing with wrapper generation.",
+                  url, e.getClass().getSimpleName()));
         }
       }
     }
