@@ -25,7 +25,7 @@
         android:fitsSystemWindows="false"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$Behavior">
 
-        <com.tom.rv2ide.ui.ExtendedMenuToolbar
+        <com.pickaxe.jcode.ui.ExtendedMenuToolbar
           android:id="@+id/editor_toolbar"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
@@ -99,7 +99,7 @@
 
   </eightbitlab.com.blurview.BlurTarget>
 
-  <com.tom.rv2ide.ui.EditorBottomSheet
+  <com.pickaxe.jcode.ui.EditorBottomSheet
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
     android:layout_height="match_parent"

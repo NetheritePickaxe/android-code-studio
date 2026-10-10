@@ -48,21 +48,21 @@ dependencies {
 
 gradlePlugin {
   plugins {
-    create("com.tom.rv2ide.build") {
-      id = "com.tom.rv2ide.build"
-      implementationClass = "com.tom.rv2ide.plugins.AndroidIDEPlugin"
+    create("com.pickaxe.jcode.build") {
+      id = "com.pickaxe.jcode.build"
+      implementationClass = "com.pickaxe.jcode.plugins.AndroidIDEPlugin"
     }
-    create("com.tom.rv2ide.core-app") {
-      id = "com.tom.rv2ide.core-app"
-      implementationClass = "com.tom.rv2ide.plugins.AndroidIDECoreAppPlugin"
+    create("com.pickaxe.jcode.core-app") {
+      id = "com.pickaxe.jcode.core-app"
+      implementationClass = "com.pickaxe.jcode.plugins.AndroidIDECoreAppPlugin"
     }
-    create("com.tom.rv2ide.build.propsparser") {
-      id = "com.tom.rv2ide.build.propsparser"
-      implementationClass = "com.tom.rv2ide.plugins.PropertiesParserPlugin"
+    create("com.pickaxe.jcode.build.propsparser") {
+      id = "com.pickaxe.jcode.build.propsparser"
+      implementationClass = "com.pickaxe.jcode.plugins.PropertiesParserPlugin"
     }
-    create("com.tom.rv2ide.build.lexergenerator") {
-      id = "com.tom.rv2ide.build.lexergenerator"
-      implementationClass = "com.tom.rv2ide.plugins.LexerGeneratorPlugin"
+    create("com.pickaxe.jcode.build.lexergenerator") {
+      id = "com.pickaxe.jcode.build.lexergenerator"
+      implementationClass = "com.pickaxe.jcode.plugins.LexerGeneratorPlugin"
     }
   }
 }

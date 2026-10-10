@@ -100,7 +100,7 @@
     app:layout_constraintStart_toEndOf="@+id/completion_icon_card"
     app:layout_constraintTop_toBottomOf="@id/completion_label"
     app:layout_constraintBottom_toTopOf="@id/completion_api_info"
-    tools:text="com.tom.rv2ide.activities.MainActivity" />
+    tools:text="com.pickaxe.jcode.activities.MainActivity" />
 
   <TextView
     android:id="@+id/completion_api_info"

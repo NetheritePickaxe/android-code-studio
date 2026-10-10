@@ -35,7 +35,7 @@
           app:cardCornerRadius="16dp"
           app:cardElevation="0dp"
           style="?attr/materialCardViewElevatedStyle">
-            <com.tom.rv2ide.editor.ui.IDEEditor
+            <com.pickaxe.jcode.editor.ui.IDEEditor
               android:id="@+id/tv_output"
               android:layout_width="match_parent"
               android:layout_height="200dp"

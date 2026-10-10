@@ -39,18 +39,18 @@ kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-em
 kotlin-scripting-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable", version.ref = "kotlin" }
 
 # Dependencies in composite build
-composite-appintro = { module = "com.tom.rv2ide.build:appintro" }
-composite-desugaringCore = { module = "com.tom.rv2ide.build:desugaring-core" }
-composite-fuzzysearch = { module = "com.tom.rv2ide.build:fuzzysearch" }
-composite-googleJavaFormat = { module = "com.tom.rv2ide.build:google-java-format" }
-composite-javaCompiler = { module = "com.tom.rv2ide.build:java-compiler" }
-composite-javac = { module = "com.tom.rv2ide.build:javac" }
-composite-jdkCompiler = { module = "com.tom.rv2ide.build:jdk-compiler" }
-composite-jdkJdeps = { module = "com.tom.rv2ide.build:jdk-jdeps" }
-composite-javapoet = { module = "com.tom.rv2ide.build:javapoet" }
-composite-jaxp = { module = "com.tom.rv2ide.build:jaxp" }
-composite-jdt = { module = "com.tom.rv2ide.build:jdt" }
-composite-layoutlibApi = { module = "com.tom.rv2ide.build:layoutlib-api" }
+composite-appintro = { module = "com.pickaxe.jcode.build:appintro" }
+composite-desugaringCore = { module = "com.pickaxe.jcode.build:desugaring-core" }
+composite-fuzzysearch = { module = "com.pickaxe.jcode.build:fuzzysearch" }
+composite-googleJavaFormat = { module = "com.pickaxe.jcode.build:google-java-format" }
+composite-javaCompiler = { module = "com.pickaxe.jcode.build:java-compiler" }
+composite-javac = { module = "com.pickaxe.jcode.build:javac" }
+composite-jdkCompiler = { module = "com.pickaxe.jcode.build:jdk-compiler" }
+composite-jdkJdeps = { module = "com.pickaxe.jcode.build:jdk-jdeps" }
+composite-javapoet = { module = "com.pickaxe.jcode.build:javapoet" }
+composite-jaxp = { module = "com.pickaxe.jcode.build:jaxp" }
+composite-jdt = { module = "com.pickaxe.jcode.build:jdt" }
+composite-layoutlibApi = { module = "com.pickaxe.jcode.build:layoutlib-api" }
 
 # AndroidIDE
 androidide-ts = { module = "io.github.mohammed-baqer-null:android-tree-sitter", version.ref = "tree-sitter" }
@@ -153,7 +153,7 @@ aapt2-proto = { module = "com.android.tools.build:aapt2-proto", version = "8.3.0
 
 # use logback-core from logback-android instead
 #logging-logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback" }
-logging-logback-core = { module = "com.tom.rv2ide.build:logback-core" }
+logging-logback-core = { module = "com.pickaxe.jcode.build:logback-core" }
 logging-logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 # XML

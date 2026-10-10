@@ -17,13 +17,13 @@
 
 
 import com.android.SdkConstants
-import com.tom.rv2ide.build.config.AGP_VERSION_MINIMUM
-import com.tom.rv2ide.build.config.BuildConfig
-import com.tom.rv2ide.build.config.ProjectConfig
-import com.tom.rv2ide.build.config.VersionUtils
-import com.tom.rv2ide.build.config.downloadVersion
-import com.tom.rv2ide.build.config.replaceContents
-import com.tom.rv2ide.build.config.simpleVersionName
+import com.pickaxe.jcode.build.config.AGP_VERSION_MINIMUM
+import com.pickaxe.jcode.build.config.BuildConfig
+import com.pickaxe.jcode.build.config.ProjectConfig
+import com.pickaxe.jcode.build.config.VersionUtils
+import com.pickaxe.jcode.build.config.downloadVersion
+import com.pickaxe.jcode.build.config.replaceContents
+import com.pickaxe.jcode.build.config.simpleVersionName
 
 plugins {
   //noinspection JavaPluginLanguageLevel

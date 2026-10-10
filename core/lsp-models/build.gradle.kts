@@ -15,7 +15,7 @@
  *   along with AndroidIDE.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import com.tom.rv2ide.build.config.BuildConfig
+import com.pickaxe.jcode.build.config.BuildConfig
 
 
 plugins {

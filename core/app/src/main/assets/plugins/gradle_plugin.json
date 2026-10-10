@@ -3,8 +3,8 @@
   "name": "Gradle Build Plugin",
   "version": "1.0.0",
   "description": "Handles Gradle build operations in separate process to prevent memory issues",
-  "mainClass": "com.tom.rv2ide.plugins.GradlePluginService",
-  "serviceClass": "com.tom.rv2ide.plugins.GradlePluginService",
+  "mainClass": "com.pickaxe.jcode.plugins.GradlePluginService",
+  "serviceClass": "com.pickaxe.jcode.plugins.GradlePluginService",
   "dependencies": [],
   "permissions": [
     "android.permission.INTERNET",

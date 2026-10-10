@@ -16,7 +16,7 @@
  */
 
 
-import com.tom.rv2ide.plugins.NoDesugarPlugin
+import com.pickaxe.jcode.plugins.NoDesugarPlugin
 
 @Suppress("JavaPluginLanguageLevel")
 plugins {

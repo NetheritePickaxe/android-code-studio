@@ -22,6 +22,6 @@ package io.github.mohammedbaqernull.logger.configurations
 */
 
 // Change this package name to match your application id ( Logger app )
-// com.tom.rv2ide = AndroidCS package name which is using the LogWire for capturing logs from apps that built by AndroidCS
+// com.pickaxe.jcode = AndroidCS package name which is using the LogWire for capturing logs from apps that built by AndroidCS
 
-const val PACKAGE_NAME: String = "com.tom.rv2ide"
+const val PACKAGE_NAME: String = "com.pickaxe.jcode"

@@ -16,8 +16,8 @@
  */
 
 
-import com.tom.rv2ide.plugins.LexerGeneratorPlugin
-import com.tom.rv2ide.build.config.BuildConfig
+import com.pickaxe.jcode.plugins.LexerGeneratorPlugin
+import com.pickaxe.jcode.build.config.BuildConfig
 
 plugins {
   id("java-library")

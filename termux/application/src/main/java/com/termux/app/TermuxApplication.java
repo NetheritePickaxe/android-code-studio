@@ -1,7 +1,7 @@
 package com.termux.app;
 
 import android.content.Context;
-import com.tom.rv2ide.app.BaseApplication;
+import com.pickaxe.jcode.app.BaseApplication;
 import com.termux.shared.errors.Error;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;

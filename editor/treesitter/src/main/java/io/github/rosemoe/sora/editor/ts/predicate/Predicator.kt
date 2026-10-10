@@ -21,9 +21,9 @@
  */
 package io.github.rosemoe.sora.editor.ts.predicate
 
-import com.tom.rv2ide.treesitter.TSQuery
-import com.tom.rv2ide.treesitter.TSQueryMatch
-import com.tom.rv2ide.treesitter.TSQueryPredicateStep
+import com.pickaxe.jcode.treesitter.TSQuery
+import com.pickaxe.jcode.treesitter.TSQueryMatch
+import com.pickaxe.jcode.treesitter.TSQueryPredicateStep
 
 /**
  * Predicate runner for tree-sitter

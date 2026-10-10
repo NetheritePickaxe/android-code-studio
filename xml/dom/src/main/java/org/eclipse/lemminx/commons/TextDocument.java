@@ -9,8 +9,8 @@
  */
 package org.eclipse.lemminx.commons;
 
-import com.tom.rv2ide.models.Position;
-import com.tom.rv2ide.models.Range;
+import com.pickaxe.jcode.models.Position;
+import com.pickaxe.jcode.models.Range;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

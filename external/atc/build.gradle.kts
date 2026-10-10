@@ -23,7 +23,7 @@ plugins {
 }
 
 android {
-    namespace = "com.tom.androidcodestudio.atc"
+    namespace = "com.pickaxe.jcode.atc.atc"
     compileSdk = 36
 
     defaultConfig { minSdk = 21 }

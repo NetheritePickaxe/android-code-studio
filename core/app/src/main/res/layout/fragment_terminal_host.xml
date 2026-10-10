@@ -60,7 +60,7 @@
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/terminal_fragment_host"
-            android:name="com.tom.rv2ide.terminal.TerminalFragment"
+            android:name="com.pickaxe.jcode.terminal.TerminalFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:tag="termux_terminal_fragment" />

@@ -71,7 +71,7 @@ import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 import com.termux.view.TerminalView;
 import com.termux.view.TerminalViewClient;
-import com.tom.rv2ide.projects.internal.ProjectManagerImpl;
+import com.pickaxe.jcode.projects.internal.ProjectManagerImpl;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Objects;

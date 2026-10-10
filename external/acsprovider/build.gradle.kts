@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.tom.androidcodestudio.acsprovider"
+    namespace = "com.pickaxe.jcode.atc.acsprovider"
     compileSdk = 36
 
 }

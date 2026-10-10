@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.tom.rv2ide.ui.ContentTranslatingDrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.pickaxe.jcode.ui.ContentTranslatingDrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:id="@+id/editor_drawerLayout"
@@ -9,7 +9,7 @@
   android:background="?attr/colorSurfaceDim"
   tools:ignore="DuplicateIncludedIds">
 
-  <com.tom.rv2ide.ui.SwipeRevealLayout
+  <com.pickaxe.jcode.ui.SwipeRevealLayout
     android:id="@+id/swipe_reveal"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -35,7 +35,7 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-  </com.tom.rv2ide.ui.SwipeRevealLayout>
+  </com.pickaxe.jcode.ui.SwipeRevealLayout>
 
   <com.google.android.material.navigation.NavigationView
     android:id="@+id/startNav"
@@ -46,10 +46,10 @@
 
     <androidx.fragment.app.FragmentContainerView
       android:id="@+id/drawer_sidebar"
-      android:name="com.tom.rv2ide.fragments.sidebar.EditorSidebarFragment"
+      android:name="com.pickaxe.jcode.fragments.sidebar.EditorSidebarFragment"
       android:layout_width="match_parent"
       android:layout_height="match_parent" />
 
   </com.google.android.material.navigation.NavigationView>
 
-</com.tom.rv2ide.ui.ContentTranslatingDrawerLayout>
+</com.pickaxe.jcode.ui.ContentTranslatingDrawerLayout>

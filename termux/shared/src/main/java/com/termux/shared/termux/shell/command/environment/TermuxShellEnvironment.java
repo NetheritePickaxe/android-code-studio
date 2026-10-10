@@ -1,6 +1,6 @@
 package com.termux.shared.termux.shell.command.environment;
 
-import static com.tom.rv2ide.utils.Environment.ANDROID_HOME;
+import static com.pickaxe.jcode.utils.Environment.ANDROID_HOME;
 
 import android.content.Context;
 

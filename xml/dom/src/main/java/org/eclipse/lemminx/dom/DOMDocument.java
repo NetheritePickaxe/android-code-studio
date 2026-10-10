@@ -17,8 +17,8 @@
  */
 package org.eclipse.lemminx.dom;
 
-import com.tom.rv2ide.models.Position;
-import com.tom.rv2ide.models.Range;
+import com.pickaxe.jcode.models.Position;
+import com.pickaxe.jcode.models.Range;
 
 import java.net.URI;
 import java.net.URISyntaxException;

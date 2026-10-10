@@ -16,7 +16,7 @@
  */
 
 
-import com.tom.rv2ide.build.config.BuildConfig
+import com.pickaxe.jcode.build.config.BuildConfig
 
 plugins {
     id("com.android.library")

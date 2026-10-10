@@ -50,7 +50,7 @@
     </LinearLayout>
 
     <!-- Log Editor -->
-    <com.tom.rv2ide.editor.ui.IDEEditor
+    <com.pickaxe.jcode.editor.ui.IDEEditor
         android:id="@+id/logEditor"
         android:layout_width="match_parent"
         android:layout_height="0dp"
