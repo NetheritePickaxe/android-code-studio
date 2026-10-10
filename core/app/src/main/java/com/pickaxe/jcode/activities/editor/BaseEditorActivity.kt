@@ -99,7 +99,6 @@ import com.pickaxe.jcode.tasks.cancelIfActive
 import com.pickaxe.jcode.ui.CodeEditorView
 import com.pickaxe.jcode.ui.ContentTranslatingDrawerLayout
 import com.pickaxe.jcode.ui.SwipeRevealLayout
-import com.pickaxe.jcode.uidesigner.UIDesignerActivity
 import com.pickaxe.jcode.utils.ActionMenuUtils.createMenu
 import com.pickaxe.jcode.utils.DialogUtils.newMaterialDialogBuilder
 import com.pickaxe.jcode.utils.Environment
@@ -171,7 +170,6 @@ abstract class BaseEditorActivity :
   /** Editor activity's [CoroutineScope] for executing tasks in the background. */
   protected val editorActivityScope = CoroutineScope(Dispatchers.Default)
 
-  var uiDesignerResultLauncher: ActivityResultLauncher<Intent>? = null
   val editorViewModel by viewModels<EditorViewModel>()
 
   internal var _binding: ActivityEditorBinding? = null
@@ -691,9 +689,6 @@ override fun onApplySystemBarInsets(insets: Insets) {
     }
     
     
-    uiDesignerResultLauncher =
-        registerForActivityResult(StartActivityForResult(), this::handleUiDesignerResult)
-
     setupMemUsageChart()
     watchMemory()
 
@@ -1219,31 +1214,6 @@ override fun onApplySystemBarInsets(insets: Insets) {
     if (!isDestroying && isFinishing) {
       isDestroying = true
     }
-  }
-
-  private fun handleUiDesignerResult(result: ActivityResult) {
-    if (result.resultCode != RESULT_OK || result.data == null) {
-      log.warn(
-          "UI Designer returned invalid result: resultCode={}, data={}",
-          result.resultCode,
-          result.data,
-      )
-      return
-    }
-    val generated = result.data!!.getStringExtra(UIDesignerActivity.RESULT_GENERATED_XML)
-    if (TextUtils.isEmpty(generated)) {
-      log.warn("UI Designer returned blank generated XML code")
-      return
-    }
-    val view = provideCurrentEditor()
-    val text =
-        view?.editor?.text
-            ?: run {
-              log.warn("No file opened to append UI designer result")
-              return
-            }
-    val endLine = text.lineCount - 1
-    text.replace(0, 0, endLine, text.getColumnCount(endLine), generated)
   }
 
   private fun setupDrawers() {

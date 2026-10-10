@@ -193,8 +193,7 @@ dependencies {
   // external deps here
   implementation("com.github.Dimezis:BlurView:version-3.2.0")
   implementation("androidx.security:security-crypto:1.1.0-alpha06")
-  implementation(projects.external.acsprovider)
-  implementation(projects.external.atc) 
+  implementation(projects.external.atc)
   implementation(libs.external.customizable.cardview)
   implementation(projects.external.logwire)
 	implementation(libs.external.seasonal.effects)
@@ -264,7 +263,6 @@ dependencies {
 
   // Local projects here
   implementation(projects.core.projectdata)
-  implementation(projects.ideconfigurations)
   implementation(projects.core.actions)
   implementation(projects.core.common)
   implementation(projects.core.indexingApi)
@@ -294,7 +292,6 @@ dependencies {
   implementation(projects.utilities.templatesApi)
   implementation(projects.utilities.templatesImpl)
   implementation(projects.utilities.treeview)
-  implementation(projects.utilities.uidesigner)
   implementation(projects.utilities.xmlInflater)
   implementation(projects.xml.aaptcompiler)
   implementation(projects.xml.lsp)

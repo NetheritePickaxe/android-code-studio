@@ -83,7 +83,6 @@ include(
   ":annotation:processors",
   ":annotation:processors-ksp",
 
-  ":external:acsprovider",
   ":external:atc",
   ":core:projectdata",
   ":external:logwire",
@@ -93,7 +92,6 @@ include(
   
   ":core:actions",
   ":core:app",
-  ":ideconfigurations",
   ":core:common",
   ":core:indexing-api",
   ":core:indexing-core",
@@ -134,7 +132,6 @@ include(
   ":utilities:templates-api",
   ":utilities:templates-impl",
   ":utilities:treeview",
-  ":utilities:uidesigner",
   ":utilities:xml-inflater",
   ":xml:aaptcompiler",
   ":xml:dom",
