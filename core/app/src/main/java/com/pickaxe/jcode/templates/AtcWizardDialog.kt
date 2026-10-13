@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.provider.DocumentsContractCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.FragmentActivity
@@ -29,8 +28,7 @@ import com.pickaxe.jcode.activities.FolderPickerActivity
 import com.pickaxe.jcode.databinding.DialogAtcWizardBinding
 import com.pickaxe.jcode.templates.android.Template
 import com.pickaxe.jcode.templates.android.TemplateOptions
-import com.pickaxe.jcode.templates.android.TemplateRegistry
-import com.pickaxe.jcode.templates.android.etc.NativeCpp.Check
+import com.pickaxe.jcode.templates.java.TemplateRegistry
 import com.pickaxe.jcode.templates.preferences.Options
 import com.pickaxe.jcode.templates.preferences.WizardPreferences
 import com.pickaxe.jcode.utils.Environment
@@ -38,7 +36,6 @@ import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class AtcWizardDialog : BottomSheetDialogFragment() {
 
@@ -70,21 +67,16 @@ class AtcWizardDialog : BottomSheetDialogFragment() {
 
   private fun setupSwitches() {
     with(binding) {
+      // jcode targets plain Java/Kotlin Gradle projects; the CMake and NDK
+      // controls are Android-only and are hidden here.
       useCMakeSwitch.visibility = View.GONE
-      useCMakeSwitch.isChecked = Options.OPT_BUILD_SYSTEM_USE_CMAKE
       useKtsSwitch.isChecked = Options.OPT_USE_GRADLE_KTS
-
-      useCMakeSwitch.setOnCheckedChangeListener { _, isChecked ->
-        Options.OPT_BUILD_SYSTEM_USE_CMAKE = isChecked
-        if (isChecked) validateAndSelectCMake()
-      }
 
       useKtsSwitch.setOnCheckedChangeListener { _, isChecked ->
         Options.OPT_USE_GRADLE_KTS = isChecked
       }
 
       ndkVersionButton.visibility = View.GONE
-      ndkVersionButton.setOnClickListener { showNdkVersionPicker(requireContext()) }
     }
   }
 
@@ -116,35 +108,17 @@ class AtcWizardDialog : BottomSheetDialogFragment() {
   }
 
   private fun setupDropdowns(ctx: Context) {
-    val languageItems = arrayOf(ctx.getString(R.string.kotlin), ctx.getString(R.string.java))
+    val languageItems = arrayOf(ctx.getString(R.string.java), ctx.getString(R.string.kotlin))
     binding.languageInput.apply {
       setSimpleItems(languageItems)
       setText(languageItems[0], false)
       setOnClickListener { showDropDown() }
     }
 
-    val sdkValues = Sdk.values()
-    val minSdkDisplay = sdkValues.map { it.displayName() }.toTypedArray()
-    val defIdx = sdkValues.indexOfFirst { it.api == 21 }.coerceAtLeast(0)
-    Options.OPT_MIN_SDK = sdkValues.getOrNull(defIdx)?.api ?: 21
-    binding.minSdkInput.apply {
-      setSimpleItems(minSdkDisplay)
-      setText(minSdkDisplay[defIdx], false)
-      setOnClickListener { showDropDown() }
-      setOnItemClickListener { _, _, position, _ ->
-        Options.OPT_MIN_SDK = sdkValues.getOrNull(position)?.api ?: 21
-      }
-    }
-
-    val nativeLangValues = arrayOf("C++", "C")
-    binding.nativeLanguageInput.apply {
-      setSimpleItems(nativeLangValues)
-      setText(nativeLangValues[0], false)
-      setOnClickListener { showDropDown() }
-      setOnItemClickListener { _, _, position, _ ->
-        Options.OPT_NATIVE_LANGUAGE = if (position == 1) "c" else "cpp"
-      }
-    }
+    // minSdk and native language are Android-only; hidden for jcode.
+    binding.minSdkInput.visibility = View.GONE
+    (binding.minSdkInput.parent as? android.view.View)?.visibility = View.GONE
+    binding.nativeLanguageInputLayout.visibility = View.GONE
   }
 
   private fun setupTemplatesGrid(ctx: Context) {
@@ -154,12 +128,7 @@ class AtcWizardDialog : BottomSheetDialogFragment() {
         TemplateAdapter(ctx, templates) { template ->
           selectedTemplate = template
           template.configureOptions()
-
-          if (template.javaClass.simpleName == "NativeCpp") {
-            validateNativeTemplate(ctx)
-          } else {
-            proceedToOptionsPage(ctx)
-          }
+          proceedToOptionsPage(ctx)
         }
   }
 
@@ -181,55 +150,6 @@ class AtcWizardDialog : BottomSheetDialogFragment() {
     binding.createButton.setOnClickListener { createProject(ctx) }
   }
 
-  private fun validateAndSelectCMake() {
-    val cmakeVersions = Check.getAllCMakeVersions()
-    if (cmakeVersions.isEmpty()) {
-      showAlert(
-          "CMake Not Found",
-          "No CMake installation found.",
-      ) {
-        // IDE Settings no longer host CMake installation
-      }
-      binding.useCMakeSwitch.isChecked = false
-    } else {
-      showCMakeVersionPicker(requireContext(), cmakeVersions)
-    }
-  }
-
-  private fun validateNativeTemplate(ctx: Context) {
-    val progressDialog =
-        showProgress("Checking NDK...", "Please wait while we validate your NDK installation.")
-
-    CoroutineScope(Dispatchers.IO).launch {
-      val hasNdk = Check.isAtLeastOneInstalled()
-      val highestNdk = if (hasNdk) Check.getHighestNdkVersion() else null
-      val isValid = highestNdk?.let { Check.validateNdkVersion(it) } ?: false
-
-      withContext(Dispatchers.Main) {
-        progressDialog.dismiss()
-
-        when {
-          !hasNdk -> showNdkError(ctx, getString(R.string.error_ndk_not_found_or_incompatible))
-          !isValid ->
-              showNdkError(
-                  ctx,
-                  "The highest NDK version found ($highestNdk) is invalid or corrupted.",
-              )
-          else -> {
-            Options.OPT_SELECTED_NDK_VERSION = highestNdk
-            proceedToOptionsPage(ctx)
-          }
-        }
-      }
-    }
-  }
-
-  private fun showNdkError(ctx: Context, message: String) {
-    showAlert(getString(R.string.native_error_title), message) {
-      // NDK installation via IDE Settings is no longer available
-    }
-  }
-
   private fun proceedToOptionsPage(ctx: Context) {
     binding.root.post {
       val templateName = "My${selectedTemplate?.displayName?.replace(" ", "")}" ?: "MyProject"
@@ -238,12 +158,6 @@ class AtcWizardDialog : BottomSheetDialogFragment() {
 
       binding.projectNameInput.setText(templateName)
       binding.packageNameInput.setText("com.example.$packageSuffix")
-
-      val isNative = Options.OPT_IS_NATIVE_CPP
-      binding.useCMakeSwitch.visibility = if (isNative) View.VISIBLE else View.GONE
-      binding.nativeLanguageInputLayout.visibility = if (isNative) View.VISIBLE else View.GONE
-      binding.ndkVersionButton.visibility = if (isNative) View.VISIBLE else View.GONE
-      binding.ndkVersionButton.text = "NDK: ${Options.OPT_SELECTED_NDK_VERSION ?: "Auto"}"
 
       SheetTransitions.slide(
           binding.wizardContainer,
@@ -266,16 +180,11 @@ class AtcWizardDialog : BottomSheetDialogFragment() {
         binding.packageNameInput.text?.toString()?.trim().takeUnless { it.isNullOrBlank() }
             ?: "com.example.${selectedTemplate?.displayName?.replace(" ", ".")?.lowercase() ?: "myproject"}"
 
-    var lang =
+    val lang =
         if (binding.languageInput.text?.toString()?.lowercase()?.startsWith("java") == true)
             LanguageType.JAVA
         else LanguageType.KOTLIN
 
-    val sdkValues = Sdk.values()
-    val minSdkDisplay = sdkValues.map { it.displayName() }.toTypedArray()
-    val selectedIdx = minSdkDisplay.indexOf(binding.minSdkInput.text?.toString()).coerceAtLeast(0)
-    val sdkApi = Options.OPT_MIN_SDK ?: 21
-    
     val savePath =
         binding.saveLocationInput.text?.toString()?.trim().takeUnless { it.isNullOrBlank() }
             ?: Environment.PROJECTS_DIR.absolutePath
@@ -289,28 +198,16 @@ class AtcWizardDialog : BottomSheetDialogFragment() {
       return
     }
 
-    if (
-        Options.OPT_IS_NATIVE_GAME_ACTIVITY == true &&
-            WizardPreferences.getLastSaveLocation(ctx) != Environment.AT_ACSHOME_PROJECTS.toString()
-    ) {
-      requireAcsHomeProjectsDir()
-      return
-    }
-
     WizardPreferences.setLastSaveLocation(ctx, savePath)
     WizardPreferences.addRecentProject(ctx, projectDir.absolutePath)
 
     selectedTemplate?.let { t ->
-      if (t.javaClass.simpleName.contains("Compose", ignoreCase = true)) {
-        lang = LanguageType.KOTLIN
-      }
-
       CoroutineScope(Dispatchers.Main).launch {
         try {
           t.create(
               ctx,
               listener,
-              TemplateOptions(proj, pkg, lang, sdkApi, Options.OPT_USE_GRADLE_KTS, File(savePath)),
+              TemplateOptions(proj, pkg, lang, Options.OPT_USE_GRADLE_KTS, File(savePath)),
           )
         } catch (e: Exception) {
           listener?.onTemplateCreated(false, "Error: ${e.message}")
@@ -319,20 +216,6 @@ class AtcWizardDialog : BottomSheetDialogFragment() {
     } ?: listener?.onCreationCancelled()
 
     dismiss()
-  }
-
-  private fun requireAcsHomeProjectsDir() {
-    showAlert(
-        "Invalid Save Location",
-        "Game projects must be saved in the Android Code Studio home directory to work correctly.",
-        "Automatically switch",
-    ) {
-      binding.saveLocationInput.setText(Environment.AT_ACSHOME_PROJECTS.toString())
-      WizardPreferences.setLastSaveLocation(
-          requireContext(),
-          Environment.AT_ACSHOME_PROJECTS.toString(),
-      )
-    }
   }
 
   private fun validateProjectName() {
@@ -378,53 +261,6 @@ class AtcWizardDialog : BottomSheetDialogFragment() {
     }
   }
 
-  private fun showNdkVersionPicker(ctx: Context) {
-    val versions = Check.getAllNdkVersions()
-    if (versions.isEmpty()) {
-      showAlert("No NDK Found", "No NDK versions are installed.")
-      return
-    }
-
-    val versionLabels =
-        versions.map { "$it ${if (Check.validateNdkVersion(it)) "✓" else "✗"}" }.toTypedArray()
-    val currentIndex = versions.indexOf(Options.OPT_SELECTED_NDK_VERSION).coerceAtLeast(0)
-
-    MaterialAlertDialogBuilder(ctx)
-        .setTitle("Select NDK Version")
-        .setSingleChoiceItems(versionLabels, currentIndex) { dialog, which ->
-          val selectedVersion = versions[which]
-          if (Check.validateNdkVersion(selectedVersion)) {
-            Options.OPT_SELECTED_NDK_VERSION = selectedVersion
-            binding.ndkVersionButton.text = "NDK: $selectedVersion"
-            dialog.dismiss()
-          } else {
-            Toast.makeText(ctx, "Invalid NDK: $selectedVersion", Toast.LENGTH_SHORT).show()
-          }
-        }
-        .setNegativeButton("Cancel", null)
-        .show()
-  }
-
-  private fun showCMakeVersionPicker(ctx: Context, versions: List<String>) {
-    val versionLabels =
-        versions
-            .map { "$it ${if (Check.validateCMakeVersion(it) != null) "✓" else "✗"}" }
-            .toTypedArray()
-
-    MaterialAlertDialogBuilder(ctx)
-        .setTitle("Select CMake Version")
-        .setSingleChoiceItems(versionLabels, 0) { dialog, which ->
-          val selectedVersion = versions[which]
-          Check.validateCMakeVersion(selectedVersion)?.let { path ->
-            Options.OPT_CMAKE_PATH = path
-            Toast.makeText(ctx, "CMake $selectedVersion selected", Toast.LENGTH_SHORT).show()
-            dialog.dismiss()
-          } ?: Toast.makeText(ctx, "Invalid CMake: $selectedVersion", Toast.LENGTH_SHORT).show()
-        }
-        .setNegativeButton("Cancel") { _, _ -> binding.useCMakeSwitch.isChecked = false }
-        .show()
-  }
-
   private fun showAlert(
       title: String,
       message: String,
@@ -438,14 +274,6 @@ class AtcWizardDialog : BottomSheetDialogFragment() {
         .setNegativeButton("Cancel", null)
         .show()
   }
-
-  private fun showProgress(title: String, message: String) =
-      MaterialAlertDialogBuilder(requireContext())
-          .setTitle(title)
-          .setMessage(message)
-          .setCancelable(false)
-          .create()
-          .apply { show() }
 
   override fun onDestroyView() {
     super.onDestroyView()

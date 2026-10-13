@@ -111,3 +111,8 @@ build.log
 external/logwire/build
 external/atc/build
 external/acsprovider/build
+
+# Harness
+.openchamber/
+# Kotlin/kotlin-dsl compiled output dirs (module-local bin)
+bin/

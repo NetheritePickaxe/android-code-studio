@@ -58,7 +58,6 @@ data class TemplateOptions(
     val projectName: String,
     val packageId: String,
     val languageType: LanguageType,
-    val minSdk: Int,
     val useKts: Boolean,
     val saveLocation: File,
 )

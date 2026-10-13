@@ -11,7 +11,7 @@ import com.google.android.material.card.MaterialCardView
 import com.google.android.material.color.MaterialColors
 import com.pickaxe.jcode.resources.R
 import com.pickaxe.jcode.templates.android.Template
-import com.pickaxe.jcode.templates.android.TemplateRegistry
+import com.pickaxe.jcode.templates.java.TemplateRegistry
 
 class AtcInterface {
 
