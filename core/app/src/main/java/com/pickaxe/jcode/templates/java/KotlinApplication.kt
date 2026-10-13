@@ -115,6 +115,11 @@ class KotlinApplication : Template {
           application
       }
 
+      repositories {
+          mavenCentral()
+          google()
+      }
+
       application {
           mainClass.set("$mainClass")
       }
@@ -124,6 +129,11 @@ class KotlinApplication : Template {
       plugins {
           id 'org.jetbrains.kotlin.jvm' version '2.1.0'
           id 'application'
+      }
+
+      repositories {
+          mavenCentral()
+          google()
       }
 
       application {
