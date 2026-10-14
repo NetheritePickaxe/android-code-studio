@@ -22,7 +22,6 @@ import androidx.annotation.RestrictTo
 import com.pickaxe.jcode.builder.model.IJavaCompilerSettings
 import com.pickaxe.jcode.javac.services.fs.CacheFSInfoSingleton
 import com.pickaxe.jcode.lookup.Lookup
-import com.pickaxe.jcode.projects.android.AndroidModule
 import com.pickaxe.jcode.projects.classpath.JarFsClasspathReader
 import com.pickaxe.jcode.projects.util.BootClasspathProvider
 import com.pickaxe.jcode.tooling.api.models.GradleTask
@@ -144,9 +143,7 @@ abstract class ModuleProject(
     watch.log()
     log.debug("Found {} classpaths.", topLevelClasses.size)
 
-    if (this is AndroidModule) {
-      BootClasspathProvider.update(bootClassPaths.map { it.path })
-    }
+
   }
 
   @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)

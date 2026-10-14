@@ -20,7 +20,7 @@ package com.pickaxe.jcode.lsp.kotlin
 import com.pickaxe.jcode.lsp.kotlin.compiler.KotlinCompilerService
 import com.pickaxe.jcode.projects.IProjectManager
 import com.pickaxe.jcode.projects.ModuleProject
-import com.pickaxe.jcode.projects.android.AndroidModule
+import com.pickaxe.jcode.projects.ModuleProject
 import com.pickaxe.jcode.projects.classpath.ClassInfo
 import com.pickaxe.jcode.projects.classpath.IClasspathReader
 import com.pickaxe.jcode.projects.classpath.JarFsClasspathReader
@@ -100,28 +100,21 @@ class KotlinClasspathProvider {
             }
 
             // If it's an Android module, add additional Android-specific classpaths
-            if (project is AndroidModule) {
-              // Add boot classpaths (android.jar, etc.)
-              for (bootCp in project.bootClassPaths) {
+            if (project is com.pickaxe.jcode.projects.ModuleProject) {
+              // Add boot classpaths (jdk.jar, etc.)
                 classpaths.add(bootCp.absolutePath)
               }
 
               // resolveVersionCatalogDependencies(project, classpaths)
 
               // Add generated jar
-              val generatedJar = project.getGeneratedJar()
               if (generatedJar.exists()) {
                 classpaths.add(generatedJar.absolutePath)
                 KslLogs.info("Added generated JAR: {}", generatedJar.absolutePath)
               }
 
               // Add selected variant's class jars
-              val variant = project.getSelectedVariant()
-              if (variant != null) {
-                for (classJar in variant.mainArtifact.classJars) {
-                  classpaths.add(classJar.absolutePath)
-                }
-              }
+
 
               addAndroidGeneratedSources(project, classpaths)
             }
@@ -165,7 +158,7 @@ class KotlinClasspathProvider {
         .firstOrNull()
   }
 
-  private fun addAndroidGeneratedSources(module: AndroidModule, classpaths: MutableSet<String>) {
+  private fun addAndroidGeneratedSources(module: com.pickaxe.jcode.projects.ModuleProject, classpaths: MutableSet<String>) {
     try {
       val moduleDir = File(module.path)
       val buildDir = File(moduleDir, "build")
@@ -525,9 +518,6 @@ class KotlinClasspathProvider {
     val serviceResult =
         try {
           compilerService?.let { service ->
-            val bootClassPaths = service.getFileManager().getBootClassPaths()
-            val androidJar = bootClassPaths.find { it.name == "android.jar" }
-            androidJar?.parentFile?.parentFile?.parentFile?.absolutePath
           }
         } catch (e: Exception) {
           KslLogs.error("Failed to get Android SDK path from compiler service", e)
@@ -545,20 +535,6 @@ class KotlinClasspathProvider {
 
       if (workspace != null) {
         val androidModules = workspace.androidProjects()
-        val firstModule = androidModules.firstOrNull()
-
-        if (firstModule != null) {
-          val androidJar = firstModule.bootClassPaths.find { it.name == "android.jar" }
-          if (androidJar != null) {
-            val platformDir = androidJar.parentFile
-            if (platformDir != null) {
-              val sdkRoot = platformDir.parentFile
-              if (sdkRoot != null) {
-                return sdkRoot.absolutePath
-              }
-            }
-          }
-        }
       }
       ""
     } catch (e: Exception) {

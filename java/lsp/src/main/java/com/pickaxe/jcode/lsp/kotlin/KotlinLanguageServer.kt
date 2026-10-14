@@ -248,11 +248,11 @@ class KotlinLanguageServer(private val context: Context) : ILanguageServer {
     val mainModule =
         workspace
             .getSubProjects()
-            .filterIsInstance<com.pickaxe.jcode.projects.android.AndroidModule>()
-            .firstOrNull { it.isApplication }
+            .filterIsInstance<com.pickaxe.jcode.projects.ModuleProject>()
+            .firstOrNull()
             ?: workspace
                 .getSubProjects()
-                .filterIsInstance<com.pickaxe.jcode.projects.android.AndroidModule>()
+                .filterIsInstance<com.pickaxe.jcode.projects.ModuleProject>()
                 .firstOrNull()
 
     return mainModule?.let { KotlinCompilerProvider.get(it) }

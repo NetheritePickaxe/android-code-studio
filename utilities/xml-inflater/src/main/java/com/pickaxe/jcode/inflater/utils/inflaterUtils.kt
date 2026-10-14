@@ -32,7 +32,7 @@ import com.pickaxe.jcode.inflater.InflateException
 import com.pickaxe.jcode.inflater.internal.AttributeImpl
 import com.pickaxe.jcode.lookup.Lookup
 import com.pickaxe.jcode.projects.IProjectManager
-import com.pickaxe.jcode.projects.android.AndroidModule
+import com.pickaxe.jcode.projects.ModuleProject
 import java.io.File
 
 /** Get the [ILayoutInflater] registered with [Lookup]. */
@@ -80,13 +80,13 @@ fun newAttribute(
  *
  * @param file The file to process.
  * @param expectedType The expected [type][AaptResourceType] for the XML file.
- * @return The pair of [XmlProcessor] (processed) instance and the [AndroidModule] instance for the
+ * @return The pair of [XmlProcessor] (processed) instance and the [com.pickaxe.jcode.projects.ModuleProject] instance for the
  *   given file.
  */
 fun processXmlFile(
     file: File,
     expectedType: com.android.aaptcompiler.AaptResourceType,
-): Pair<XmlProcessor, AndroidModule> {
+): Pair<XmlProcessor, com.pickaxe.jcode.projects.ModuleProject> {
   val pathData = extractPathData(file)
   if (pathData.type != expectedType) {
     throw InflateException("File is not a layout file.")
@@ -97,7 +97,7 @@ fun processXmlFile(
   }
 
   val module =
-      IProjectManager.getInstance().getWorkspace()?.findModuleForFile(file, false) as? AndroidModule
+      IProjectManager.getInstance().getWorkspace()?.findModuleForFile(file, false)
           ?: throw InflateException(
               "Cannot find module for given file. Is the project initialized?"
           )

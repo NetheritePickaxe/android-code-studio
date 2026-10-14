@@ -18,7 +18,6 @@
 package com.pickaxe.jcode.projects
 
 import com.android.builder.model.v2.models.ProjectSyncIssues
-import com.pickaxe.jcode.projects.android.AndroidModule
 import com.pickaxe.jcode.tooling.api.models.BuildVariantInfo
 import java.io.File
 import java.nio.file.Path
@@ -69,12 +68,12 @@ interface IWorkspace {
       findProject(path) ?: throw ProjectNotFoundException(path)
 
   /**
-   * List all the [AndroidModule]s in this project. If this project is itself an Android module,
+   * List all the [ModuleProject]s in this project. If this project is itself an Android module,
    * then it also added to the list at index `0`.
    *
    * @return A sequence of android modules.
    */
-  fun androidProjects(): Sequence<AndroidModule>
+  fun androidProjects(): Sequence<ModuleProject>
 
   /**
    * Find the module project for the given file path.
@@ -103,7 +102,7 @@ interface IWorkspace {
   fun containsSourceFile(file: Path): Boolean
 
   /**
-   * Checks if the given file is a resource file in any of the included Android modules.
+   * Checks if the given file is a resource file in any of the included modules.
    *
    * @param file The file to check.
    * @return `true` if the given file is a resource file in any of the Android modules, `false`

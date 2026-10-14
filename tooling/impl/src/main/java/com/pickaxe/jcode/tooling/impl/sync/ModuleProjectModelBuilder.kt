@@ -29,20 +29,6 @@ class ModuleProjectModelBuilder(initializationParams: InitializeProjectParams) :
     AbstractModelBuilder<ModuleProjectModelBuilderParams, IModuleProject>(initializationParams) {
 
   override fun build(param: ModuleProjectModelBuilderParams): IModuleProject {
-    val versions = getAndroidVersions(param.module, param.controller)
-    return if (versions != null) {
-      checkAgpVersion(versions, param.syncIssueReporter)
-      AndroidProjectModelBuilder(initializationParams)
-          .build(
-              AndroidProjectModelBuilderParams(
-                  param.controller,
-                  param.module,
-                  versions,
-                  param.syncIssueReporter,
-              )
-          )
-    } else {
-      JavaProjectModelBuilder(initializationParams).build(JavaProjectModelBuilderParams(param))
-    }
+    return JavaProjectModelBuilder(initializationParams).build(JavaProjectModelBuilderParams(param))
   }
 }

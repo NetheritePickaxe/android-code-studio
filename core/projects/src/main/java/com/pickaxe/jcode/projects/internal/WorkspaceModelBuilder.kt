@@ -18,7 +18,6 @@
 package com.pickaxe.jcode.projects.internal
 
 import com.pickaxe.jcode.projects.GradleProject
-import com.pickaxe.jcode.projects.android.AndroidModule
 import com.pickaxe.jcode.projects.java.JavaModule
 import com.pickaxe.jcode.tooling.api.IAndroidProject
 import com.pickaxe.jcode.tooling.api.IGradleProject
@@ -54,8 +53,8 @@ internal object WorkspaceModelBuilder {
       }
 
       val rootProject = when (project.getType().get()) {
-        ProjectType.Gradle -> transform(project.asGradleProject())
-        ProjectType.Android -> transform(project.asAndroidProject())
+        ProjectType.Gradle -> transform(com.pickaxe.jcode.tooling.api.IGradleProject::class.java.cast(project))
+        ProjectType.Android -> transform(com.pickaxe.jcode.tooling.api.IGradleProject::class.java.cast(project))
         else -> throw IllegalStateException(
           "Root project must be either an Android project or a Gradle project"
         )
@@ -89,39 +88,11 @@ internal object WorkspaceModelBuilder {
     )
   }
 
-  private fun transform(
-    project: IAndroidProject
-  ): AndroidModule {
-    val metadata = project.getMetadata().get() as AndroidProjectMetadata
-    val libraryMap = project.getLibraryMap().get()
-    val variants = project.getVariants().get()
-    val configuredVariant = project.getConfiguredVariant().get()
-    return AndroidModule(
-      name = metadata.name ?: IProject.PROJECT_UNKNOWN,
-      description = metadata.description ?: "",
-      path = metadata.projectPath,
-      projectDir = metadata.projectDir,
-      buildDir = metadata.buildDir,
-      buildScript = metadata.buildScript,
-      tasks = project.getTasks().get(),
-      resourcePrefix = metadata.resourcePrefix,
-      namespace = metadata.namespace,
-      androidTestNamespace = metadata.androidTestNamespace,
-      testFixtureNamespace = metadata.testFixtureNamespace,
-      projectType = metadata.androidType,
-      mainSourceSet = project.getMainSourceSet().get(),
-      flags = metadata.flags,
-      compilerSettings = metadata.javaCompileOptions,
-      viewBindingOptions = metadata.viewBindingOptions,
-      bootClassPaths = project.getBootClasspaths().get(),
-      libraries = libraryMap.keys,
-      libraryMap = libraryMap,
-      lintCheckJars = project.getLintCheckJars().get(),
-      variants = variants,
-      configuredVariant = variants.find { it.name == configuredVariant },
-      classesJar = metadata.classesJar
-    )
+    private fun transform(project: com.pickaxe.jcode.tooling.api.IAndroidProject): com.pickaxe.jcode.projects.GradleProject {
+    return transform(com.pickaxe.jcode.tooling.api.IGradleProject::class.java.cast(project) as com.pickaxe.jcode.tooling.api.IGradleProject)
   }
+
+
 
   private fun transform(project: IJavaProject): JavaModule {
     val metadata = project.getMetadata().get() as JavaProjectMetadata

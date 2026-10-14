@@ -24,7 +24,7 @@ import com.pickaxe.jcode.lsp.kotlin.compiler.KotlinCompilerService
 import com.pickaxe.jcode.lsp.kotlin.etc.LspFeatures
 import com.pickaxe.jcode.projects.IWorkspace
 import com.pickaxe.jcode.projects.ModuleProject
-import com.pickaxe.jcode.projects.android.AndroidModule
+
 import com.pickaxe.jcode.projectdata.state.lsp.Index
 import com.pickaxe.jcode.projectdata.logs.LogStream
 import com.pickaxe.jcode.utils.Environment
@@ -146,13 +146,6 @@ class KotlinWorkspaceSetup(private val context: Context, private val workspace: 
 
       // Watch all Android module build directories
       val modulesToWatch = mutableListOf<File>()
-      workspace.getSubProjects().filterIsInstance<AndroidModule>().forEach { module ->
-        val buildDir = File(module.path, "build")
-        if (buildDir.exists()) {
-          modulesToWatch.add(buildDir)
-        }
-      }
-
       if (modulesToWatch.isEmpty()) {
         KslLogs.warn("No build directories found to watch")
         return
@@ -393,15 +386,11 @@ class KotlinWorkspaceSetup(private val context: Context, private val workspace: 
     val subProjects = workspace.getSubProjects()
 
     for (subProject in subProjects) {
-      if (subProject is AndroidModule && subProject.isApplication) {
-        return subProject
-      }
+      return subProject
     }
 
     for (subProject in subProjects) {
-      if (subProject is AndroidModule) {
-        return subProject
-      }
+      return subProject
     }
 
     return null

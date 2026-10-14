@@ -20,7 +20,7 @@ package com.pickaxe.jcode.lsp.kotlin
 import com.pickaxe.jcode.lsp.java.JavaCompilerProvider
 import com.pickaxe.jcode.lsp.java.compiler.JavaCompilerService
 import com.pickaxe.jcode.projects.IWorkspace
-import com.pickaxe.jcode.projects.android.AndroidModule
+import com.pickaxe.jcode.projects.ModuleProject
 import org.slf4j.LoggerFactory
 
 /*
@@ -42,9 +42,9 @@ class KotlinJavaCompilerBridge(private val workspace: IWorkspace) {
   private fun initializeCompiler() {
     try {
       val mainModule =
-          workspace.getSubProjects().filterIsInstance<AndroidModule>().firstOrNull {
-            it.isApplication
-          } ?: workspace.getSubProjects().filterIsInstance<AndroidModule>().firstOrNull()
+          workspace.getSubProjects().filterIsInstance<com.pickaxe.jcode.projects.ModuleProject>().firstOrNull {
+            false
+          } ?: workspace.getSubProjects().filterIsInstance<com.pickaxe.jcode.projects.ModuleProject>().firstOrNull()
 
       if (mainModule != null) {
         javaCompiler = JavaCompilerProvider.get(mainModule)

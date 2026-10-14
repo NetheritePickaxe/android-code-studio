@@ -20,14 +20,12 @@ package com.pickaxe.jcode.projects.util
 import androidx.annotation.RestrictTo
 import androidx.annotation.VisibleForTesting
 import com.pickaxe.jcode.projects.IProjectManager
-import com.pickaxe.jcode.projects.android.AndroidModule
-import com.pickaxe.jcode.projects.android.androidAppProjects
 
 /** **For testing purposes only!** */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @VisibleForTesting
-fun findAppModule(): AndroidModule? {
-  return IProjectManager.getInstance().getWorkspace()?.androidAppProjects()?.firstOrNull {
+fun findAppModule(): com.pickaxe.jcode.projects.ModuleProject? {
+  return IProjectManager.getInstance().getWorkspace()?.androidProjects()?.firstOrNull {
     it.path == ":app"
   }
 }

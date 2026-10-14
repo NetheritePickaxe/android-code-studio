@@ -61,8 +61,6 @@ class RootModelBuilder(initializationParams: InitializeProjectParams) :
               ideaModules.find { it.gradleProject.parent == null }
                   ?: throw ModelBuilderException("Unable to find root project")
 
-          val rootProjectVersions = getAndroidVersions(rootModule, controller)
-
           val syncIssues = hashSetOf<DefaultSyncIssue>()
           val syncIssueReporter = ISyncIssueReporter {
             if (it.shouldBeIgnored()) {
@@ -70,24 +68,12 @@ class RootModelBuilder(initializationParams: InitializeProjectParams) :
               return@ISyncIssueReporter
             }
 
-            val issue = it as? DefaultSyncIssue ?: AndroidModulePropertyCopier.copy(it)
+            val issue = it as? DefaultSyncIssue ?: it
             syncIssues.add(issue)
           }
 
           val rootProject =
-              if (rootProjectVersions != null) {
-                // Root project is an Android project
-                checkAgpVersion(rootProjectVersions, syncIssueReporter)
-                AndroidProjectModelBuilder(initializationParams)
-                    .build(
-                        AndroidProjectModelBuilderParams(
-                            controller,
-                            rootModule,
-                            rootProjectVersions,
-                            syncIssueReporter,
-                        )
-                    )
-              } else {
+              if (false) { } else {
                 GradleProjectModelBuilder(initializationParams).build(rootModule.gradleProject)
               }
 

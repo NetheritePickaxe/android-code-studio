@@ -18,26 +18,26 @@
 package com.pickaxe.jcode.inflater.utils
 
 import com.pickaxe.jcode.projects.IProjectManager
-import com.pickaxe.jcode.projects.android.AndroidModule
+import com.pickaxe.jcode.projects.ModuleProject
 import java.io.File
 
-private var currentModule: AndroidModule? = null
+private var currentModule: com.pickaxe.jcode.projects.ModuleProject? = null
 var isParsing: Boolean = false
   private set
 
-val module: AndroidModule
+val module: com.pickaxe.jcode.projects.ModuleProject
   get() =
-      currentModule ?: throw IllegalStateException("You must call startParse(AndroidModule) first")
+      currentModule ?: throw IllegalStateException("You must call startParse(com.pickaxe.jcode.projects.ModuleProject) first")
 
 fun startParse(file: File) {
   if (isParsing) {
     return
   }
-  (IProjectManager.getInstance().getWorkspace()?.findModuleForFile(file, false) as? AndroidModule)
+  (IProjectManager.getInstance().getWorkspace()?.findModuleForFile(file, false))
       ?.let { startParse(it) }
 }
 
-fun startParse(m: AndroidModule) {
+fun startParse(m: com.pickaxe.jcode.projects.ModuleProject) {
   currentModule = m
   isParsing = true
 }

@@ -23,7 +23,6 @@ import com.google.common.collect.ImmutableMap
 import com.pickaxe.jcode.projects.GradleProject
 import com.pickaxe.jcode.projects.IWorkspace
 import com.pickaxe.jcode.projects.ModuleProject
-import com.pickaxe.jcode.projects.android.AndroidModule
 import com.pickaxe.jcode.tooling.api.models.BuildVariantInfo
 import java.io.File
 import java.nio.file.Files
@@ -77,8 +76,8 @@ internal class WorkspaceImpl(
     return this.subProjects.find { it.path == path }
   }
 
-  override fun androidProjects(): Sequence<AndroidModule> {
-    return subProjects.asSequence().filterIsInstance<AndroidModule>()
+  override fun androidProjects(): Sequence<ModuleProject> {
+    return subProjects.asSequence().filterIsInstance<ModuleProject>()
   }
 
   override fun findModuleForFile(file: Path, checkExistance: Boolean): ModuleProject? {
@@ -135,9 +134,6 @@ internal class WorkspaceImpl(
 
   override fun isAndroidResource(file: File): Boolean {
     val module = findModuleForFile(file, true) ?: return false
-    if (module is AndroidModule) {
-      return module.getResourceDirectories().find { file.path.startsWith(it.path) } != null
-    }
     return true
   }
 }

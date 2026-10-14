@@ -34,7 +34,6 @@ import com.pickaxe.jcode.projects.IProjectManager
 import com.pickaxe.jcode.projects.IWorkspace
 import com.pickaxe.jcode.projects.ModuleProject
 import com.pickaxe.jcode.projects.R
-import com.pickaxe.jcode.projects.android.AndroidModule
 import com.pickaxe.jcode.projects.builder.BuildService
 import com.pickaxe.jcode.tasks.executeAsync
 import com.pickaxe.jcode.tooling.api.IAndroidProject
@@ -122,9 +121,7 @@ class ProjectManagerImpl : IProjectManager, EventReceiver {
           modulesFlow.map { module ->
             indexerScope.async {
               module.indexSourcesAndClasspaths()
-              if (module is AndroidModule) {
-                module.readResources()
-              }
+
             }
           }
 
@@ -166,29 +163,8 @@ class ProjectManagerImpl : IProjectManager, EventReceiver {
         getWorkspace()
             ?.androidProjects()
             ?.flatMap { module ->
-              val variant = module.getSelectedVariant()
-              if (variant == null) {
-                log.error("Selected build variant for project '{}' not found", module.path)
-                return@flatMap emptyList()
-              }
-
-              val mainArtifact = variant.mainArtifact
-              val variantNameCapitalized =
-                  variant.name.replaceFirstChar {
-                    if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
-                  }
-
-              return@flatMap listOf(
-                      mainArtifact.resGenTaskName,
-                      mainArtifact.sourceGenTaskName,
-                      if (module.viewBindingOptions.isEnabled)
-                          "dataBindingGenBaseClasses$variantNameCapitalized"
-                      else null,
-                      "process${variantNameCapitalized}Resources",
-                  )
-                  .mapNotNull { it?.let { "${module.path}:${it}" } }
-            }
-            ?.toList() ?: emptyList()
+              emptyList<String>()
+            }?.toList() ?: emptyList()
 
     builder.executeTasks(*tasks.toTypedArray()).whenComplete { result, taskErr ->
       if (result == null || !result.isSuccessful || taskErr != null) {
@@ -224,30 +200,7 @@ class ProjectManagerImpl : IProjectManager, EventReceiver {
 
     val buildVariants = mutableMapOf<String, BuildVariantInfo>()
     rootProject.getSubProjects().forEach { subproject ->
-      if (subproject is AndroidModule) {
 
-        val variantNames =
-            ImmutableList.builder<String>()
-                .addAll(subproject.variants.map { variant -> variant.name })
-                .build()
-
-        val variantName = subproject.configuredVariant?.name ?: IAndroidProject.DEFAULT_VARIANT
-
-        val moduleDir = File(projectDir, subproject.path.replace(":", File.separator))
-        val gradleInfo = GradleFileParser.parseModuleBuildGradle(moduleDir)
-
-        buildVariants[subproject.path] =
-            BuildVariantInfo(
-                projectPath = subproject.path,
-                buildVariants = variantNames,
-                selectedVariant = variantName,
-                versionName = gradleInfo?.versionName,
-                versionCode = gradleInfo?.versionCode,
-                minSdk = gradleInfo?.minSdk,
-                targetSdk = gradleInfo?.targetSdk,
-                compileSdk = gradleInfo?.compileSdk
-            )
-      }
     }
 
     onUpdated(buildVariants)
@@ -276,18 +229,7 @@ class ProjectManagerImpl : IProjectManager, EventReceiver {
       }
 
       val module = getWorkspace()?.findModuleForFile(this, false) ?: return@apply
-      if (module !is AndroidModule) {
-        return@apply
-      }
 
-      val isResource =
-          module.mainSourceSet?.sourceProvider?.resDirectories?.any {
-            this.pathString.contains(it.path)
-          } ?: false
-
-      if (isResource) {
-        module.updateResourceTable()
-      }
     }
   }
 
