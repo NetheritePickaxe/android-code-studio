@@ -61,7 +61,7 @@ internal fun findUnqualifiedResourceEntry(type: AaptResourceType, name: String):
   var resGrp: IResourceGroup? = null
   var resPck: IResourceTablePackage? = null
   var resEntry: IResourceEntry? = null
-  for (t in module.getAllResourceTables()) {
+  for (t in emptyList<IResourceTable>()) {
     val entries =
         t.packages.mapNotNull {
           if (it.name == SdkConstants.ANDROID_PKG) {
@@ -94,10 +94,9 @@ internal fun findQualifedResourceEntry(
     type: AaptResourceType,
     name: String,
 ): IResourceEntry? {
-  return module
-      .findResourceTableForPackage(pack, type)
-      ?.findResource(ResourceName(pack, type, name))
-      ?.entry
+  return null
+      // Android resource table lookup removed
+      // module.findResourceTableForPackage(pack, type)?.findResource(ResourceName(pack, type, name))?.entry
 }
 
 internal fun findAttributeResource(

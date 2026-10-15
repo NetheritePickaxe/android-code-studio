@@ -34,7 +34,7 @@ import com.pickaxe.jcode.lsp.java.visitors.FindTypeDeclarations;
 import com.pickaxe.jcode.models.Position;
 import com.pickaxe.jcode.models.Range;
 import com.pickaxe.jcode.projects.FileManager;
-import com.pickaxe.jcode.projects.android.AndroidModule;
+
 import com.pickaxe.jcode.projects.ModuleProject;
 import com.pickaxe.jcode.projects.util.BootClasspathProvider;
 import com.pickaxe.jcode.projects.util.StringSearch;
@@ -110,14 +110,6 @@ public class JavaCompilerService implements CompilerProvider {
   }
 
   private Set<String> getBootclasspathClasses() {
-    if (module != null && module instanceof AndroidModule) {
-      final List<String> classpaths =
-          ((AndroidModule) module)
-              .getBootClassPaths().stream().map(File::getPath).collect(Collectors.toList());
-      BootClasspathProvider.update(classpaths);
-      this.bootClasspathClasses =
-          Collections.unmodifiableSet(BootClasspathProvider.getTopLevelClasses(classpaths));
-    }
     return bootClasspathClasses;
   }
 

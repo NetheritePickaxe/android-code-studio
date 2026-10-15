@@ -384,16 +384,7 @@ class KotlinWorkspaceSetup(private val context: Context, private val workspace: 
 
   private fun findMainAndroidModule(): ModuleProject? {
     val subProjects = workspace.getSubProjects()
-
-    for (subProject in subProjects) {
-      return subProject
-    }
-
-    for (subProject in subProjects) {
-      return subProject
-    }
-
-    return null
+    return subProjects.firstOrNull { it is ModuleProject } as? ModuleProject
   }
 
   private fun createInitParams(workspaceRoot: String): JsonObject {

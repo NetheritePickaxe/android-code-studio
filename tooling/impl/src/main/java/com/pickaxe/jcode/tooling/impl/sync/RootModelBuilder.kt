@@ -68,14 +68,14 @@ class RootModelBuilder(initializationParams: InitializeProjectParams) :
               return@ISyncIssueReporter
             }
 
-            val issue = it as? DefaultSyncIssue ?: it
-            syncIssues.add(issue)
+            val issue = it as? DefaultSyncIssue
+            if (issue != null) {
+              syncIssues.add(issue)
+            }
           }
 
           val rootProject =
-              if (false) { } else {
-                GradleProjectModelBuilder(initializationParams).build(rootModule.gradleProject)
-              }
+              GradleProjectModelBuilder(initializationParams).build(rootModule.gradleProject)
 
           val projects =
               ideaModules.map { ideaModule ->

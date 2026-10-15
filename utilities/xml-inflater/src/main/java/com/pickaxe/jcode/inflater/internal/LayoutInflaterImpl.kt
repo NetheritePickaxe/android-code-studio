@@ -50,7 +50,6 @@ import com.pickaxe.jcode.inflater.utils.isParsing
 import com.pickaxe.jcode.inflater.utils.startParse
 import com.pickaxe.jcode.inflater.viewAdapter
 import com.pickaxe.jcode.lookup.Lookup
-import com.pickaxe.jcode.projects.android.AndroidModule
 import com.pickaxe.jcode.xml.widgets.Widget
 import com.pickaxe.jcode.xml.widgets.WidgetTable
 import com.pickaxe.jcode.xml.widgets.WidgetType
@@ -64,7 +63,7 @@ import java.io.File
 open class LayoutInflaterImpl : ILayoutInflater {
 
   override var inflationEventListener: IInflateEventsListener? = null
-  override var module: AndroidModule? = null
+  override var module: com.pickaxe.jcode.projects.ModuleProject? = null
   private var manuallyStartedParse = false
   private var _primaryInflatingFile: File? = null
   private var _currentLayoutFile: LayoutFile? = null
@@ -116,7 +115,7 @@ open class LayoutInflaterImpl : ILayoutInflater {
   protected open fun doInflate(
       processor: XmlProcessor,
       parent: ViewGroup,
-      module: AndroidModule,
+      module: com.pickaxe.jcode.projects.ModuleProject,
   ): List<IView> {
     return doInflate(processor, module) { wrap(parent) }
   }
@@ -124,14 +123,14 @@ open class LayoutInflaterImpl : ILayoutInflater {
   protected open fun doInflate(
       processor: XmlProcessor,
       parent: IViewGroup,
-      module: AndroidModule,
+      module: com.pickaxe.jcode.projects.ModuleProject,
   ): List<IView> {
     return doInflate(processor, module) { parent }
   }
 
   protected open fun doInflate(
       processor: XmlProcessor,
-      module: AndroidModule,
+      module: com.pickaxe.jcode.projects.ModuleProject,
       parent: () -> IViewGroup,
   ): List<IView> {
     // TODO(itsaky) : Add test for multiple view as root layout
@@ -161,9 +160,9 @@ open class LayoutInflaterImpl : ILayoutInflater {
   protected open fun onCreateView(
       element: XmlElement,
       parent: IViewGroup,
-      module: AndroidModule,
+      module: com.pickaxe.jcode.projects.ModuleProject,
       widgets: WidgetTable =
-          module.getWidgetTable()
+          null
               ?: throw IllegalStateException("No widget table found for module $module"),
   ): List<IView> {
 
@@ -249,7 +248,7 @@ open class LayoutInflaterImpl : ILayoutInflater {
   private fun onCreateMergedView(
       element: XmlElement,
       parent: IViewGroup,
-      module: AndroidModule,
+      module: com.pickaxe.jcode.projects.ModuleProject,
       widgets: WidgetTable,
   ): List<IView> {
     val views = mutableListOf<IView>()
@@ -310,7 +309,7 @@ open class LayoutInflaterImpl : ILayoutInflater {
   protected open fun onCreatePlatformView(
       widget: Widget,
       parent: ViewGroup,
-      module: AndroidModule,
+      module: com.pickaxe.jcode.projects.ModuleProject,
       widgets: WidgetTable,
   ): IView {
     return try {
@@ -348,7 +347,7 @@ open class LayoutInflaterImpl : ILayoutInflater {
     }
   }
 
-  protected open fun processXmlFile(file: File): Pair<XmlProcessor, AndroidModule> {
+  protected open fun processXmlFile(file: File): Pair<XmlProcessor, com.pickaxe.jcode.projects.ModuleProject> {
     return com.pickaxe.jcode.inflater.utils.processXmlFile(file, LAYOUT)
   }
 

@@ -20,7 +20,6 @@ package com.pickaxe.jcode.lsp.kotlin
 import com.pickaxe.jcode.lsp.kotlin.compiler.KotlinCompilerService
 import com.pickaxe.jcode.projects.IProjectManager
 import com.pickaxe.jcode.projects.ModuleProject
-import com.pickaxe.jcode.projects.ModuleProject
 import com.pickaxe.jcode.projects.classpath.ClassInfo
 import com.pickaxe.jcode.projects.classpath.IClasspathReader
 import com.pickaxe.jcode.projects.classpath.JarFsClasspathReader
@@ -101,21 +100,6 @@ class KotlinClasspathProvider {
 
             // If it's an Android module, add additional Android-specific classpaths
             if (project is com.pickaxe.jcode.projects.ModuleProject) {
-              // Add boot classpaths (jdk.jar, etc.)
-                classpaths.add(bootCp.absolutePath)
-              }
-
-              // resolveVersionCatalogDependencies(project, classpaths)
-
-              // Add generated jar
-              if (generatedJar.exists()) {
-                classpaths.add(generatedJar.absolutePath)
-                KslLogs.info("Added generated JAR: {}", generatedJar.absolutePath)
-              }
-
-              // Add selected variant's class jars
-
-
               addAndroidGeneratedSources(project, classpaths)
             }
           }
@@ -515,16 +499,9 @@ class KotlinClasspathProvider {
 
   fun getAndroidSdkPath(): String {
     // First try from compiler service
-    val serviceResult =
-        try {
-          compilerService?.let { service ->
-          }
-        } catch (e: Exception) {
-          KslLogs.error("Failed to get Android SDK path from compiler service", e)
-          null
-        }
+    val serviceResult = null as String?
 
-    if (!serviceResult.isNullOrEmpty()) {
+    if (!serviceResult.isNullOrBlank()) {
       return serviceResult
     }
 
@@ -534,7 +511,7 @@ class KotlinClasspathProvider {
       val workspace = projectManager.getWorkspace()
 
       if (workspace != null) {
-        val androidModules = workspace.androidProjects()
+        // No Android-specific projects in de-Androidized model
       }
       ""
     } catch (e: Exception) {

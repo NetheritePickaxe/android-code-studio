@@ -24,7 +24,7 @@ import androidx.annotation.NonNull;
 import com.blankj.utilcode.util.CloseUtils;
 import com.tom.rv2ide.javac.config.JavacConfigProvider;
 import com.pickaxe.jcode.javac.services.fs.AndroidFsProviderImpl;
-import com.pickaxe.jcode.projects.android.AndroidModule;
+
 import com.pickaxe.jcode.projects.ModuleProject;
 import com.pickaxe.jcode.projects.util.StringSearch;
 import com.pickaxe.jcode.utils.ClassTrie;
@@ -101,12 +101,6 @@ public class SourceFileManager extends ForwardingJavaFileManager<JavacFileManage
     if (module == null) {
       return emptySet();
     }
-
-    if (module instanceof AndroidModule) {
-      final AndroidModule androidModule = (AndroidModule) module;
-      setLocationLogError(StandardLocation.PLATFORM_CLASS_PATH, androidModule.getBootClassPaths());
-    }
-
     return module.getCompileClasspaths();
   }
 

@@ -429,9 +429,12 @@ fun <T> resolveQualifiedResourceReference(
     def: T,
     resolver: (Value?) -> T?,
 ): T {
-  val table =
-      module.findResourceTableForPackage(pck, type)
-          ?: throw IllegalArgumentException("Resource table for package '$pck' not found.")
+  val table: IResourceTable? = null
+      // Android resource table lookup removed
+      // module.findResourceTableForPackage(pck, type)
+  if (table == null) {
+      throw IllegalArgumentException("Resource table for package '$pck' not found.")
+  }
 
   return resolveResourceReference(
       table = table,

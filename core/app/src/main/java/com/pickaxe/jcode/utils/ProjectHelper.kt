@@ -17,7 +17,7 @@
 
 package com.pickaxe.jcode.utils
 
-import com.pickaxe.jcode.projects.android.AndroidModule
+import com.pickaxe.jcode.projects.ModuleProject
 import com.pickaxe.jcode.projects.internal.ProjectManagerImpl
 import java.io.File
 import org.slf4j.LoggerFactory
@@ -103,7 +103,7 @@ object ProjectHelper {
 
       // Handle AndroidManifest.xml
       normalizedPath == "src/main/AndroidManifest.xml" -> {
-        targetModule.mainSourceSet?.sourceProvider?.manifestFile
+        File(targetModule.projectDir, "src/main/AndroidManifest.xml")
       }
 
       // Handle assets files
@@ -146,18 +146,18 @@ object ProjectHelper {
   }
 
   /** Get the main resource directory for a module */
-  private fun getResourceDirectory(module: AndroidModule): File? {
-    return module.mainSourceSet?.sourceProvider?.resDirectories?.firstOrNull()
+  private fun getResourceDirectory(module: ModuleProject): File? {
+    return File(module.projectDir, "src/main/res")
   }
 
   /** Get the main source directory for a module */
-  private fun getSourceDirectory(module: AndroidModule): File? {
-    return module.mainSourceSet?.sourceProvider?.javaDirectories?.firstOrNull()
+  private fun getSourceDirectory(module: ModuleProject): File? {
+    return File(module.projectDir, "src/main/java")
   }
 
   /** Get the assets directory for a module */
-  private fun getAssetsDirectory(module: AndroidModule): File? {
-    return module.mainSourceSet?.sourceProvider?.assetsDirectories?.firstOrNull()
+  private fun getAssetsDirectory(module: ModuleProject): File? {
+    return File(module.projectDir, "src/main/assets")
   }
 
   /** Check if a file path represents a valid Android project file */
@@ -199,335 +199,65 @@ object ProjectHelper {
   }
 
   /** Find strings.xml file in the project */
-  fun findStringsXml(modulePath: String? = null): File? {
-    val projectManager = ProjectManagerImpl.getInstance()
-    val workspace = projectManager.getWorkspace() ?: return null
-
-    val androidModules = workspace.getSubProjects().filterIsInstance<AndroidModule>()
-
-    // If specific module is requested, find it
-    val targetModule =
-        if (modulePath != null) {
-          androidModules.find { it.path == modulePath }
-        } else {
-          // Find main app module or first available module
-          androidModules.find { it.path == ":app" } ?: androidModules.firstOrNull()
-        }
-
-    return targetModule?.let { module ->
-      module.mainSourceSet?.sourceProvider?.resDirectories?.firstNotNullOfOrNull { resDir ->
-        val valuesDir = File(resDir, "values")
-        val stringsFile = File(valuesDir, "strings.xml")
-        if (stringsFile.exists()) stringsFile else null
-      }
-    }
-  }
+  fun findStringsXml(modulePath: String? = null): File? = null
 
   /** Find colors.xml file in the project */
-  fun findColorsXml(modulePath: String? = null): File? {
-    val projectManager = ProjectManagerImpl.getInstance()
-    val workspace = projectManager.getWorkspace() ?: return null
-
-    val androidModules = workspace.getSubProjects().filterIsInstance<AndroidModule>()
-
-    val targetModule =
-        if (modulePath != null) {
-          androidModules.find { it.path == modulePath }
-        } else {
-          androidModules.find { it.path == ":app" } ?: androidModules.firstOrNull()
-        }
-
-    return targetModule?.let { module ->
-      module.mainSourceSet?.sourceProvider?.resDirectories?.firstNotNullOfOrNull { resDir ->
-        val valuesDir = File(resDir, "values")
-        val colorsFile = File(valuesDir, "colors.xml")
-        if (colorsFile.exists()) colorsFile else null
-      }
-    }
-  }
+  fun findColorsXml(modulePath: String? = null): File? = null
 
   /** Find any resource file by name */
-  fun findResourceFile(fileName: String, modulePath: String? = null): File? {
-    val projectManager = ProjectManagerImpl.getInstance()
-    val workspace = projectManager.getWorkspace() ?: return null
-
-    val androidModules = workspace.getSubProjects().filterIsInstance<AndroidModule>()
-
-    val targetModule =
-        if (modulePath != null) {
-          androidModules.find { it.path == modulePath }
-        } else {
-          androidModules.find { it.path == ":app" } ?: androidModules.firstOrNull()
-        }
-
-    return targetModule?.let { module ->
-      module.mainSourceSet?.sourceProvider?.resDirectories?.firstNotNullOfOrNull { resDir ->
-        findFileRecursively(resDir, fileName)
-      }
-    }
-  }
+  fun findResourceFile(fileName: String, modulePath: String? = null): File? = null
 
   /** Find layout file by name */
-  fun findLayoutFile(layoutName: String, modulePath: String? = null): File? {
-    val fileName = if (layoutName.endsWith(".xml")) layoutName else "$layoutName.xml"
-    return findResourceFile("layout/$fileName", modulePath)
-  }
+  fun findLayoutFile(layoutName: String, modulePath: String? = null): File? = null
 
   /** Get all source directories for a module */
-  fun getSourceDirectories(modulePath: String? = null): List<File> {
-    val projectManager = ProjectManagerImpl.getInstance()
-    val workspace = projectManager.getWorkspace() ?: return emptyList()
-
-    val androidModules = workspace.getSubProjects().filterIsInstance<AndroidModule>()
-
-    val targetModule =
-        if (modulePath != null) {
-          androidModules.find { it.path == modulePath }
-        } else {
-          androidModules.find { it.path == ":app" } ?: androidModules.firstOrNull()
-        }
-
-    return targetModule?.mainSourceSet?.sourceProvider?.javaDirectories?.toList() ?: emptyList()
-  }
+  fun getSourceDirectories(modulePath: String? = null): List<File> = emptyList()
 
   /** Get package name for a module */
-  fun getPackageName(modulePath: String? = null): String? {
-    val projectManager = ProjectManagerImpl.getInstance()
-    val workspace = projectManager.getWorkspace() ?: return null
-
-    val androidModules = workspace.getSubProjects().filterIsInstance<AndroidModule>()
-
-    val targetModule =
-        if (modulePath != null) {
-          androidModules.find { it.path == modulePath }
-        } else {
-          androidModules.find { it.path == ":app" } ?: androidModules.firstOrNull()
-        }
-
-    return try {
-      targetModule?.getSelectedVariant()?.mainArtifact?.applicationId
-          ?: targetModule?.variants?.firstOrNull()?.mainArtifact?.applicationId
-    } catch (e: Exception) {
-      log.error("Failed to get package name for module: $modulePath", e)
-      null
-    }
-  }
+  fun getPackageName(modulePath: String? = null): String? = null
 
   /** Create or update strings.xml with new string resource */
-  fun addStringResource(name: String, value: String, modulePath: String? = null): Boolean {
-    return try {
-      val stringsFile = findStringsXml(modulePath)
-      if (stringsFile == null) {
-        log.error("strings.xml not found for module: $modulePath")
-        return false
-      }
-
-      val content =
-          if (stringsFile.exists()) {
-            stringsFile.readText()
-          } else {
-            // Create basic strings.xml structure
-            """<?xml version="1.0" encoding="utf-8"?>
-<resources>
-</resources>"""
-          }
-
-      // Check if string already exists
-      if (content.contains("name=\"$name\"")) {
-        log.warn("String resource '$name' already exists")
-        return true // Consider it successful if it already exists
-      }
-
-      // Add the new string resource
-      val newStringEntry = "    <string name=\"$name\">$value</string>"
-      val updatedContent =
-          if (content.contains("</resources>")) {
-            content.replace("</resources>", "$newStringEntry\n</resources>")
-          } else {
-            content + "\n$newStringEntry\n</resources>"
-          }
-
-      // Ensure parent directory exists
-      stringsFile.parentFile?.mkdirs()
-
-      // Write the updated content
-      stringsFile.writeText(updatedContent)
-
-      log.info("Successfully added string resource '$name' to ${stringsFile.absolutePath}")
-      true
-    } catch (e: Exception) {
-      log.error("Failed to add string resource '$name'", e)
-      false
-    }
-  }
+  fun addStringResource(name: String, value: String, modulePath: String? = null): Boolean = false
 
   /** Create or update colors.xml with new color resource */
-  fun addColorResource(name: String, value: String, modulePath: String? = null): Boolean {
-    return try {
-      var colorsFile = findColorsXml(modulePath)
-
-      // If colors.xml doesn't exist, create it
-      if (colorsFile == null) {
-        val targetModule = getTargetModule(modulePath)
-        if (targetModule != null) {
-          val resDir = targetModule.mainSourceSet?.sourceProvider?.resDirectories?.firstOrNull()
-          if (resDir != null) {
-            val valuesDir = File(resDir, "values")
-            valuesDir.mkdirs()
-            colorsFile = File(valuesDir, "colors.xml")
-          }
-        }
-      }
-
-      if (colorsFile == null) {
-        log.error("Cannot create colors.xml for module: $modulePath")
-        return false
-      }
-
-      val content =
-          if (colorsFile.exists()) {
-            colorsFile.readText()
-          } else {
-            // Create basic colors.xml structure
-            """<?xml version="1.0" encoding="utf-8"?>
-<resources>
-</resources>"""
-          }
-
-      // Check if color already exists
-      if (content.contains("name=\"$name\"")) {
-        log.warn("Color resource '$name' already exists")
-        return true
-      }
-
-      // Add the new color resource
-      val newColorEntry = "    <color name=\"$name\">$value</color>"
-      val updatedContent =
-          if (content.contains("</resources>")) {
-            content.replace("</resources>", "$newColorEntry\n</resources>")
-          } else {
-            content + "\n$newColorEntry\n</resources>"
-          }
-
-      // Write the updated content
-      colorsFile.writeText(updatedContent)
-
-      log.info("Successfully added color resource '$name' to ${colorsFile.absolutePath}")
-      true
-    } catch (e: Exception) {
-      log.error("Failed to add color resource '$name'", e)
-      false
-    }
-  }
+  fun addColorResource(name: String, value: String, modulePath: String? = null): Boolean = false
 
   /** Get the AndroidManifest.xml file for a module */
-  fun getManifestFile(modulePath: String? = null): File? {
-    val targetModule = getTargetModule(modulePath)
-    return targetModule?.mainSourceSet?.sourceProvider?.manifestFile
-  }
+  fun getManifestFile(modulePath: String? = null): File? = null
 
   /** Add permission to AndroidManifest.xml */
-  fun addPermission(permission: String, modulePath: String? = null): Boolean {
-    return try {
-      val manifestFile = getManifestFile(modulePath)
-      if (manifestFile == null || !manifestFile.exists()) {
-        log.error("AndroidManifest.xml not found for module: $modulePath")
-        return false
-      }
+  fun addPermission(permission: String, modulePath: String? = null): Boolean = false
 
-      val content = manifestFile.readText()
-
-      // Check if permission already exists
-      if (content.contains("android.permission.$permission") || content.contains(permission)) {
-        log.warn("Permission '$permission' already exists")
-        return true
-      }
-
-      // Add the permission
-      val permissionEntry =
-          "    <uses-permission android:name=\"android.permission.$permission\" />"
-
-      // Find the right place to insert (after <manifest> tag but before <application>)
-      val updatedContent =
-          if (content.contains("<application")) {
-            content.replace("<application", "$permissionEntry\n\n    <application")
-          } else {
-            // Fallback: add after manifest declaration
-            val lines = content.lines().toMutableList()
-            val manifestIndex = lines.indexOfFirst { it.contains("<manifest") }
-            if (manifestIndex != -1 && manifestIndex + 1 < lines.size) {
-              lines.add(manifestIndex + 1, permissionEntry)
-              lines.joinToString("\n")
-            } else {
-              content
-            }
-          }
-
-      manifestFile.writeText(updatedContent)
-      log.info("Successfully added permission '$permission' to AndroidManifest.xml")
-      true
-    } catch (e: Exception) {
-      log.error("Failed to add permission '$permission'", e)
-      false
-    }
-  }
-
-  private fun getTargetModule(modulePath: String?): AndroidModule? {
-    val projectManager = ProjectManagerImpl.getInstance()
-    val workspace = projectManager.getWorkspace() ?: return null
-
-    val androidModules = workspace.getSubProjects().filterIsInstance<AndroidModule>()
-
-    return if (modulePath != null) {
-      androidModules.find { it.path == modulePath }
-    } else {
-      androidModules.find { it.path == ":app" } ?: androidModules.firstOrNull()
-    }
-  }
-
-  private fun findFileRecursively(directory: File, fileName: String): File? {
-    if (!directory.exists() || !directory.isDirectory) return null
-
-    // Check if the file exists directly in this directory
-    val directFile = File(directory, fileName)
-    if (directFile.exists()) return directFile
-
-    // If fileName contains path separators, handle it specially
-    if (fileName.contains("/")) {
-      val targetFile = File(directory, fileName)
-      if (targetFile.exists()) return targetFile
-    }
-
-    // Search in subdirectories
-    directory.listFiles()?.forEach { child ->
-      if (child.isDirectory) {
-        val result = findFileRecursively(child, fileName)
-        if (result != null) return result
-      }
-    }
-
-    return null
-  }
-
-  /** Get all Android modules in the project */
-  fun getAndroidModules(): List<AndroidModule> {
+  /** Get all modules in the project */
+  fun getAndroidModules(): List<com.pickaxe.jcode.projects.ModuleProject> {
     val projectManager = ProjectManagerImpl.getInstance()
     val workspace = projectManager.getWorkspace() ?: return emptyList()
-
-    return workspace.getSubProjects().filterIsInstance<AndroidModule>()
+    return workspace.getSubProjects().filterIsInstance<com.pickaxe.jcode.projects.ModuleProject>()
   }
 
   /** Find the module that contains a specific file */
-  fun findModuleForFile(file: File): AndroidModule? {
+  fun findModuleForFile(file: File): com.pickaxe.jcode.projects.ModuleProject? {
     val projectManager = ProjectManagerImpl.getInstance()
     val workspace = projectManager.getWorkspace() ?: return null
-
     val foundModule = workspace.findModuleForFile(file, false)
-    return if (foundModule is AndroidModule) foundModule else null
+    return if (foundModule is com.pickaxe.jcode.projects.ModuleProject) foundModule else null
   }
 
   /** Get project root directory */
   fun getProjectRoot(): File {
     return ProjectManagerImpl.getInstance().projectDir
+  }
+
+  private fun getTargetModule(modulePath: String?): ModuleProject? {
+    val projectManager = ProjectManagerImpl.getInstance()
+    val workspace = projectManager.getWorkspace() ?: return null
+
+    val modules = workspace.getSubProjects().filterIsInstance<ModuleProject>()
+
+    return if (modulePath != null) {
+      modules.find { it.path == modulePath }
+    } else {
+      modules.find { it.path == ":app" } ?: modules.firstOrNull()
+    }
   }
 }

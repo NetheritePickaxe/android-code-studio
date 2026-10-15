@@ -103,7 +103,7 @@ fun processXmlFile(
           )
   val resFile =
       com.android.aaptcompiler.ResourceFile(
-          com.android.aaptcompiler.ResourceName(module.namespace, pathData.type!!, pathData.name),
+          com.android.aaptcompiler.ResourceName("", pathData.type!!, pathData.name),
           pathData.config,
           pathData.source,
           ProtoXml,

@@ -20,7 +20,7 @@ package com.pickaxe.jcode.lsp.kotlin.compiler;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.pickaxe.jcode.projects.ModuleProject;
-import com.pickaxe.jcode.projects.android.AndroidModule;
+
 import com.pickaxe.jcode.projects.util.BootClasspathProvider;
 import com.pickaxe.jcode.utils.Environment;
 import java.io.File;
@@ -66,16 +66,6 @@ public class KotlinCompilerService {
   private Set<String> getBootclasspathClasses() {
     Set<String> bootClasspathClasses = BootClasspathProvider.getTopLevelClasses(
         Collections.singleton(Environment.ANDROID_JAR.getAbsolutePath()));
-    
-    if (module != null && module instanceof AndroidModule) {
-      final AndroidModule androidModule = (AndroidModule) module;
-      // Use the existing public API to get boot classpaths
-      final List<String> classpaths =
-          androidModule.getBootClassPaths().stream().map(File::getPath).collect(Collectors.toList());
-      BootClasspathProvider.update(classpaths);
-      bootClasspathClasses =
-          Collections.unmodifiableSet(BootClasspathProvider.getTopLevelClasses(classpaths));
-    }
     return bootClasspathClasses;
   }
 

@@ -41,7 +41,6 @@ import com.pickaxe.jcode.lsp.xml.providers.completion.manifestResourceTable
 import com.pickaxe.jcode.lsp.xml.providers.completion.match
 import com.pickaxe.jcode.lsp.xml.utils.XmlUtils.NodeType
 import com.pickaxe.jcode.projects.ModuleProject
-import com.pickaxe.jcode.projects.android.AndroidModule
 import com.pickaxe.jcode.xml.permissions.Permission
 import com.pickaxe.jcode.xml.res.IResourceTable
 import com.pickaxe.jcode.xml.resources.ResourceTableRegistry
@@ -122,43 +121,18 @@ class ManifestAttrValueCompletionProvider(provider: ICompletionProvider) :
     return CompletionResult(result)
   }
 
-  private fun completeServiceActions(prefix: String, result: MutableList<CompletionItem>) {
-    val module = getModule()
-    if (module is AndroidModule) {
-      addMatches(prefix, module.getServiceActions(), result)
-    }
-  }
+  private fun completeServiceActions(prefix: String, result: MutableList<CompletionItem>) {}
 
-  private fun completeActivityActions(prefix: String, result: MutableList<CompletionItem>) {
-    val module = getModule()
-    if (module is AndroidModule) {
-      addMatches(prefix, module.getActivityActions(), result)
-    }
-  }
+  private fun completeActivityActions(prefix: String, result: MutableList<CompletionItem>) {}
 
-  private fun completeReceiverActions(prefix: String, result: MutableList<CompletionItem>) {
-    val module = getModule()
-    if (module is AndroidModule) {
-      addMatches(prefix, module.getBroadcastActions(), result)
-    }
-  }
+  private fun completeReceiverActions(prefix: String, result: MutableList<CompletionItem>) {}
 
   private fun completeCategory(prefix: String): CompletionResult {
-    val result = mutableListOf<CompletionItem>()
-    val mod = getModule()
-    if (mod is AndroidModule) {
-      addMatches(prefix, mod.getCategories(), result)
-    }
-    return CompletionResult(result)
+    return CompletionResult(emptyList())
   }
 
   private fun completeFeature(prefix: String): CompletionResult {
-    val result = mutableListOf<CompletionItem>()
-    val mod = getModule()
-    if (mod is AndroidModule) {
-      addMatches(prefix, mod.getFeatures(), result)
-    }
-    return CompletionResult(result)
+    return CompletionResult(emptyList())
   }
 
   private fun addMatches(

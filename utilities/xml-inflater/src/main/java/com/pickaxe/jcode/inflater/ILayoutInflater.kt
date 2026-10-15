@@ -21,7 +21,6 @@ import android.view.ViewGroup
 import com.pickaxe.jcode.inflater.events.IInflateEventsListener
 import com.pickaxe.jcode.inflater.internal.LayoutInflaterImpl
 import com.pickaxe.jcode.lookup.Lookup.Key
-import com.pickaxe.jcode.projects.android.AndroidModule
 import java.io.Closeable
 import java.io.File
 
@@ -38,8 +37,8 @@ interface ILayoutInflater : Closeable {
   /** The [IComponentFactory] which is used to create components of the layout inflater. */
   var componentFactory: IComponentFactory
 
-  /** The [AndroidModule] which is used to resolve resource references. */
-  var module: AndroidModule?
+  /** The [com.pickaxe.jcode.projects.ModuleProject] which is used to resolve resource references. */
+  var module: com.pickaxe.jcode.projects.ModuleProject?
 
   /**
    * Inflate the given raw XML file.
@@ -85,14 +84,14 @@ interface ILayoutInflater : Closeable {
     /**
      * Creates a new [ILayoutInflater] instance.
      *
-     * @param module The [AndroidModule] that will be used to resolve resource references.
+     * @param module The [com.pickaxe.jcode.projects.ModuleProject] that will be used to resolve resource references.
      * @param componentFactory The [IComponentFactory] that will be used to create [ILayoutInflater]
      *   components.
      */
     @JvmStatic
     @JvmOverloads
     fun newInflater(
-        module: AndroidModule? = null,
+        module: com.pickaxe.jcode.projects.ModuleProject? = null,
         componentFactory: IComponentFactory = DefaultComponentFactory(),
     ): ILayoutInflater {
       return LayoutInflaterImpl().also {

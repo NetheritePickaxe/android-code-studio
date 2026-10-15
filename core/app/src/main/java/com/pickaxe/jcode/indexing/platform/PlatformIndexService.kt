@@ -35,15 +35,7 @@ internal class PlatformIndexService : IIndexService {
     get() = "Android Platform Indexing Service"
 
   override fun scanFiles(workspace: IWorkspace): Collection<File> {
-    return mutableListOf<File>().apply {
-      workspace.androidProjects().forEach { androidModule ->
-        add(
-            androidModule.getPlatformDir()?.also {
-              log.debug("Adding {} to the list of indexable paths", it)
-            } ?: return@forEach
-        )
-      }
-    }
+    return emptyList()
   }
 
   override suspend fun indexFiles(workspace: IWorkspace, files: Collection<File>) {}

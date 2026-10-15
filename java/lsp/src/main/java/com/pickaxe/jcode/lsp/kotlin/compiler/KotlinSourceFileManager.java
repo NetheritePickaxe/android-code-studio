@@ -22,7 +22,7 @@ import static java.util.Collections.emptySet;
 import androidx.annotation.NonNull;
 import com.tom.rv2ide.javac.config.JavacConfigProvider;
 import com.pickaxe.jcode.javac.services.fs.AndroidFsProviderImpl;
-import com.pickaxe.jcode.projects.android.AndroidModule;
+
 import com.pickaxe.jcode.projects.ModuleProject;
 import com.pickaxe.jcode.utils.Environment;
 import java.io.File;
@@ -87,15 +87,6 @@ public class KotlinSourceFileManager {
 
   @NonNull
   private Set<File> configureBootClasspaths(final ModuleProject module) {
-    if (module == null) {
-      return emptySet();
-    }
-
-    if (module instanceof AndroidModule) {
-      final AndroidModule androidModule = (AndroidModule) module;
-      return new java.util.HashSet<>(androidModule.getBootClassPaths());
-    }
-
     return emptySet();
   }
 
@@ -127,7 +118,7 @@ public class KotlinSourceFileManager {
    * Check if this file manager is for an Android module.
    */
   public boolean isAndroidModule() {
-    return module instanceof AndroidModule;
+    return false;
   }
 
   /**

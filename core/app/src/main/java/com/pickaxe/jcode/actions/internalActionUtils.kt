@@ -20,7 +20,7 @@ package com.pickaxe.jcode.actions
 import android.content.Context
 import com.pickaxe.jcode.R
 import com.pickaxe.jcode.projects.IProjectManager
-import com.pickaxe.jcode.projects.android.AndroidModule
+import com.pickaxe.jcode.projects.ModuleProject
 import com.pickaxe.jcode.utils.DialogUtils
 import com.pickaxe.jcode.utils.ILogger
 import com.pickaxe.jcode.utils.flashError
@@ -28,7 +28,7 @@ import com.pickaxe.jcode.utils.flashError
 /** @see openApplicationModuleChooser */
 inline fun openApplicationModuleChooser(
     data: ActionData,
-    crossinline callback: (AndroidModule) -> Unit,
+    crossinline callback: (ModuleProject) -> Unit,
 ) = openApplicationModuleChooser(data.requireContext(), callback)
 
 /**
@@ -40,14 +40,10 @@ inline fun openApplicationModuleChooser(
  */
 inline fun openApplicationModuleChooser(
     context: Context,
-    crossinline callback: (AndroidModule) -> Unit,
+    crossinline callback: (ModuleProject) -> Unit,
 ) {
   val applications =
-      IProjectManager.getInstance()
-          .getWorkspace()
-          ?.androidProjects()
-          ?.filter(AndroidModule::isApplication)
-          ?.toList() ?: emptyList()
+      IProjectManager.getInstance().getWorkspace()?.androidProjects()?.toList() ?: emptyList()
 
   if (applications.isEmpty()) {
     flashError(R.string.msg_launch_failure_no_app_module)
