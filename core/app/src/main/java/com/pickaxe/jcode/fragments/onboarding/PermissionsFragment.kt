@@ -85,15 +85,6 @@ class PermissionsFragment : OnboardingMultiActionFragment(), SlidePolicy {
           )
       )
 
-      permissions.add(
-          OnboardingPermissionItem(
-              Manifest.permission.REQUEST_INSTALL_PACKAGES,
-              R.string.permission_title_install_packages,
-              R.string.permission_desc_install_packages,
-              canRequestPackageInstalls(context),
-          )
-      )
-
       return permissions
     }
 
