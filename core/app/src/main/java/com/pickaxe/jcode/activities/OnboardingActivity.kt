@@ -149,14 +149,11 @@ class OnboardingActivity : AppIntro2() {
     tryNavigateToMainIfSetupIsCompleted()
   }
 
-  private fun checkToolsIsInstalled(): Boolean {
-    return IJdkDistributionProvider.getInstance().installedDistributions.isNotEmpty()
-  }
-
   private fun isSetupCompleted(): Boolean {
-    return checkToolsIsInstalled() &&
-        StatPreferences.statConsentDialogShown &&
-        PermissionsFragment.areAllPermissionsGranted(this)
+    // The JDK/toolchain is no longer installed during onboarding (that step was removed as part of
+    // the de-Android refactor). It is provisioned later from within the app's terminal via the
+    // `idesetup` script. So onboarding only needs the stats consent + granted permissions.
+    return StatPreferences.statConsentDialogShown && PermissionsFragment.areAllPermissionsGranted(this)
   }
 
   private fun tryNavigateToMainIfSetupIsCompleted(): Boolean {
