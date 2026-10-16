@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~  This file is part of AndroidIDE.
   ~
@@ -16,72 +16,50 @@
   ~   along with AndroidIDE.  If not, see <https://www.gnu.org/licenses/>.
   -->
 <resources>
-  <string name="msg_directory_absolute_path">%1$s 鐩綍缁濆璺緞锛氣€?2$s鈥?/string>
+  <string name="msg_directory_absolute_path">%1$s 目录绝对路径：“%2$s”</string>
   <!-- PackageUtils -->
-  <string name="error_app_not_installed_or_disabled_warning">%1$s (%2$s) 搴旂敤绋嬪簭鏈畨瑁呮垨琚鐢ㄣ€?/string>
-  <string name="error_get_package_context_failed_title">鏃犳硶鑾峰彇杞欢鍖呬笂涓嬫枃</string>
-  <string name="error_get_package_context_failed_message">鏃犳硶鑾峰彇鈥?1$s鈥濊蒋浠跺寘涓婁笅鏂囥€傝繖鍙兘鏄洜涓哄簲鐢ㄨ蒋浠跺寘鏈畨瑁咃紝鎴栬€呭叾 APK 绛惧悕涓庡綋鍓嶅簲鐢ㄤ笉鍚屻€?/string>
-  <string name="error_get_package_context_failed_help_url_message">鏌ョ湅 %1$s 浜嗚В鏇村璇︽儏銆?/string>
-  <string name="error_get_component_state_failed">鏃犳硶鑾峰彇 %1$s/%2$s 缁勪欢鐘舵€?/string>
-  <string name="error_enable_component_failed">鏃犳硶鍚敤 %1$s/%2$s 缁勪欢</string>
-  <string name="error_disable_component_failed">鏃犳硶绂佺敤 %1$s/%2$s 缁勪欢</string>
+  <string name="error_app_not_installed_or_disabled_warning">%1$s (%2$s) 应用程序未安装或被禁用。</string>
+  <string name="error_get_package_context_failed_title">无法获取软件包上下文</string>
+  <string name="error_get_package_context_failed_message">无法获取“%1$s”软件包上下文。这可能是因为应用软件包未安装，或者其 APK 签名与当前应用不同。</string>
+  <string name="error_get_package_context_failed_help_url_message">查看 %1$s 了解更多详情。</string>
+  <string name="error_get_component_state_failed">无法获取 %1$s/%2$s 组件状态</string>
+  <string name="error_enable_component_failed">无法启用 %1$s/%2$s 组件</string>
+  <string name="error_disable_component_failed">无法禁用 %1$s/%2$s 组件</string>
   <!-- PermissionUtils -->
-  <string name="error_failed_to_request_permissions">璇锋眰鏉冮檺澶辫触锛岃姹備唬鐮佷负 %1$d锛?2$s</string>
-  <string name="error_attempted_to_ask_for_permissions_not_requested">灏濊瘯璇锋眰搴旂敤娓呭崟涓湭瑕佹眰鐨勬潈闄愶細%1$s</string>
-  <string name="error_has_not_requested_legacy_external_storage">鈥?1$s鈥濊蒋浠跺寘鐨勭洰鏍?targetSdkVersion 涓?%2$d锛屽苟涓旇繍琛屽湪 android sdk %3$d 涓婏紝浣嗗皻鏈湪搴旂敤娓呭崟涓皢 requestLegacyExternalStorage 璁剧疆涓?true</string>
-  <string name="msg_requires_dump_and_package_usage_stats_permissions">闇€瑕佲€淒UMP鈥濆拰鈥淧ACKAGE_USAGE_STATS鈥濇潈闄?/string>
-  <string name="error_display_over_other_apps_permission_not_granted">%1$s 闇€瑕佲€滄樉绀哄湪鍏朵粬搴旂敤鐨勪笂灞傗€濇潈闄愭墠鑳藉湪 Android &gt;= 10 涓婁粠鍚庡彴鍚姩娲诲姩鍜屾湇鍔°€備粠鈥淎ndroid 璁剧疆 -&gt; 搴旂敤 -&gt; %1$s -&gt; 楂樼骇鈥濅腑鎺堜簣瀹冦€備笉鍚岃澶囦笂鐨勬潈闄愬悕绉板彲鑳戒細鏈夋墍涓嶅悓锛屼緥濡傚湪灏忕背涓婏紝鍏剁О涓衡€滃悗鍙板脊鍑虹晫闈⑩€濓紝鏌ョ湅 https://dontkillmyapp.com 浠ヤ簡瑙ｈ澶囩壒瀹氶棶棰樸€?/string>
+  <string name="error_failed_to_request_permissions">请求权限失败，请求代码为 %1$d：%2$s</string>
+  <string name="error_attempted_to_ask_for_permissions_not_requested">尝试请求应用清单中未要求的权限：%1$s</string>
+  <string name="error_has_not_requested_legacy_external_storage">“%1$s”软件包的目标 targetSdkVersion 为 %2$d，并且运行在 android sdk %3$d 上，但尚未在应用清单中将 requestLegacyExternalStorage 设置为 true</string>
+  <string name="msg_requires_dump_and_package_usage_stats_permissions">需要“DUMP”和“PACKAGE_USAGE_STATS”权限</string>
+  <string name="error_display_over_other_apps_permission_not_granted">%1$s 需要“显示在其他应用的上层”权限才能在 Android &gt;= 10 上从后台启动活动和服务。从“Android 设置 -&gt; 应用 -&gt; %1$s -&gt; 高级”中授予它。不同设备上的权限名称可能会有所不同，例如在小米上，其称为“后台弹出界面”，查看 https://dontkillmyapp.com 以了解设备特定问题。</string>
   <!-- TermuxPluginUtils -->
-  <string name="error_allow_external_apps_ungranted">%1$s 瑕佹眰灏嗏€?2$s鈥濇枃浠朵腑鐨勨€渁llow-external-apps鈥濆睘鎬ц缃负鈥渢rue鈥濄€?/string>
+  <string name="error_allow_external_apps_ungranted">%1$s 要求将“%2$s”文件中的“allow-external-apps”属性设置为“true”。</string>
   <!-- ReportActivity -->
-  <string name="title_report_text">鎶ュ憡姝ｆ枃</string>
-  <string name="msg_report_truncated">**鎶ュ憡琚埅鏂?*\n\n鎶ュ憡澶ぇ锛屾棤娉曞湪姝ゅ鏌ョ湅銆備娇鐢ㄩ€夐」鑿滃崟锛堝彸涓婅鐨?3 鐐癸級涓殑鈥滀繚瀛樺埌鏂囦欢鈥濋€夐」锛屽苟鍦ㄥ閮ㄦ枃鏈紪杈戝櫒搴旂敤涓煡鐪嬪畠銆俓n\n##\n\n</string>
+  <string name="title_report_text">报告正文</string>
+  <string name="msg_report_truncated">**报告被截断**\n\n报告太大，无法在此处查看。使用选项菜单（右上角的 3 点）中的“保存到文件”选项，并在外部文本编辑器应用中查看它。\n\n##\n\n</string>
   <!-- ShareUtils -->
-  <string name="title_share_with">鍒嗕韩鍒?/string>
-  <string name="title_open_url_with">鎵撳紑缃戝潃</string>
-  <string name="msg_storage_permission_not_granted">鏈巿浜堝瓨鍌ㄦ潈闄愩€?/string>
-  <string name="msg_file_saved_successfully">%1$s 鏂囦欢宸叉垚鍔熶繚瀛樺湪 鈥?2$s鈥?/string>
+  <string name="title_share_with">分享到</string>
+  <string name="title_open_url_with">打开网址</string>
+  <string name="msg_storage_permission_not_granted">未授予存储权限。</string>
+  <string name="msg_file_saved_successfully">%1$s 文件已成功保存在 “%2$s”</string>
   <!-- Shell -->
   <!-- TermuxUtils -->
-  <string name="msg_report_issue">濡傛灉瑕佹姤鍛婃闂锛岃浠庨€夐」鑿滃崟锛堝彸涓婅鐨?3 鐐癸級澶嶅埗鍏舵枃鏈紝骞跺湪浠ヤ笅閾炬帴涔嬩竴涓婂彂甯冮棶棰樸€俓n\n濡傛灉鎮ㄨ鍙戝竷 Termux 搴旂敤宕╂簝鎶ュ憡锛岃鎻愪緵鏈夊叧瀵艰嚧宕╂簝鐨勫師鍥狅紝浠ュ強濡備綍閲嶇幇鐨勮缁嗕俊鎭紝濡傛灉鍙兘鐨勮瘽銆俓n\n濡傛灉鎮ㄨ鍦?GitHub 涓婂彂甯冮棶棰橈紝璇峰皢鍏跺彂甯冨埌鎶ュ憡鎵€灞炵殑瀛樺偍搴撲腑銆備娇鐢?*锛堥儴鍒嗭級灞忓箷鎴浘**鑰屼笉鏄鍒剁殑鏂囨湰鎴栨鎶ュ憡鐨勬枃浠舵墦寮€鐨勯棶棰樻垨鍙戦€佺殑鐢靛瓙閭欢**鍙兘浼氳鑷姩鍏抽棴鎴栧垹闄?*銆傛偍鍙互閫夋嫨鍒犻櫎鎮ㄨ涓虹瀵嗘垨涓嶆兂鍏变韩鎴栦笌闂鏃犲叧鐨勪换浣曡澶囩壒瀹氫俊鎭€俓n\n鎴戜滑涓嶆彁渚涗换浣曚笌榛戝鐩稿叧鐨勫伐鍏锋垨鑴氭湰鐨勬敮鎸併€傞€氳繃鐢靛瓙閭欢銆丟itHub 鎴栧叾浠栧畼鏂?Termux 绀惧尯璁哄潧鎻愬嚭鐨勮繖绫婚棶棰橈紝閮藉彲鑳戒細琚嚜鍔ㄥ叧闂垨鍒犻櫎锛岀敋鑷冲彲鑳藉鑷?*涓存椂鎴栨案涔?*鐨勫皝绂併€傛煡鐪?%1$s/wiki/Hacking 浠ヤ簡瑙ｈ缁嗕俊鎭€?/string>
-  <string name="msg_termux_app_required_by_app">%1$s 搴旂敤闇€瑕?AndroidIDE 鏉ヨ繍琛?termux 鍛戒护銆?/string>
-  <string name="error_termux_app_package_context_not_accessible">AndroidIDE 搴旂敤绋嬪簭锛堝寘涓婁笅鏂囷級鏃犳硶璁块棶銆?/string>
-  <string name="error_termux_prefix_dir_path_not_accessible">%1$s 搴旂敤鏃犳硶璁块棶 AndroidIDE 搴旂敤鐨?$PREFIX 鐩綍銆?
-         杩欏彲鑳芥槸鍥犱负鎮ㄥ皻鏈畨瑁呮垨璁剧疆 AndroidIDE 搴旂敤锛屾垨鑰?AndroidIDE 搴旂敤鍜?%1$s 搴旂敤鍏锋湁涓嶅悓鐨?APK 绛惧悕锛屽洜涓烘偍宸茶娉曚粠涓嶅悓鏉ユ簮瀹夎杩欎袱涓簲鐢ㄧ▼搴忋€?
-         涔熷彲鑳芥槸鍥犱负 AndroidIDE 鐨?$PREFIX 鐩綍鈥?data/data/com.pickaxe.jcode/files/usr鈥濅笉瀛樺湪鎴栬€呮病鏈夎銆佸啓銆佹墽琛屾潈闄愩€?/string>
+  <string name="msg_report_issue">如果要报告此问题，请从选项菜单（右上角的 3 点）复制其文本，并在以下链接之一上发布问题。\n\n如果您要发布 Termux 应用崩溃报告，请提供有关导致崩溃的原因，以及如何重现的详细信息，如果可能的话。\n\n如果您要在 GitHub 上发布问题，请将其发布到报告所属的存储库中。使用**（部分）屏幕截图**而不是复制的文本或此报告的文件打开的问题或发送的电子邮件**可能会被自动关闭或删除**。您可以选择删除您认为私密或不想共享或与问题无关的任何设备特定信息。\n\n我们不提供任何与黑客相关的工具或脚本的支持。通过电子邮件、GitHub 或其他官方 Termux 社区论坛提出的这类问题，都可能会被自动关闭或删除，甚至可能导致**临时或永久**的封禁。查看 %1$s/wiki/Hacking 以了解详细信息。</string>
+  <string name="msg_termux_app_required_by_app">%1$s 应用需要 AndroidIDE 来运行 termux 命令。</string>
+  <string name="error_termux_app_package_context_not_accessible">AndroidIDE 应用程序（包上下文）无法访问。</string>
+  <string name="error_termux_prefix_dir_path_not_accessible">%1$s 应用无法访问 AndroidIDE 应用的 $PREFIX 目录。
+         这可能是因为您尚未安装或设置 AndroidIDE 应用，或者 AndroidIDE 应用和 %1$s 应用具有不同的 APK 签名，因为您已设法从不同来源安装这两个应用程序。
+         也可能是因为 AndroidIDE 的 $PREFIX 目录“/data/data/com.pickaxe.jcode/files/usr”不存在或者没有读、写、执行权限。</string>
   <!-- Miscellaneous -->
-  <string name="action_share">鍒嗕韩</string>
-  <string name="action_save_to_file">淇濆瓨鍒版枃浠?/string>
-  <string name="msg_storage_permission_granted_on_request">鐢ㄦ埛鏍规嵁璇锋眰鎺堜簣瀛樺偍鏉冮檺</string>
-  <string name="msg_storage_permission_not_granted_on_request">鐢ㄦ埛鏈牴鎹姹傛巿浜堝瓨鍌ㄦ潈闄?/string>
+  <string name="action_share">分享</string>
+  <string name="action_save_to_file">保存到文件</string>
+  <string name="msg_storage_permission_granted_on_request">用户根据请求授予存储权限</string>
+  <string name="msg_storage_permission_not_granted_on_request">用户未根据请求授予存储权限</string>
   <!-- Log Level -->
-  <string name="log_level_title">鏃ュ織绾у埆</string>
-  <string name="log_level_off">鍏抽棴</string>
-  <string name="log_level_normal">鏍囧噯</string>
-  <string name="log_level_debug">璋冭瘯</string>
-  <string name="log_level_verbose">璇︾粏</string>
-  <string name="log_level_unknown">*鏈煡*</string>
-  <string name="log_level_value">Logcat 鏃ュ織绾у埆璁剧疆涓衡€?1$s鈥?/string>
-  <string name="error_attempted_to_check_for_permissions_not_requested">尝试检查未请求的权限</string>
-  <string name="error_sending_sigkill_to_process">无法向进程发送 SIGKILL</string>
-  <string name="error_executable_unset">未设置可执行文件</string>
-  <string name="error_execution_cancelled">执行已取消</string>
-  <string name="error_failed_to_execute_termux_session_command">Termux 会话命令执行失败</string>
-  <string name="error_failed_to_execute_app_shell_command">应用 Shell 命令执行失败</string>
-  <string name="error_exception_received_while_executing_app_shell_command">执行应用 Shell 命令时发生异常</string>
-  <string name="action_yes">是</string>
-  <string name="action_no">否</string>
-  <string name="action_copy">复制</string>
-  <string name="action_cancel">取消</string>
+  <string name="log_level_title">日志级别</string>
+  <string name="log_level_off">关闭</string>
+  <string name="log_level_normal">标准</string>
+  <string name="log_level_debug">调试</string>
+  <string name="log_level_verbose">详细</string>
+  <string name="log_level_unknown">*未知*</string>
+  <string name="log_level_value">Logcat 日志级别设置为“%1$s”</string>
 </resources>
-
-
-
-
-
-
-
-
-
-
-

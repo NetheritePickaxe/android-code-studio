@@ -1005,4 +1005,7 @@
   <string name="lsp_ok_button">好的</string>
   <string name="lsp_installation_failed_description">无法安装更新：%s</string>
   <string name="lsp_retry_button">重试</string>
+  <string name="template_cpp">C++ 工程</string>
+  <string name="btn_idecfg">IDE 配置</string>
+  <string name="msg_use_ndk">为此工程添加 C++ 模板</string>
 </resources>
