@@ -64,7 +64,6 @@ public final class Environment {
   
     // lsp
     public static File SERVERS_DIR;
-    public static File SERVERS_C_CPP_DIR;
     public static File SERVERS_KOTLIN_DIR;
     public static File SERVER_CONFIG_DIR;
 
@@ -104,7 +103,6 @@ public final class Environment {
 
         // Server locations
         SERVERS_DIR = mkdirIfNotExits(new File(HOME, "acs/servers"));
-        SERVERS_C_CPP_DIR = mkdirIfNotExits(new File(HOME, "acs/servers/c_cpp/server"));
         SERVERS_KOTLIN_DIR = mkdirIfNotExits(new File(HOME, "acs/servers/kotlin/server"));
         SERVER_CONFIG_DIR = mkdirIfNotExits(new File(HOME, ".config/kotlin-language-server"));
         

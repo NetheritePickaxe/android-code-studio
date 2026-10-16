@@ -200,42 +200,9 @@ private class KotlinFormatStyle(
   }
 }
 
-/* DEPRECATED! clang lsp installation handled via terminal
-@Parcelize
-private class CCPPCategory(
-    override val key: String = "lsp_ccpp_category",
-    override val title: Int = string.c_cpp,
-    override val summary: Int? = string.ccpp_lsp_category_summary,
-    override val children: List<IPreference> = mutableListOf(),
-) : IPreferenceScreen() {
-
-  init {
-    addPreference(CCPPLSP())
-  }
-}
-
-@Parcelize
-private class CCPPLSP(
-    override val key: String = "lsp_c_cpp_server",
-    override val title: Int = string.lsp_options_c_cpp_title,
-    override val summary: Int? = string.lsp_options_c_cpp_summary,
-) :
-    LSPPreference(
-        hint = string.server_status,
-        getValue = { getStatus(isCCppServerInstalled()) },
-        serverId = "C_CPP",
-        isInstalled = ::isCCppServerInstalled,
-    )
-*/
-
 private fun getStatus(installed: Boolean): String = if (installed) "installed" else "not installed"
 
 private fun isKotlinServerInstalled(): Boolean {
   val serverDir = File(Environment.HOME, "acs/servers/kotlin/server")
-  return serverDir.exists() && serverDir.isDirectory && serverDir.listFiles()?.isNotEmpty() == true
-}
-
-private fun isCCppServerInstalled(): Boolean {
-  val serverDir = File(Environment.HOME, "acs/servers/c_cpp")
   return serverDir.exists() && serverDir.isDirectory && serverDir.listFiles()?.isNotEmpty() == true
 }

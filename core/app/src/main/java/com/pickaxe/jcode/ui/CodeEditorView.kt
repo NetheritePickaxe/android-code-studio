@@ -31,7 +31,6 @@ import com.pickaxe.jcode.lsp.api.ILanguageServer
 import com.pickaxe.jcode.lsp.api.ILanguageServerRegistry
 import com.pickaxe.jcode.lsp.java.JavaLanguageServer
 import com.pickaxe.jcode.lsp.kotlin.KotlinLanguageServer
-import com.pickaxe.jcode.lsp.clang.ClangLanguageServer
 import com.pickaxe.jcode.lsp.models.DiagnosticResult
 import com.pickaxe.jcode.lsp.xml.XMLLanguageServer
 import com.pickaxe.jcode.models.Range
@@ -276,26 +275,6 @@ class CodeEditorView(context: Context, file: File, selection: Range) :
               log.error("Failed to analyze file for diagnostics", e)
             }
           }
-          
-          // Clang lsp
-          if (
-              languageServer is ClangLanguageServer &&
-                  (file.extension == "cpp" || file.extension == "c")
-          ) {
-            try {
-              val result = languageServer.analyze(file.toPath())
-
-              if (result != DiagnosticResult.NO_UPDATE) {
-                withContext(Dispatchers.Main) {
-                  editor.updateEditorDiagnostics(result.diagnostics)
-                }
-              }
-            } catch (e: Exception) {
-              log.error("Failed to analyze file for diagnostics", e)
-            }
-          }
-          
-          
         }
   }
 
@@ -389,7 +368,6 @@ class CodeEditorView(context: Context, file: File, selection: Range) :
           "java" -> JavaLanguageServer.SERVER_ID
           "xml" -> XMLLanguageServer.SERVER_ID
           "kt" -> KotlinLanguageServer.SERVER_ID
-          "cpp", "c" -> ClangLanguageServer.SERVER_ID
           else -> return null
         }
     return ILanguageServerRegistry.getDefault().getServer(serverID)

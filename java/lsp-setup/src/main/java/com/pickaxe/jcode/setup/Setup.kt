@@ -43,7 +43,6 @@ import java.io.File
 
 class Setup(private val context: Context) {
   
-  private val cppExtensions = setOf("c", "cpp", "cc", "cxx", "h", "hpp", "hh", "hxx")
   private val kotlinExtensions = setOf("kt", "kts")
   private val scope = CoroutineScope(Dispatchers.Main)
   
@@ -51,11 +50,6 @@ class Setup(private val context: Context) {
     scope.launch {
       withContext(Dispatchers.IO) {
         val serversToInstall = mutableListOf<Pair<String, String>>()
-        
-        val hasCppFiles = checkForFiles(projectDir, cppExtensions)
-        if (hasCppFiles && !isServerInstalled("clang")) {
-          serversToInstall.add("clang" to context.getString(R.string.project_contians_clang_title))
-        }
         
         val hasKotlinFiles = checkForFiles(projectDir, kotlinExtensions)
         if (hasKotlinFiles && !isServerInstalled("kotlin")) {

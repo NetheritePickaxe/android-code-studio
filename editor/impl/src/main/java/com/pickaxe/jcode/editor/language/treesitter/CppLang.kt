@@ -19,12 +19,7 @@ package com.pickaxe.jcode.editor.language.treesitter
 
 import android.content.Context
 import com.pickaxe.jcode.editor.language.treesitter.TreeSitterLanguage.Factory
-import com.pickaxe.jcode.lsp.api.ILanguageServer
-import com.pickaxe.jcode.lsp.api.ILanguageServerRegistry
-import com.pickaxe.jcode.lsp.clang.ClangLanguageServer
-import io.github.rosemoe.sora.util.MyCharacter
 import com.tom.rv2ide.treesitter.cpp.TSLanguageCpp
-import io.github.rosemoe.sora.lang.Language.INTERRUPTION_LEVEL_STRONG
 
 /**
  * [TreeSitterLanguage] implementation for Cpp.
@@ -42,8 +37,4 @@ open class CppLang(context: Context) :
     const val TS_TYPE_H = "h"
     const val TS_TYPE_HPP = "hpp"
   }
-
-  override val languageServer: ILanguageServer?
-    get() = ILanguageServerRegistry.getDefault().getServer(ClangLanguageServer.SERVER_ID)
-
 }
