@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 import com.pickaxe.jcode.lsp.models.CodeActionItem;
 import com.pickaxe.jcode.lsp.models.DiagnosticItem;
 import com.pickaxe.jcode.lsp.models.DiagnosticResult;
+import com.pickaxe.jcode.lsp.models.DocumentChange;
 import com.pickaxe.jcode.lsp.models.PerformCodeActionParams;
 import com.pickaxe.jcode.lsp.models.ShowDocumentParams;
 import com.pickaxe.jcode.lsp.models.ShowDocumentResult;
@@ -76,6 +77,18 @@ public interface ILanguageClient {
   @Deprecated
   default void performCodeAction(File file, CodeActionItem actionItem) {
     performCodeAction(actionItem);
+  }
+
+  /**
+   * Apply a workspace edit described as a list of document changes. Unlike
+   * {@link #performCodeAction(PerformCodeActionParams)}, the changes are expected to be persisted
+   * to disk by the client (files that are not open in the editor are modified directly).
+   *
+   * @param changes The list of document changes to apply.
+   * @return <code>true</code> if at least one change was applied, <code>false</code> otherwise.
+   */
+  default boolean applyWorkspaceEdit(List<DocumentChange> changes) {
+    return false;
   }
 
   /**

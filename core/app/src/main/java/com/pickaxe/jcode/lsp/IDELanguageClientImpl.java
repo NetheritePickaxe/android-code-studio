@@ -35,6 +35,7 @@ import com.pickaxe.jcode.lsp.api.ILanguageClient;
 import com.pickaxe.jcode.lsp.models.CodeActionItem;
 import com.pickaxe.jcode.lsp.models.DiagnosticItem;
 import com.pickaxe.jcode.lsp.models.DiagnosticResult;
+import com.pickaxe.jcode.lsp.models.DocumentChange;
 import com.pickaxe.jcode.lsp.models.PerformCodeActionParams;
 import com.pickaxe.jcode.lsp.models.ShowDocumentParams;
 import com.pickaxe.jcode.lsp.models.ShowDocumentResult;
@@ -77,6 +78,15 @@ public class IDELanguageClientImpl implements ILanguageClient {
   private static IDELanguageClientImpl mInstance;
   private final Map<File, List<DiagnosticItem>> diagnostics = new HashMap<>();
   protected EditorHandlerActivity activity;
+
+  /** Sorts text edits in reverse document order (last position first). */
+  private static final Comparator<TextEdit> REVERSE_EDIT_ORDER =
+      (a, b) -> {
+        final var sa = a.getRange().getStart();
+        final var sb = b.getRange().getStart();
+        final int line = Integer.compare(sb.getLine(), sa.getLine());
+        return line != 0 ? line : Integer.compare(sb.getColumn(), sa.getColumn());
+      };
 
   private IDELanguageClientImpl(EditorHandlerActivity provider) {
     setActivity(provider);
@@ -269,6 +279,92 @@ public void publishDiagnostics(DiagnosticResult result) {
                 editor.getText().replace(startLine, startCol, endLine, endCol, edit.getNewText());
               }
             });
+  }
+
+  /**
+   * Applies a workspace edit. Files that are currently open in the editor are modified in memory
+   * and then persisted; files that are not open are modified directly on disk.
+   *
+   * @param changes The list of document changes to apply.
+   * @return <code>true</code> if at least one change was applied, <code>false</code> otherwise.
+   */
+  @Override
+  public boolean applyWorkspaceEdit(final List<DocumentChange> changes) {
+    if (changes == null || changes.isEmpty() || !canUseActivity()) {
+      return false;
+    }
+
+    boolean applied = false;
+
+    for (final DocumentChange change : changes) {
+      if (change == null || change.getFile() == null) {
+        continue;
+      }
+
+      final File file = change.getFile().toFile();
+      if (!file.exists() || !file.isFile()) {
+        continue;
+      }
+
+      final List<TextEdit> edits = change.getEdits();
+      if (edits == null || edits.isEmpty()) {
+        continue;
+      }
+
+      // Apply the edits in reverse document order so that applying one edit does not invalidate
+      // the positions of the edits that come before it.
+      final List<TextEdit> sorted = new ArrayList<>(edits);
+      sorted.sort(REVERSE_EDIT_ORDER);
+
+      final var frag = findEditorByFile(file);
+      if (frag != null && frag.getEditor() != null) {
+        // The file is open: edit it in memory and persist it below.
+        final IDEEditor editor = frag.getEditor();
+        activity.runOnUiThread(
+            () -> {
+              for (final TextEdit edit : sorted) {
+                applyEdit(editor.getText(), edit);
+              }
+              editor.markModified();
+            });
+        applied = true;
+      } else {
+        // The file is not open: modify it directly.
+        final String text = FileIOUtils.readFile2String(file);
+        if (text == null) {
+          continue;
+        }
+
+        final Content content = new Content(text);
+        for (final TextEdit edit : sorted) {
+          applyEdit(content, edit);
+        }
+
+        if (FileIOUtils.writeFileFromString(file, content.toString(), false)) {
+          applied = true;
+        }
+      }
+    }
+
+    if (applied) {
+      // Persist the files which are currently open in the editor.
+      activity.saveAllAsync(false, true, false, null, null);
+    }
+
+    return applied;
+  }
+
+  private static void applyEdit(final Content content, final TextEdit edit) {
+    final Range range = edit.getRange();
+    final int startLine = range.getStart().getLine();
+    final int startCol = range.getStart().getColumn();
+    final int endLine = range.getEnd().getLine();
+    final int endCol = range.getEnd().getColumn();
+    if (startLine == endLine && startCol == endCol) {
+      content.insert(startLine, startCol, edit.getNewText());
+    } else {
+      content.replace(startLine, startCol, endLine, endCol, edit.getNewText());
+    }
   }
 
   @Override

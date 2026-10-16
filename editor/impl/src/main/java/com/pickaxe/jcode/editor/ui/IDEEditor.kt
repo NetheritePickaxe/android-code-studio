@@ -57,6 +57,8 @@ import com.pickaxe.jcode.lsp.models.DefinitionResult
 import com.pickaxe.jcode.lsp.models.ExpandSelectionParams
 import com.pickaxe.jcode.lsp.models.ReferenceParams
 import com.pickaxe.jcode.lsp.models.ReferenceResult
+import com.pickaxe.jcode.lsp.models.RenameParams
+import com.pickaxe.jcode.lsp.models.RenameResult
 import com.pickaxe.jcode.lsp.models.ShowDocumentParams
 import com.pickaxe.jcode.lsp.models.SignatureHelp
 import com.pickaxe.jcode.lsp.models.SignatureHelpParams
@@ -352,6 +354,26 @@ constructor(
           onFindReferencesResult(result)
         }
         ?.logError("references request")
+  }
+
+  override fun rename(newName: String) {
+    if (isReleased) {
+      return
+    }
+    val languageServer = this.languageServer ?: return
+    val file = file ?: return
+
+    launchCancellableAsyncWithProgress(string.msg_renaming_symbol) { _, cancelChecker ->
+          val result =
+              safeGet("rename request") {
+                val params =
+                    RenameParams(file.toPath(), cursorLSPPosition, newName, cancelChecker)
+                languageServer.rename(params)
+              }
+
+          onRenameResult(result)
+        }
+        ?.logError("rename request")
   }
 
   override fun expandSelection() {
@@ -861,6 +883,31 @@ constructor(
         }
 
         languageClient.showLocations(result.locations)
+      }
+
+  protected open suspend fun onRenameResult(result: RenameResult?) =
+      withContext(Dispatchers.Main) {
+        if (isReleased) {
+          return@withContext
+        }
+
+        val languageClient =
+            languageClient
+                ?: run {
+                  log.error("No language client found to handle the rename result")
+                  return@withContext
+                }
+
+        if (result == null || result.changes.isEmpty()) {
+          log.error("No rename edits received from language server")
+          flashError(string.msg_rename_failed)
+          return@withContext
+        }
+
+        if (!languageClient.applyWorkspaceEdit(result.changes)) {
+          log.error("Failed to apply rename edits")
+          flashError(string.msg_rename_failed)
+        }
       }
 
   protected open fun dispatchDocumentOpenEvent() {

@@ -146,6 +146,8 @@
   <string name="msg_api_info_deprecated">Deprecated in API %d</string>
   <string name="msg_finding_references">Finding references…</string>
   <string name="msg_finding_definition">Finding definition…</string>
+  <string name="msg_renaming_symbol">Renaming symbol…</string>
+  <string name="msg_rename_failed">Cannot rename this symbol</string>
   <string name="msg_no_definition">Definition not found</string>
 
   <!-- Build Tools Installation -->
@@ -532,7 +534,6 @@
   
   <string name="lsp_installed_title">Successfully installed</string>
   <string name="lsp_installed_summary">Installation completed successfully!</string>
-  <string name="project_contians_clang_title">Your project contains C/C++ files. Would you like to install the Clang language server?</string>
   <string name="project_contians_kotlin_title">Your project contains Kotlin files. Would you like to install the Kotlin language server?</string>
   <string name="installing_lsp">Installing Language Server</string>
   <string name="lsp_setup_str">Language Server Setup</string>
@@ -541,9 +542,6 @@
   <string name="lsp_options_kotlin_title">Kotlin Language Server</string>
   <string name="lsp_options_kotlin_summary">Kotlin language server offering intelligent coding features including code completion, error highlighting, and more</string>
   <string name="kotlin_server_required">Kotlin language server must be installed to use this feature</string>
-
-  <string name="lsp_options_c_cpp_title">C &amp; C++ Language Server</string>
-  <string name="lsp_options_c_cpp_summary">C and C++ language server providing intelligent development features such as code completion, error highlighting, and others</string>
 
   <string name="acs_lsp_hover_title">Code Information on Hover</string>
   <string name="acs_lsp_hover_summary">Show types, function signatures, and documentation when hovering over code</string>
@@ -558,8 +556,6 @@
 
   <string name="kotlin">Kotlin</string>
   <string name="kotlin_lsp_category_summary">Kotlin language server and features</string>
-  <string name="c_cpp">C/C++</string>
-  <string name="ccpp_lsp_category_summary">C/C++ language server and features</string>
 
   <!-- LSP Server Management -->
   <string name="lsp_server_uninstall">Uninstall</string>
@@ -628,6 +624,8 @@
   <string name="msg_no_overridable_methods">Unable to find any overridable method</string>
   <string name="action_goto_definition">Go to definition</string>
   <string name="action_find_references">Find references</string>
+  <string name="action_rename_symbol">Rename symbol</string>
+  <string name="rename_symbol_hint">New name</string>
   <string name="action_generate_toString">Generate toString()</string>
   <string name="action_remove_unused_imports">Remove unused imports</string>
   <string name="action_organize_imports">Organize imports</string>

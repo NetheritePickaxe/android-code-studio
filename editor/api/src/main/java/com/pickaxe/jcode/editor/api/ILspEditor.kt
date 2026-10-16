@@ -81,6 +81,16 @@ interface ILspEditor {
   fun findReferences()
 
   /**
+   * Requests the language server to rename the symbol at the current cursor position to [newName].
+   *
+   * If the server returns a valid workspace edit, it is forwarded to the language client so that
+   * the edits are applied (and persisted) across all the affected files.
+   *
+   * @param newName The new name of the symbol.
+   */
+  fun rename(newName: String)
+
+  /**
    * Requests the language server to provided a semantically larger selection than the current
    * selection. If a valid response is received, that range will be selected.
    */

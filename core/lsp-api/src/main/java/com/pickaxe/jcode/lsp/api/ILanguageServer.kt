@@ -43,6 +43,8 @@ import com.pickaxe.jcode.lsp.models.FormatCodeParams
 import com.pickaxe.jcode.lsp.models.LSPFailure
 import com.pickaxe.jcode.lsp.models.ReferenceParams
 import com.pickaxe.jcode.lsp.models.ReferenceResult
+import com.pickaxe.jcode.lsp.models.RenameParams
+import com.pickaxe.jcode.lsp.models.RenameResult
 import com.pickaxe.jcode.lsp.models.SignatureHelp
 import com.pickaxe.jcode.lsp.models.SignatureHelpParams
 import com.pickaxe.jcode.models.Range
@@ -124,6 +126,19 @@ interface ILanguageServer {
    * @return The result of the computation.
    */
   suspend fun findDefinition(params: DefinitionParams): DefinitionResult
+
+  /**
+   * Rename the symbol at the given position to the given name.
+   *
+   * Implementations that do not support renaming should return an empty result (the default
+   * behavior).
+   *
+   * @param params The params describing the symbol to rename and the new name.
+   * @return The edits to apply in order to complete the rename.
+   */
+  suspend fun rename(params: RenameParams): RenameResult {
+    return RenameResult(emptyList())
+  }
 
   /**
    * Request the server to provide an expanded selection range for the current selection.

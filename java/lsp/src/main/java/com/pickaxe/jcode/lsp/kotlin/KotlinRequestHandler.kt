@@ -285,6 +285,35 @@ class KotlinRequestHandler(
         withTimeoutOrNull(5000) { deferred.await() } ?: DefinitionResult(emptyList())
       }
 
+  suspend fun rename(params: RenameParams): RenameResult =
+      withContext(Dispatchers.IO) {
+        val deferred = CompletableDeferred<RenameResult>()
+
+        documentManager.ensureDocumentOpen(params.file)
+
+        val lspParams =
+            JsonObject().apply {
+              add(
+                  "textDocument",
+                  JsonObject().apply { addProperty("uri", params.file.toUri().toString()) },
+              )
+              add(
+                  "position",
+                  JsonObject().apply {
+                    addProperty("line", params.position.line)
+                    addProperty("character", params.position.column)
+                  },
+              )
+              addProperty("newName", params.newName)
+            }
+
+        processManager.sendRequest("textDocument/rename", lspParams) { result ->
+          deferred.complete(RenameResult(parseWorkspaceEdit(result)))
+        }
+
+        withTimeoutOrNull(10000) { deferred.await() } ?: RenameResult(emptyList())
+      }
+
   suspend fun signatureHelp(params: SignatureHelpParams): SignatureHelp =
       withContext(Dispatchers.IO) {
         val deferred = CompletableDeferred<SignatureHelp>()
@@ -509,4 +538,86 @@ class KotlinRequestHandler(
       )
     } ?: emptyList()
   }
+
+  /**
+   * Parses an LSP `WorkspaceEdit` into a list of [DocumentChange]s. Supports both the `changes`
+   * (a map keyed by document URI) and the `documentChanges` (an array of text document edits)
+   * forms.
+   */
+  private fun parseWorkspaceEdit(result: JsonObject?): List<DocumentChange> {
+    if (result == null || result.isJsonNull) {
+      return emptyList()
+    }
+
+    val changes = mutableListOf<DocumentChange>()
+
+    val changesElement = result.get("changes")
+    if (changesElement != null && changesElement.isJsonObject) {
+      changesElement.asJsonObject.entrySet().forEach { (uri, edits) ->
+        val file = uriToPath(uri) ?: return@forEach
+        changes.add(DocumentChange(file, parseTextEdits(edits)))
+      }
+    }
+
+    val documentChanges = result.get("documentChanges")
+    if (documentChanges != null && documentChanges.isJsonArray) {
+      documentChanges.asJsonArray.forEach { element ->
+        if (!element.isJsonObject) {
+          return@forEach
+        }
+        val change = element.asJsonObject
+        val textDocument = change.getAsJsonObject("textDocument") ?: return@forEach
+        val uri = textDocument.get("uri")?.asString ?: return@forEach
+        val file = uriToPath(uri) ?: return@forEach
+        changes.add(DocumentChange(file, parseTextEdits(change.get("edits"))))
+      }
+    }
+
+    // Merge edits which target the same file.
+    return changes
+        .groupBy { it.file }
+        .map { (file, perFile) -> DocumentChange(file, perFile.flatMap { it.edits }) }
+  }
+
+  private fun parseTextEdits(edits: com.google.gson.JsonElement?): List<TextEdit> {
+    if (edits == null || !edits.isJsonArray) {
+      return emptyList()
+    }
+
+    return edits.asJsonArray.mapNotNull { element ->
+      // Resource operations (e.g. file renames) are not text edits and are skipped.
+      if (!element.isJsonObject) {
+        return@mapNotNull null
+      }
+
+      val edit = element.asJsonObject
+      val range = edit.getAsJsonObject("range") ?: return@mapNotNull null
+      val start = range.getAsJsonObject("start") ?: return@mapNotNull null
+      val end = range.getAsJsonObject("end") ?: return@mapNotNull null
+
+      TextEdit(
+          range =
+              com.pickaxe.jcode.models.Range(
+                  start =
+                      com.pickaxe.jcode.models.Position(
+                          start.get("line").asInt,
+                          start.get("character").asInt,
+                      ),
+                  end =
+                      com.pickaxe.jcode.models.Position(
+                          end.get("line").asInt,
+                          end.get("character").asInt,
+                      ),
+              ),
+          newText = edit.get("newText")?.asString ?: "",
+      )
+    }
+  }
+
+  private fun uriToPath(uri: String): java.nio.file.Path? =
+      try {
+        Paths.get(java.net.URI(uri))
+      } catch (e: Exception) {
+        null
+      }
 }

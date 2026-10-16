@@ -27,6 +27,7 @@ import com.pickaxe.jcode.lsp.kotlin.compiler.KotlinCompilerService
 import com.pickaxe.jcode.lsp.kotlin.etc.LspFeatures
 import com.pickaxe.jcode.lsp.kotlin.providers.KotlinCodeFormatProvider
 import com.pickaxe.jcode.lsp.models.*
+import com.pickaxe.jcode.lsp.util.LSPEditorActions
 import com.pickaxe.jcode.models.Range
 import com.pickaxe.jcode.projects.IWorkspace
 import com.pickaxe.jcode.utils.VMUtils
@@ -108,6 +109,8 @@ class KotlinLanguageServer(private val context: Context) : ILanguageServer {
   }
 
   override fun setupWorkspace(workspace: IWorkspace) {
+    LSPEditorActions.ensureActionsMenuRegistered(KotlinCodeActionsMenu)
+
     formatProvider = KotlinCodeFormatProvider(processManager)
 
     workspaceSetup = KotlinWorkspaceSetup(context, workspace)
@@ -202,6 +205,14 @@ class KotlinLanguageServer(private val context: Context) : ILanguageServer {
       requestHandler.findDefinition(params)
     } else {
       DefinitionResult(emptyList())
+    }
+  }
+
+  override suspend fun rename(params: RenameParams): RenameResult {
+    return if (initialized) {
+      requestHandler.rename(params)
+    } else {
+      RenameResult(emptyList())
     }
   }
 

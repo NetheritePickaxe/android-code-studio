@@ -22,6 +22,7 @@ import com.pickaxe.jcode.lsp.actions.IActionsMenuProvider
 import com.pickaxe.jcode.lsp.java.actions.common.CommentAction
 import com.pickaxe.jcode.lsp.java.actions.common.FindReferencesAction
 import com.pickaxe.jcode.lsp.java.actions.common.GoToDefinitionAction
+import com.pickaxe.jcode.lsp.actions.RenameSymbolAction
 import com.pickaxe.jcode.lsp.java.actions.common.OrganizeImportsAction
 import com.pickaxe.jcode.lsp.java.actions.common.RemoveUnusedImportsAction
 import com.pickaxe.jcode.lsp.java.actions.common.UncommentAction
@@ -55,6 +56,7 @@ object JavaCodeActionsMenu : IActionsMenuProvider {
           UncommentAction(),
           GoToDefinitionAction(),
           FindReferencesAction(),
+          RenameSymbolAction(),
           AddImportAction(),
           AutoFixImportsAction(),
           ImplementAbstractMethodsAction(),

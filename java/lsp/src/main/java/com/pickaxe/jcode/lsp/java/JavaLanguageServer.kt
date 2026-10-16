@@ -38,6 +38,7 @@ import com.pickaxe.jcode.lsp.java.providers.DefinitionProvider
 import com.pickaxe.jcode.lsp.java.providers.JavaDiagnosticProvider
 import com.pickaxe.jcode.lsp.java.providers.JavaSelectionProvider
 import com.pickaxe.jcode.lsp.java.providers.ReferenceProvider
+import com.pickaxe.jcode.lsp.java.providers.RenameProvider
 import com.pickaxe.jcode.lsp.java.providers.SignatureProvider
 import com.pickaxe.jcode.lsp.java.providers.snippet.JavaSnippetRepository.init
 import com.pickaxe.jcode.lsp.java.utils.AnalyzeTimer
@@ -54,6 +55,8 @@ import com.pickaxe.jcode.lsp.models.FormatCodeParams
 import com.pickaxe.jcode.lsp.models.LSPFailure
 import com.pickaxe.jcode.lsp.models.ReferenceParams
 import com.pickaxe.jcode.lsp.models.ReferenceResult
+import com.pickaxe.jcode.lsp.models.RenameParams
+import com.pickaxe.jcode.lsp.models.RenameResult
 import com.pickaxe.jcode.lsp.models.SignatureHelp
 import com.pickaxe.jcode.lsp.models.SignatureHelpParams
 import com.pickaxe.jcode.lsp.util.LSPEditorActions
@@ -187,6 +190,11 @@ class JavaLanguageServer : ILanguageServer {
     return if (!settings.referencesEnabled()) {
       ReferenceResult(emptyList())
     } else ReferenceProvider(compiler, params.cancelChecker).findReferences(params)
+  }
+
+  override suspend fun rename(params: RenameParams): RenameResult {
+    val compiler = getCompiler(params.file)
+    return RenameProvider(compiler, params.cancelChecker).rename(params)
   }
 
   override suspend fun findDefinition(params: DefinitionParams): DefinitionResult {
