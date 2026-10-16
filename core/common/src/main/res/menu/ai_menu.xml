@@ -4,29 +4,29 @@
     
     <item
         android:id="@+id/action_settings"
-        android:title="Settings"
+        android:title="@string/ai_agent_settings"
         android:icon="@drawable/ic_settings"
         app:showAsAction="ifRoom" />
     
     <item
         android:id="@+id/action_history"
-        android:title="History"
+        android:title="@string/sidebar_git_history_msg"
         android:icon="@drawable/ic_history"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_select_agent"
-        android:title="Select Agent"
+        android:title="@string/hl_select_agent"
         android:icon="@drawable/ic_robot"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_select_provider"
-        android:title="Select Provider"
+        android:title="@string/hl_select_provider"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_auto_switch"
-        android:title="Auto-Switch: OFF"
+        android:title="@string/hl_auto_switch_off"
         android:checkable="true"
         app:showAsAction="never" />    
 

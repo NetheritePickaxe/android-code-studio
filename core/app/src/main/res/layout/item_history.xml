@@ -26,7 +26,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:src="@drawable/ic_history"
-                android:contentDescription="History icon" />
+                android:contentDescription="@string/hl_history_icon" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -39,7 +39,7 @@
                     android:id="@+id/historyTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Created MainActivity.kt"
+                    android:text="@string/hl_created_mainactivity_kt"
                     android:textAppearance="?attr/textAppearanceBodyLarge"
                     android:textStyle="bold" />
 
@@ -60,7 +60,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Modified 3 files"
+            android:text="@string/hl_modified_3_files"
             android:textAppearance="?attr/textAppearanceBodyMedium" />
 
     </LinearLayout>

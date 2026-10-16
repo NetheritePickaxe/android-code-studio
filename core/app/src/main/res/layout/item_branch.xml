@@ -21,7 +21,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
-            android:text="main"
+            android:text="@string/hl_main"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="?android:textColorPrimary"/>
@@ -30,7 +30,7 @@
             android:id="@+id/buttonCheckout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Checkout"
+            android:text="@string/hl_checkout"
             android:textSize="12sp"
             android:layout_marginEnd="4dp"
             style="@style/Widget.Material3.Button.TonalButton"/>
@@ -39,7 +39,7 @@
             android:id="@+id/buttonDelete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Delete"
+            android:text="@string/delete"
             android:textSize="12sp"
             style="@style/Widget.Material3.Button.OutlinedButton"/>
     </LinearLayout>

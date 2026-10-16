@@ -17,7 +17,7 @@
          android:gravity="center"
          android:textSize="24sp"
          android:fontFamily="sans-serif-bold"
-         android:text="Dialog title"
+         tools:text="Dialog title"
          android:id="@+id/title"
          android:textStyle="bold" />
     <TextView
@@ -29,7 +29,7 @@
          android:alpha="0.8"
          android:id="@+id/description"
          android:fontFamily="sans-serif-medium"
-         android:text="Dialog description"
+         tools:text="Dialog description"
          />
 
     <com.google.android.material.progressindicator.LinearProgressIndicator
@@ -56,7 +56,7 @@
          android:fontFamily="sans-serif-medium"
          android:textColor="?attr/colorOnPrimaryContainer"
          android:id="@+id/button_primary"
-         android:text="Primary Action" />
+         tools:text="Primary Action" />
 
     <TextView
          android:layout_height="wrap_content"
@@ -71,7 +71,7 @@
          android:fontFamily="sans-serif-medium"
          android:textColor="?attr/colorOnPrimaryContainer"
          android:id="@+id/button_middle"
-         android:text="Middle Action" />
+         tools:text="Middle Action" />
 
     <TextView
          android:layout_height="wrap_content"
@@ -85,6 +85,6 @@
          android:fontFamily="sans-serif-medium"
          android:textColor="?attr/colorOnPrimaryContainer"
          android:id="@+id/button_secondary"
-         android:text="Secondary Action" />
+         tools:text="Secondary Action" />
 
 </LinearLayout>

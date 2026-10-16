@@ -55,7 +55,7 @@
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:contentDescription="Paste Here"
+        android:contentDescription="@string/hl_paste_here"
         android:layout_margin="32dp"
         app:srcCompat="@drawable/ic_paste"
         android:id="@+id/fab_paste"
@@ -68,9 +68,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/gotoMyProj"
-        android:text="Goto My project"
+        android:text="@string/hl_goto_my_project"
         android:layout_margin="32dp"
-        android:contentDescription="Paste Here"
+        android:contentDescription="@string/hl_paste_here"
         app:icon="@drawable/ic_arrow_back"
         app:layout_anchorGravity="bottom|start"
         android:layout_gravity="bottom|start" />
