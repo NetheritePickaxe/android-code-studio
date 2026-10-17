@@ -24,14 +24,22 @@ import com.pickaxe.jcode.artificial.agents.anthropic.Anthropic
 import com.pickaxe.jcode.artificial.agents.grok.Grok
 import com.pickaxe.jcode.artificial.agents.deepseek.DeepSeek
 import com.pickaxe.jcode.artificial.agents.local.LocalLLM
+import com.pickaxe.jcode.artificial.dialogs.ProviderSwitchDialog
+import com.pickaxe.jcode.artificial.file.AIFileWriter
 import com.pickaxe.jcode.artificial.file.FileWriteResult
-import com.pickaxe.jcode.artificial.parser.SnippetParser
+import com.pickaxe.jcode.artificial.harness.AgentHarness
+import com.pickaxe.jcode.artificial.harness.HarnessEvent
+import com.pickaxe.jcode.artificial.harness.ToolContext
+import com.pickaxe.jcode.artificial.harness.ToolRegistry
+import com.pickaxe.jcode.artificial.harness.providers.ChatProviderFactory
 import com.pickaxe.jcode.artificial.permissions.AIPermissionManager
 import com.pickaxe.jcode.artificial.project.awareness.ProjectData
 import com.pickaxe.jcode.artificial.secrets.ApiKey
+import com.pickaxe.jcode.artificial.tools.defaultTools
+import com.pickaxe.jcode.utils.ProjectHelper
 import java.io.File
-import kotlinx.coroutines.delay
-import com.pickaxe.jcode.artificial.dialogs.ProviderSwitchDialog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * @author Mohammed-baqer-null @ https://github.com/Mohammed-baqer-null
@@ -39,7 +47,6 @@ import com.pickaxe.jcode.artificial.dialogs.ProviderSwitchDialog
 
 class AIAgentManager(private val context: Context) {
 
-    private val snippetParser = SnippetParser()
     private val permissionManager = AIPermissionManager(context)
     private var currentProjectRoot: File? = null
     private var currentProviderId: String = "gemini"
@@ -136,222 +143,119 @@ class AIAgentManager(private val context: Context) {
     }
 
     suspend fun executeRequest(userRequest: String, callback: AIAgentCallback) {
-        var success = false
+        val root = currentProjectRoot ?: runCatching { ProjectHelper.getProjectRoot() }.getOrNull()
+        if (root == null || !root.exists()) {
+            callback.onError("No project is open.\n\nOpen a project before using the AI agent.")
+            return
+        }
+        permissionManager.setFileWriteEnabled(true)
+        permissionManager.addAllowedDirectory(root.absolutePath)
+
+        val fileWriter = AIFileWriter(context)
+        val changedFiles = LinkedHashMap<String, Boolean>()
+        val toolContext =
+            ToolContext(root, fileWriter) { event -> handleEvent(event, callback, changedFiles) }
+        val registry = ToolRegistry().registerAll(defaultTools(toolContext))
+
+        var providerId = currentProviderId
         var providerSwitched = false
 
-        currentAgent?.resetAttemptCount()
-        callback.onProcessing("Analyzing your request...")
-
-        while (!success && (currentAgent?.canRetry() == true)) {
-            try {
-                val currentAttempt = currentAgent?.getCurrentAttemptCount() ?: 0
-
-                if (currentAttempt > 0 && !providerSwitched) {
-                    callback.onRetry(currentAttempt, "Thinking differently...")
-                    delay(1000)
-                }
-
-                val previousFileStates = captureCurrentFileStates()
-
-                val result = currentAgent?.generateCode(
-                    prompt = userRequest,
-                    context = null,
-                    language = "kotlin",
-                    projectStructure = null
-                ) ?: Result.failure(Exception("No agent initialized"))
-
-                result.fold(
-                    onSuccess = { response ->
-                        
-                        if (response.contains("FILE_TO_MODIFY:")) {
-                            callback.onProcessing("Modifying files...")
-                            val modifications = processModifications(response, previousFileStates, callback)
-
-                            if (modifications.isNotEmpty()) {
-                                val allSuccessful = modifications.all { it.writeResult is FileWriteResult.Success }
-
-                                if (allSuccessful) {
-                                    val results = modifications.map { mod ->
-                                        val isNewFile = !previousFileStates.containsKey(mod.filePath)
-                                        ModificationResult(
-                                            filePath = mod.filePath,
-                                            content = mod.content,
-                                            success = true,
-                                            message = "Modified successfully",
-                                            isNewFile = isNewFile
-                                        )
-                                    }
-
-                                    val summary = createSummary(results)
-                                    callback.onSuccess(response, results, summary)
-                                    success = true
-                                } else {
-                                    callback.onProcessing("Some files failed. Retrying...")
-                                    currentAgent?.incrementAttemptCount()
-                                    delay(1500)
-                                }
-                            } else {
-                                callback.onProcessing("No files were modified. Retrying...")
-                                currentAgent?.incrementAttemptCount()
-                                delay(1500)
-                            }
-                        } else {
-                            val summary = ModificationSummary(0, 0, 0, 0, 0, emptyList())
-                            callback.onTextResponse(response, summary)
-                            success = true
-                        }
-                    },
-                  onFailure = { error ->
-                      android.util.Log.e("AIAgentManager", "Error occurred: ${error.message}", error)
-                      
-                      val shouldSwitchProvider = error is com.pickaxe.jcode.artificial.exceptions.RateLimitException ||
-                                                error is com.pickaxe.jcode.artificial.exceptions.QuotaExceededException ||
-                                                error is com.pickaxe.jcode.artificial.exceptions.InsufficientBalanceException ||
-                                                error is com.pickaxe.jcode.artificial.exceptions.InvalidApiKeyException
-                      
-                      if (shouldSwitchProvider && !providerSwitched) {
-                          val currentProviderName = currentAgent?.providerName ?: "Unknown"
-                          val errorMsg = error.message ?: "Unknown error"
-                          
-                          if (providerSwitchDialog.isAutoSwitchEnabled()) {
-                              val alternativeProvider = getAlternativeProvider()
-                              if (alternativeProvider != null) {
-                                  callback.onProcessing("⚠️ $currentProviderName: $errorMsg")
-                                  callback.onProcessing("🔄 Auto-switching to another provider...")
-                                  delay(1500)
-                                  
-                                  if (setProvider(alternativeProvider)) {
-                                      providerSwitched = true
-                                      currentAgent?.resetAttemptCount()
-                                      
-                                      val newProviderName = currentAgent?.providerName ?: "Unknown"
-                                      callback.onProcessing("✅ Switched to $newProviderName")
-                                  } else {
-                                      val errorDisplay = formatErrorMessage(error)
-                                      callback.onError("$errorDisplay\n\n❌ Failed to switch providers.")
-                                      success = true
-                                  }
-                              } else {
-                                  val errorDisplay = formatErrorMessage(error)
-                                  callback.onError("$errorDisplay\n\n❌ No alternative providers available.")
-                                  success = true
-                              }
-                          } else {
-                              val errorDisplay = formatErrorMessage(error)
-                              callback.onError("PROVIDER_SWITCH_REQUIRED::$errorDisplay")
-                              success = true
-                          }
-                      } else if ((currentAgent?.canRetry() == true) && !providerSwitched) {
-                          callback.onRetry(
-                              currentAgent?.getCurrentAttemptCount() ?: 0,
-                              "Error: ${error.message?.take(50) ?: "Unknown error"}. Retrying..."
-                          )
-                          currentAgent?.incrementAttemptCount()
-                          delay(1500)
-                      } else {
-                          val errorDisplay = formatErrorMessage(error)
-                          callback.onError(errorDisplay)
-                          success = true
-                      }
-                  }
+        while (true) {
+            val provider =
+                ChatProviderFactory.create(context, providerId)
+                    ?: ChatProviderFactory.create(context, Agents(context).getProvider())
+            if (provider == null) {
+                callback.onError(
+                    "No API key configured for '$providerId'.\n\n" +
+                        "Add an API key in the AI agent settings and try again."
                 )
+                return
+            }
+
+            try {
+                callback.onProcessing("Working…")
+                val harness = AgentHarness(provider, registry, toolContext)
+                val response = withContext(Dispatchers.IO) { harness.run(userRequest) }
+                finish(response, changedFiles, callback)
+                return
             } catch (e: Exception) {
-                android.util.Log.e("AIAgentManager", "Exception occurred: ${e.message}", e)
-                
-                if (currentAgent?.canRetry() == true) {
-                    callback.onRetry(
-                        currentAgent?.getCurrentAttemptCount() ?: 0,
-                        "Exception: ${e.message?.take(50) ?: "Unknown"}. Trying again..."
-                    )
-                    currentAgent?.incrementAttemptCount()
-                    delay(1500)
-                } else {
-                    val errorDisplay = formatErrorMessage(e)
-                    callback.onError(errorDisplay)
-                    success = true
-                }
-            }
-        }
+                android.util.Log.e("AIAgentManager", "Harness failed: ${e.message}", e)
 
-        if (!success) {
-          val attemptCount = currentAgent?.getCurrentAttemptCount() ?: 0
-          val agentName = currentAgent?.providerName ?: "No agent initialized"
-          callback.onError("Failed after $attemptCount attempts with $agentName.\n\nPlease check your API key and try again.")
-          undoLastModification()
-        }
-    }
-
-    private fun getAlternativeProvider(): String? {
-        val availableProviders = AIAgentRegistry.getAvailableProviders()
-        return availableProviders.firstOrNull { it != currentProviderId }
-    }
-
-    private suspend fun processModifications(
-        response: String,
-        previousFileStates: Map<String, String>,
-        callback: AIAgentCallback
-    ): List<BaseFileModification> {
-        val modifications = mutableListOf<BaseFileModification>()
-        val parser = SnippetParser()
-
-        if (response.contains("FILE_TO_MODIFY:")) {
-            val lines = response.lines()
-            var currentFile: String? = null
-            val contentBuilder = StringBuilder()
-            var inContent = false
-
-            for (line in lines) {
-                if (line.startsWith("FILE_TO_MODIFY:")) {
-                    if (currentFile != null && contentBuilder.isNotEmpty()) {
-                        val fileName = File(currentFile).name
-                        callback.onFileModifying(currentFile, fileName)
-
-                        val rawContent = contentBuilder.toString().trim()
-                        val cleanedContent = parser.cleanFileContent(rawContent)
-                        val previousContent = previousFileStates[currentFile]
-
-                        val writeResult = currentAgent?.writeFile(currentFile, cleanedContent)
-                            ?: FileWriteResult.Error("No agent initialized")
-
-                        val success = writeResult is FileWriteResult.Success
-                        currentAgent?.recordModification(currentFile, previousContent, cleanedContent, success)
-
-                        callback.onFileModified(currentFile, fileName, success)
-                        delay(300)
-
-                        modifications.add(BaseFileModification(currentFile, cleanedContent, writeResult))
+                if (!providerSwitched && isProviderSwitchError(e)) {
+                    val alternative = getAlternativeProvider(providerId)
+                    if (alternative != null && providerSwitchDialog.isAutoSwitchEnabled()) {
+                        callback.onProcessing("⚠️ ${e.message?.take(160) ?: "Request failed"}")
+                        callback.onProcessing("🔄 Auto-switching to another provider…")
+                        providerId = alternative
+                        providerSwitched = true
+                        continue
                     }
-
-                    currentFile = line.substringAfter("FILE_TO_MODIFY:").trim()
-                    contentBuilder.clear()
-                    inContent = true
-                } else if (inContent) {
-                    contentBuilder.append(line).append("\n")
                 }
-            }
 
-            if (currentFile != null && contentBuilder.isNotEmpty()) {
-                val fileName = File(currentFile).name
-                callback.onFileModifying(currentFile, fileName)
-
-                val rawContent = contentBuilder.toString().trim()
-                val cleanedContent = parser.cleanFileContent(rawContent)
-                val previousContent = previousFileStates[currentFile]
-
-                val writeResult = currentAgent?.writeFile(currentFile, cleanedContent)
-                    ?: FileWriteResult.Error("No agent initialized")
-
-                val success = writeResult is FileWriteResult.Success
-                currentAgent?.recordModification(currentFile, previousContent, cleanedContent, success)
-
-                callback.onFileModified(currentFile, fileName, success)
-                delay(300)
-
-                modifications.add(BaseFileModification(currentFile, cleanedContent, writeResult))
+                callback.onError(formatErrorMessage(e))
+                return
             }
         }
+    }
 
-        return modifications
+    private fun finish(
+        response: String,
+        changedFiles: Map<String, Boolean>,
+        callback: AIAgentCallback
+    ) {
+        if (changedFiles.isEmpty()) {
+            callback.onTextResponse(response, ModificationSummary(0, 0, 0, 0, 0, emptyList()))
+            return
+        }
+
+        val results =
+            changedFiles.map { (path, isNew) ->
+                ModificationResult(
+                    filePath = path,
+                    content = "",
+                    success = true,
+                    message = if (isNew) "Created" else "Modified",
+                    isNewFile = isNew,
+                )
+            }
+        callback.onSuccess(response, results, createSummary(results))
+    }
+
+    private fun handleEvent(
+        event: HarnessEvent,
+        callback: AIAgentCallback,
+        changedFiles: MutableMap<String, Boolean>
+    ) {
+        when (event) {
+            is HarnessEvent.AssistantText -> callback.onProcessing(event.text)
+            is HarnessEvent.Status -> callback.onProcessing(event.message)
+            is HarnessEvent.ToolStarted -> callback.onProcessing("→ ${event.summary}")
+            is HarnessEvent.ToolFinished ->
+                if (!event.ok) callback.onProcessing("⚠️ ${event.summary}")
+            is HarnessEvent.Failure -> callback.onProcessing("⚠️ ${event.message}")
+            is HarnessEvent.FileChanged -> {
+                changedFiles[event.path] = event.isNew
+                val name = File(event.path).name
+                callback.onFileModifying(event.path, name)
+                callback.onFileModified(event.path, name, true)
+            }
+        }
+    }
+
+    private fun isProviderSwitchError(error: Throwable): Boolean {
+        val message = (error.message ?: "").lowercase()
+        return message.contains("429") ||
+            message.contains("rate limit") ||
+            message.contains("quota") ||
+            message.contains("insufficient") ||
+            message.contains("invalid api key") ||
+            message.contains("401") ||
+            message.contains("403")
+    }
+
+    private fun getAlternativeProvider(exclude: String = currentProviderId): String? {
+        val availableProviders = AIAgentRegistry.getAvailableProviders()
+        return availableProviders.firstOrNull { it != exclude }
     }
 
     private fun formatErrorMessage(error: Throwable): String {
@@ -449,29 +353,6 @@ class AIAgentManager(private val context: Context) {
             modifiedFiles = modifiedFiles,
             fileDetails = fileDetails
         )
-    }
-
-    private fun captureCurrentFileStates(): Map<String, String> {
-        val states = mutableMapOf<String, String>()
-        val projectRoot = currentProjectRoot ?: return states
-
-        if (!projectRoot.exists()) return states
-
-        projectRoot.walkTopDown()
-            .filter { it.isFile }
-            .filter {
-                it.extension in listOf("kt", "java", "xml", "gradle", "kts") &&
-                !it.path.contains("/build/") &&
-                !it.path.contains("/.gradle/")
-            }
-            .forEach { file ->
-                try {
-                    states[file.absolutePath] = file.readText()
-                } catch (e: Exception) {
-                }
-            }
-
-        return states
     }
 
     fun undoLastModification(): Boolean {
