@@ -45,7 +45,7 @@ class AnthropicProvider(
 ) : ChatProvider {
 
   override val supportsTools: Boolean = true
-  override val supportsStreaming: Boolean = false
+  override val supportsStreaming: Boolean = true
 
   private val endpoint: String = baseUrl.trimEnd('/') + "/messages"
 
@@ -74,6 +74,141 @@ class AnthropicProvider(
 
       parse(fetchJson(providerName, request))
     }
+
+  /**
+   * Stream the turn from the Messages API SSE feed.
+   *
+   * Anthropic emits typed events; the ones that matter here are `content_block_start` (opens a text
+   * or `tool_use` block), `content_block_delta` (carries a `text_delta` or an `input_json_delta`
+   * for the tool arguments, which arrive as fragments we glue back together), and `message_stop`.
+   */
+  override suspend fun chatStream(
+    messages: List<ChatMessage>,
+    tools: List<ToolSpec>,
+    onToken: suspend (String) -> Unit,
+    onToolCall: suspend (ToolCall) -> Unit,
+    onDone: suspend (ChatTurn) -> Unit,
+  ) = withContext(Dispatchers.IO) {
+    val body = JSONObject()
+    body.put("model", model)
+    body.put("max_tokens", maxTokens)
+    body.put("stream", true)
+
+    val system = messages.filter { it.role == Role.SYSTEM }.joinToString("\n\n") { it.content ?: "" }
+    if (system.isNotBlank()) body.put("system", system)
+
+    body.put("messages", encodeMessages(messages))
+    if (tools.isNotEmpty()) {
+      body.put("tools", encodeTools(tools))
+    }
+
+    val request =
+      Request.Builder()
+        .url(endpoint)
+        .addHeader("Content-Type", "application/json")
+        .addHeader("x-api-key", apiKey)
+        .addHeader("anthropic-version", "2023-06-01")
+        .post(body.toString().toRequestBody(JSON_MEDIA))
+        .build()
+
+    val text = StringBuilder()
+    val blocks = sortedMapOf<Int, AnthropicBlock>()
+
+    try {
+      fetchSse(providerName, request) { payload ->
+        val root =
+          runCatching { JSONObject(payload) }.getOrNull() ?: return@fetchSse
+        root.optJSONObject("error")?.let {
+          throw RuntimeException("$providerName error: ${it.optString("message")}")
+        }
+        when (root.optString("type")) {
+          "content_block_start" -> {
+            val index = root.optInt("index")
+            val block = root.optJSONObject("content_block") ?: return@fetchSse
+            val slot = blocks.getOrPut(index) { AnthropicBlock() }
+            slot.type = block.optString("type", "")
+            if (slot.type == "tool_use") {
+              slot.id = block.optString("id", "")
+              slot.name = block.optString("name", "")
+            }
+          }
+          "content_block_delta" -> {
+            val index = root.optInt("index")
+            val delta = root.optJSONObject("delta") ?: return@fetchSse
+            val slot = blocks.getOrPut(index) { AnthropicBlock() }
+            when (delta.optString("type")) {
+              "text_delta" ->
+                delta.optString("text").takeIf { it.isNotEmpty() && it != "null" }?.let {
+                  text.append(it)
+                  onToken(it)
+                }
+              "input_json_delta" ->
+                delta.optString("partial_json").takeIf { it.isNotEmpty() && it != "null" }?.let {
+                  slot.arguments.append(it)
+                }
+            }
+          }
+          "message_stop" -> return@fetchSse
+        }
+      }
+    } catch (e: Exception) {
+      if (text.isEmpty() && blocks.isEmpty()) {
+        val turn = parse(fetchJson(providerName, requestWithoutStream(messages, tools)))
+        turn.text?.let { onToken(it) }
+        turn.toolCalls.forEach { onToolCall(it) }
+        onDone(turn)
+        return@withContext
+      }
+      throw e
+    }
+
+    val calls =
+      blocks.values
+        .filter { it.type == "tool_use" }
+        .mapIndexed { index, slot ->
+          ToolCall(
+            id = slot.id.ifBlank { "toolu_$index" },
+            name = slot.name,
+            arguments = slot.arguments.toString().ifBlank { "{}" },
+          )
+        }
+    calls.forEach { onToolCall(it) }
+
+    val content = text.toString().takeIf { it.isNotBlank() }
+    onDone(ChatTurn(content, calls))
+  }
+
+  private fun requestWithoutStream(
+    messages: List<ChatMessage>,
+    tools: List<ToolSpec>,
+  ): Request {
+    val body = JSONObject()
+    body.put("model", model)
+    body.put("max_tokens", maxTokens)
+
+    val system = messages.filter { it.role == Role.SYSTEM }.joinToString("\n\n") { it.content ?: "" }
+    if (system.isNotBlank()) body.put("system", system)
+
+    body.put("messages", encodeMessages(messages))
+    if (tools.isNotEmpty()) {
+      body.put("tools", encodeTools(tools))
+    }
+
+    return Request.Builder()
+      .url(endpoint)
+      .addHeader("Content-Type", "application/json")
+      .addHeader("x-api-key", apiKey)
+      .addHeader("anthropic-version", "2023-06-01")
+      .post(body.toString().toRequestBody(JSON_MEDIA))
+      .build()
+  }
+
+  private class AnthropicBlock {
+    var type: String = ""
+    var id: String = ""
+    var name: String = ""
+    val arguments = StringBuilder()
+  }
 
   private fun parse(text: String): ChatTurn {
     if (text.isBlank()) throw RuntimeException("$providerName returned an empty response")

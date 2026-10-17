@@ -167,6 +167,7 @@ class AIAgentManager(private val context: Context) {
 
         val fileWriter = AIFileWriter(context)
         val changedFiles = LinkedHashMap<String, Boolean>()
+        val streamedText = StringBuilder()
         val toolContext =
             ToolContext(
                 root,
@@ -176,7 +177,7 @@ class AIAgentManager(private val context: Context) {
                 registers,
                 providerFactory = ::createProvider,
             ) { event ->
-                handleEvent(event, callback, changedFiles)
+                handleEvent(event, callback, changedFiles, streamedText)
             }
         val registry = ToolRegistry().registerAll(defaultTools(toolContext))
 
@@ -245,13 +246,26 @@ class AIAgentManager(private val context: Context) {
     private fun handleEvent(
         event: HarnessEvent,
         callback: AIAgentCallback,
-        changedFiles: MutableMap<String, Boolean>
+        changedFiles: MutableMap<String, Boolean>,
+        streamedText: StringBuilder
     ) {
         when (event) {
-            is HarnessEvent.AssistantText -> callback.onProcessing(event.text)
-            is HarnessEvent.AssistantTextChunk -> callback.onProcessing(event.text)
-            is HarnessEvent.Status -> callback.onProcessing(event.message)
-            is HarnessEvent.ToolStarted -> callback.onProcessing("→ ${event.summary}")
+            is HarnessEvent.AssistantText -> {
+                streamedText.clear()
+                callback.onProcessing(event.text)
+            }
+            is HarnessEvent.AssistantTextChunk -> {
+                streamedText.append(event.text)
+                callback.onProcessing(streamedText.toString())
+            }
+            is HarnessEvent.Status -> {
+                streamedText.clear()
+                callback.onProcessing(event.message)
+            }
+            is HarnessEvent.ToolStarted -> {
+                streamedText.clear()
+                callback.onProcessing("→ ${event.summary}")
+            }
             is HarnessEvent.ToolFinished ->
                 if (!event.ok) callback.onProcessing("⚠️ ${event.summary}")
             is HarnessEvent.CommandOutput -> {

@@ -44,7 +44,7 @@ class GeminiProvider(
 ) : ChatProvider {
 
   override val supportsTools: Boolean = true
-  override val supportsStreaming: Boolean = false
+  override val supportsStreaming: Boolean = true
 
   private val root: String = baseUrl.trimEnd('/')
 
@@ -73,6 +73,116 @@ class GeminiProvider(
 
       parse(fetchJson(providerName, request))
     }
+
+  /**
+   * Stream the turn from `streamGenerateContent` (SSE).
+   *
+   * Gemini sends complete function calls in one piece — arguments are never split — so a tool call
+   * is emitted the moment its `functionCall` part arrives. Text arrives as `text` parts spread
+   * across chunks, each handed to [onToken] as it lands.
+   */
+  override suspend fun chatStream(
+    messages: List<ChatMessage>,
+    tools: List<ToolSpec>,
+    onToken: suspend (String) -> Unit,
+    onToolCall: suspend (ToolCall) -> Unit,
+    onDone: suspend (ChatTurn) -> Unit,
+  ) = withContext(Dispatchers.IO) {
+    val body = JSONObject()
+    body.put("contents", encodeContents(messages))
+
+    val system = messages.filter { it.role == Role.SYSTEM }.joinToString("\n\n") { it.content ?: "" }
+    if (system.isNotBlank()) {
+      body.put(
+        "systemInstruction",
+        JSONObject().put("parts", JSONArray().put(JSONObject().put("text", system)))
+      )
+    }
+    if (tools.isNotEmpty()) {
+      body.put("tools", encodeTools(tools))
+    }
+
+    val request =
+      Request.Builder()
+        .url("$root/models/$model:streamGenerateContent?alt=sse&key=$apiKey")
+        .addHeader("Content-Type", "application/json")
+        .post(body.toString().toRequestBody(JSON_MEDIA))
+        .build()
+
+    val text = StringBuilder()
+    val calls = mutableListOf<ToolCall>()
+    var index = 0
+
+    try {
+      fetchSse(providerName, request) { payload ->
+        val chunk =
+          runCatching { JSONObject(payload) }.getOrNull() ?: return@fetchSse
+        chunk.optJSONObject("error")?.let {
+          throw RuntimeException("$providerName error: ${it.optString("message")}")
+        }
+        val parts =
+          chunk.optJSONArray("candidates")?.optJSONObject(0)
+            ?.optJSONObject("content")?.optJSONArray("parts")
+            ?: return@fetchSse
+
+        for (i in 0 until parts.length()) {
+          val part = parts.optJSONObject(i) ?: continue
+          part.optString("text").takeIf { it.isNotEmpty() && it != "null" }?.let {
+            text.append(it)
+            onToken(it)
+          }
+          part.optJSONObject("functionCall")?.let { fc ->
+            val call =
+              ToolCall(
+                id = "call_${index}",
+                name = fc.optString("name", ""),
+                arguments = fc.optJSONObject("args")?.toString() ?: "{}",
+              )
+            index++
+            calls.add(call)
+            onToolCall(call)
+          }
+        }
+      }
+    } catch (e: Exception) {
+      if (text.isEmpty() && calls.isEmpty()) {
+        val turn = parse(fetchJson(providerName, buildNonStreamRequest(messages, tools)))
+        turn.text?.let { onToken(it) }
+        turn.toolCalls.forEach { onToolCall(it) }
+        onDone(turn)
+        return@withContext
+      }
+      throw e
+    }
+
+    val content = text.toString().takeIf { it.isNotBlank() }
+    onDone(ChatTurn(content, calls))
+  }
+
+  private fun buildNonStreamRequest(
+    messages: List<ChatMessage>,
+    tools: List<ToolSpec>,
+  ): Request {
+    val body = JSONObject()
+    body.put("contents", encodeContents(messages))
+
+    val system = messages.filter { it.role == Role.SYSTEM }.joinToString("\n\n") { it.content ?: "" }
+    if (system.isNotBlank()) {
+      body.put(
+        "systemInstruction",
+        JSONObject().put("parts", JSONArray().put(JSONObject().put("text", system)))
+      )
+    }
+    if (tools.isNotEmpty()) {
+      body.put("tools", encodeTools(tools))
+    }
+
+    return Request.Builder()
+      .url("$root/models/$model:generateContent?key=$apiKey")
+      .addHeader("Content-Type", "application/json")
+      .post(body.toString().toRequestBody(JSON_MEDIA))
+      .build()
+  }
 
   private fun parse(text: String): ChatTurn {
     if (text.isBlank()) throw RuntimeException("$providerName returned an empty response")

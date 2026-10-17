@@ -50,24 +50,125 @@ class OpenAiCompatProvider(
 
   override suspend fun chat(messages: List<ChatMessage>, tools: List<ToolSpec>): ChatTurn =
     withContext(Dispatchers.IO) {
-      val body = JSONObject()
-      body.put("model", model)
-      body.put("messages", encodeMessages(messages))
-      if (tools.isNotEmpty()) {
-        body.put("tools", encodeTools(tools))
-        body.put("tool_choice", "auto")
+      parse(fetchJson(providerName, buildRequest(messages, tools, stream = false)))
+    }
+
+  /**
+   * Stream the turn.
+   *
+   * Text arrives token by token through [onToken]. Tool calls arrive as fragments too: a call's
+   * arguments are split across many chunks, keyed by `index`, and are glued back together here
+   * before being handed to [onToolCall], so the caller never sees a partial JSON argument.
+   */
+  override suspend fun chatStream(
+    messages: List<ChatMessage>,
+    tools: List<ToolSpec>,
+    onToken: suspend (String) -> Unit,
+    onToolCall: suspend (ToolCall) -> Unit,
+    onDone: suspend (ChatTurn) -> Unit,
+  ) = withContext(Dispatchers.IO) {
+    val text = StringBuilder()
+    val calls = sortedMapOf<Int, StreamingCall>()
+
+    try {
+      streamLoop(messages, tools, text, calls, onToken)
+    } catch (e: Exception) {
+      // Some OpenAI-compatible servers (notably older LM Studio) reject `stream: true`, or close
+      // the connection mid-flight. When nothing has been emitted yet, retry without streaming so
+      // the turn still lands; otherwise let the failure surface, since a partial turn has already
+      // been shown and re-emitting the whole text would duplicate it.
+      if (text.isEmpty() && calls.isEmpty()) {
+        val turn = parse(fetchJson(providerName, buildRequest(messages, tools, stream = false)))
+        turn.text?.let { onToken(it) }
+        turn.toolCalls.forEach { onToolCall(it) }
+        onDone(turn)
+        return@withContext
+      }
+      throw e
+    }
+
+    val finishedCalls = calls.values.mapIndexed { index, slot ->
+      ToolCall(
+        id = slot.id.ifBlank { "call_$index" },
+        name = slot.name,
+        arguments = slot.arguments.toString().ifBlank { "{}" },
+      )
+    }
+    finishedCalls.forEach { onToolCall(it) }
+
+    val content = text.toString().takeIf { it.isNotBlank() }
+    onDone(ChatTurn(content, finishedCalls))
+  }
+
+  private suspend fun streamLoop(
+    messages: List<ChatMessage>,
+    tools: List<ToolSpec>,
+    text: StringBuilder,
+    calls: MutableMap<Int, StreamingCall>,
+    onToken: suspend (String) -> Unit,
+  ) {
+    fetchSse(providerName, buildRequest(messages, tools, stream = true)) { payload ->
+      val root =
+        runCatching { JSONObject(payload) }.getOrNull()
+          ?: return@fetchSse // Some servers send keep-alives that are not JSON.
+      root.optJSONObject("error")?.let {
+        throw RuntimeException("$providerName error: ${it.optString("message")}")
       }
 
-      val request =
-        Request.Builder()
-          .url(endpoint)
-          .addHeader("Content-Type", "application/json")
-          .apply { if (!apiKey.isNullOrBlank()) addHeader("Authorization", "Bearer $apiKey") }
-          .post(body.toString().toRequestBody(JSON_MEDIA))
-          .build()
+      val choice = root.optJSONArray("choices")?.optJSONObject(0) ?: return@fetchSse
+      val delta = choice.optJSONObject("delta") ?: return@fetchSse
 
-      parse(fetchJson(providerName, request))
+      delta.optString("content").takeIf { it.isNotEmpty() && it != "null" }?.let {
+        text.append(it)
+        onToken(it)
+      }
+
+      delta.optJSONArray("tool_calls")?.let { arr ->
+        for (i in 0 until arr.length()) {
+          val piece = arr.optJSONObject(i) ?: continue
+          val slot = calls.getOrPut(piece.optInt("index", i)) { StreamingCall() }
+          piece.optString("id").takeIf { it.isNotBlank() }?.let { slot.id = it }
+          piece.optString("type").takeIf { it.isNotBlank() }?.let { slot.type = it }
+          piece.optJSONObject("function")?.let { fn ->
+            fn.optString("name").takeIf { it.isNotBlank() }?.let { slot.name = it }
+            fn.optString("arguments").takeIf { it.isNotEmpty() && it != "null" }?.let {
+              slot.arguments.append(it)
+            }
+          }
+        }
+      }
     }
+  }
+
+  private fun buildRequest(
+    messages: List<ChatMessage>,
+    tools: List<ToolSpec>,
+    stream: Boolean,
+  ): Request {
+    val body = JSONObject()
+    body.put("model", model)
+    body.put("messages", encodeMessages(messages))
+    if (tools.isNotEmpty()) {
+      body.put("tools", encodeTools(tools))
+      body.put("tool_choice", "auto")
+    }
+    if (stream) body.put("stream", true)
+
+    return Request.Builder()
+      .url(endpoint)
+      .addHeader("Content-Type", "application/json")
+      .apply { if (!apiKey.isNullOrBlank()) addHeader("Authorization", "Bearer $apiKey") }
+      .post(body.toString().toRequestBody(JSON_MEDIA))
+      .build()
+  }
+
+  /** Accumulates one tool call while its fragments stream in. */
+  private class StreamingCall {
+    var id: String = ""
+    var type: String = ""
+    var name: String = ""
+    val arguments = StringBuilder()
+  }
 
   private fun parse(text: String): ChatTurn {
     if (text.isBlank()) throw RuntimeException("$providerName returned an empty response")

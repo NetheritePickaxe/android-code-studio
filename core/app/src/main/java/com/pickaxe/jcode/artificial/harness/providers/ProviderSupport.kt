@@ -48,3 +48,37 @@ internal fun fetchJson(providerName: String, request: Request): String {
     return text
   }
 }
+
+private const val SSE_DATA = "data:"
+private const val SSE_DONE = "[DONE]"
+
+/**
+ * Run a request and hand each `data:` payload of a Server-Sent Events response to [onPayload].
+ *
+ * Blank lines separate events and are skipped, comment and field lines (`:`, `event:`, `id:`) are
+ * ignored, and the stream ends on the `[DONE]` marker or on EOF. Payloads are raw JSON strings.
+ */
+internal suspend fun fetchSse(
+  providerName: String,
+  request: Request,
+  onPayload: suspend (String) -> Unit,
+) {
+  HTTP.newCall(request).execute().use { response ->
+    val body = response.body
+    if (!response.isSuccessful) {
+      val text = body?.string().orEmpty()
+      throw RuntimeException("$providerName error (HTTP ${response.code}): ${text.take(600)}")
+    }
+    val source =
+      body?.source()
+        ?: throw RuntimeException("$providerName returned an empty stream")
+
+    while (!source.exhausted()) {
+      val line = source.readUtf8Line() ?: break
+      if (!line.startsWith(SSE_DATA)) continue
+      val payload = line.substring(SSE_DATA.length).trim()
+      if (payload == SSE_DONE) break
+      if (payload.isNotEmpty()) onPayload(payload)
+    }
+  }
+}
