@@ -22,10 +22,13 @@ import com.pickaxe.jcode.artificial.harness.ToolContext
 
 /** The default IDE tool set exposed to the agent. */
 fun defaultTools(context: ToolContext): List<Tool> =
-  listOf(
-    ReadFileTool(context),
-    WriteFileTool(context),
-    EditFileTool(context),
-    ListFilesTool(context),
-    GrepTool(context),
-  )
+  buildList {
+    add(ReadFileTool(context))
+    add(WriteFileTool(context))
+    add(EditFileTool(context))
+    add(ListFilesTool(context))
+    add(GrepTool(context))
+    if (context.commands != null) {
+      add(RunCommandTool(context))
+    }
+  }

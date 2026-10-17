@@ -36,6 +36,7 @@ import com.pickaxe.jcode.artificial.harness.providers.ChatProviderFactory
 import com.pickaxe.jcode.artificial.permissions.AIPermissionManager
 import com.pickaxe.jcode.artificial.project.awareness.ProjectData
 import com.pickaxe.jcode.artificial.secrets.ApiKey
+import com.pickaxe.jcode.artificial.tools.TermuxCommandRunner
 import com.pickaxe.jcode.artificial.tools.defaultTools
 import com.pickaxe.jcode.utils.ProjectHelper
 import java.io.File
@@ -150,13 +151,12 @@ class AIAgentManager(private val context: Context) {
             callback.onError("No project is open.\n\nOpen a project before using the AI agent.")
             return
         }
-        permissionManager.setFileWriteEnabled(true)
         permissionManager.addAllowedDirectory(root.absolutePath)
 
         val fileWriter = AIFileWriter(context)
         val changedFiles = LinkedHashMap<String, Boolean>()
         val toolContext =
-            ToolContext(root, fileWriter, modifications) { event ->
+            ToolContext(root, fileWriter, modifications, TermuxCommandRunner(context)) { event ->
                 handleEvent(event, callback, changedFiles)
             }
         val registry = ToolRegistry().registerAll(defaultTools(toolContext))

@@ -25,6 +25,7 @@ class ToolContext(
   val projectRoot: File,
   val fileWriter: AIFileWriter,
   val modifications: ModificationLog = ModificationLog(),
+  val commands: CommandRunner? = null,
   private val onEvent: (HarnessEvent) -> Unit,
 ) {
   fun emit(event: HarnessEvent) = onEvent(event)

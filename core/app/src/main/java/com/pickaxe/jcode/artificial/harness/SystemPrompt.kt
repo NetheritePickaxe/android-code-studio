@@ -39,12 +39,17 @@ object SystemPrompt {
       appendLine("- Available tools: ${toolNames.joinToString(", ")}")
       appendLine("- Prefer a specialised tool over guessing. Read before you write.")
       appendLine("- Never invent paths: use paths the tools return.")
+      appendLine(
+        "- run_command runs shell commands inside the project (gradle, git, and the bundled " +
+          "toolchain). Each call gets a fresh shell, so combine steps with '&&' instead of 'cd'."
+      )
       appendLine()
       appendLine("# Method")
       appendLine("1. Understand the request and locate the relevant files (search first, then read).")
       appendLine("2. Make the smallest correct change, using edit_file for surgical edits.")
       appendLine("3. Re-read or search to confirm the change fits the surrounding code.")
-      appendLine("4. Stop when the request is satisfied.")
+      appendLine("4. When you changed build-affecting code, verify with the smallest build or test command.")
+      appendLine("5. Stop when the request is satisfied.")
       appendLine()
       appendLine("# Rules")
       appendLine("- Do not edit a file you have not read.")
