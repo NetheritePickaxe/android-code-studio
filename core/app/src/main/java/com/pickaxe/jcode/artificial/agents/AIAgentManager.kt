@@ -29,6 +29,7 @@ import com.pickaxe.jcode.artificial.file.AIFileWriter
 import com.pickaxe.jcode.artificial.file.FileWriteResult
 import com.pickaxe.jcode.artificial.harness.AgentHarness
 import com.pickaxe.jcode.artificial.harness.ChatMessage
+import com.pickaxe.jcode.artificial.harness.EditRegisters
 import com.pickaxe.jcode.artificial.harness.HarnessEvent
 import com.pickaxe.jcode.artificial.harness.ModificationLog
 import com.pickaxe.jcode.artificial.harness.ToolContext
@@ -56,6 +57,9 @@ class AIAgentManager(private val context: Context) {
     private var currentAgent: AIAgent? = null
     private val providerSwitchDialog = ProviderSwitchDialog(context)
     private val modifications = ModificationLog()
+
+    /** Cut lines that a later edit can paste, shared by every request of this session. */
+    private val registers = EditRegisters()
 
     /** Conversation kept across requests, so a follow-up keeps the earlier context. */
     private val conversation = mutableListOf<ChatMessage>()
@@ -142,6 +146,7 @@ class AIAgentManager(private val context: Context) {
         currentAgent?.setProjectData(projectTree)
         permissionManager.addAllowedDirectory(projectRoot.absolutePath)
         conversation.clear()
+        registers.clear()
 
         return true
     }
@@ -162,7 +167,7 @@ class AIAgentManager(private val context: Context) {
         val fileWriter = AIFileWriter(context)
         val changedFiles = LinkedHashMap<String, Boolean>()
         val toolContext =
-            ToolContext(root, fileWriter, modifications, TermuxCommandRunner(context)) { event ->
+            ToolContext(root, fileWriter, modifications, TermuxCommandRunner(context), registers) { event ->
                 handleEvent(event, callback, changedFiles)
             }
         val registry = ToolRegistry().registerAll(defaultTools(toolContext))

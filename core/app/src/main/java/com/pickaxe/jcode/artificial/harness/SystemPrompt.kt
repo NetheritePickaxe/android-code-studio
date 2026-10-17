@@ -51,6 +51,18 @@ object SystemPrompt {
       appendLine("4. When you changed build-affecting code, verify with the smallest build or test command.")
       appendLine("5. Stop when the request is satisfied.")
       appendLine()
+      appendLine("# Editing")
+      appendLine(
+        "- read_file prints a [path#TAG] header first. Copy that header into the edit_file patch for " +
+          "the file: the tag must match the content the patch was built from."
+      )
+      appendLine(
+        "- edit_file takes line anchored ops (PUT/CUT/REM/MV) against the line numbers of your last " +
+          "read; its description documents the syntax."
+      )
+      appendLine("- Never invent or increment a tag. A stale tag is refused: re-read the file and retry.")
+      appendLine("- Use write_file only for new files or complete rewrites.")
+      appendLine()
       appendLine("# Rules")
       appendLine("- Do not edit a file you have not read.")
       appendLine("- Do not rewrite a whole file when a targeted edit will do.")

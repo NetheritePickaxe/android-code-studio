@@ -53,7 +53,7 @@ class ListFilesTool(private val context: ToolContext) : Tool {
       .onEnter { it.isDirectory && !isSkipped(it) }
       .filter { it.isFile }
       .forEach { file ->
-        val relative = context.relative(file)
+        val relative = context.display(file)
         if (pattern == null || Glob.matches(pattern, relative)) {
           if (results.size < max) results.add(relative)
         }
@@ -107,7 +107,7 @@ class GrepTool(private val context: ToolContext) : Tool {
       .filter { it.isFile && it.length() < MAX_FILE_BYTES && !looksBinary(it) }
       .forEach { file ->
         if (matches.size >= max) return@forEach
-        val relative = context.relative(file)
+        val relative = context.display(file)
         if (include != null && !Glob.matches(include, relative)) return@forEach
 
         val lines = runCatching { file.readLines() }.getOrNull() ?: return@forEach

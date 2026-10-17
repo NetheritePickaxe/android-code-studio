@@ -18,6 +18,7 @@
 package com.pickaxe.jcode.artificial.harness
 
 import com.pickaxe.jcode.artificial.file.AIFileWriter
+import com.pickaxe.jcode.artificial.tools.hashline.PatchWorkspace
 import java.io.File
 
 /** Shared state handed to tools. */
@@ -26,12 +27,13 @@ class ToolContext(
   val fileWriter: AIFileWriter,
   val modifications: ModificationLog = ModificationLog(),
   val commands: CommandRunner? = null,
+  val registers: EditRegisters = EditRegisters(),
   private val onEvent: (HarnessEvent) -> Unit,
-) {
+) : PatchWorkspace {
   fun emit(event: HarnessEvent) = onEvent(event)
 
   /** Resolve `path` against the project root when it is relative. */
-  fun resolve(path: String): File {
+  override fun resolve(path: String): File {
     val file = File(path)
     return if (file.isAbsolute) file else File(projectRoot, path)
   }
@@ -44,7 +46,7 @@ class ToolContext(
   fun rootPath(): String = canonical(projectRoot)
 
   /** Path relative to the project root, for display. */
-  fun relative(file: File): String {
+  override fun display(file: File): String {
     val root = rootPath()
     val path = canonical(file)
     if (path == root) return "."
@@ -52,7 +54,7 @@ class ToolContext(
   }
 
   /** True when `file` lives inside the project root. */
-  fun withinProject(file: File): Boolean {
+  override fun withinProject(file: File): Boolean {
     val root = rootPath()
     val path = canonical(file)
     return path == root || path.startsWith("$root${File.separator}")
