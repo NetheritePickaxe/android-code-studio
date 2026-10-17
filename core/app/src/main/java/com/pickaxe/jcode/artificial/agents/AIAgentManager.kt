@@ -243,10 +243,16 @@ class AIAgentManager(private val context: Context) {
     ) {
         when (event) {
             is HarnessEvent.AssistantText -> callback.onProcessing(event.text)
+            is HarnessEvent.AssistantTextChunk -> callback.onProcessing(event.text)
             is HarnessEvent.Status -> callback.onProcessing(event.message)
             is HarnessEvent.ToolStarted -> callback.onProcessing("→ ${event.summary}")
             is HarnessEvent.ToolFinished ->
                 if (!event.ok) callback.onProcessing("⚠️ ${event.summary}")
+            is HarnessEvent.CommandOutput -> {
+                val summary =
+                    "ran: ${event.command.take(120)}${if (event.command.length > 120) "..." else ""} (exit ${event.exitCode})"
+                callback.onProcessing(if (event.timedOut) "⏱️ $summary [timed out]" else "✓ $summary")
+            }
             is HarnessEvent.Failure -> callback.onProcessing("⚠️ ${event.message}")
             is HarnessEvent.FileChanged -> {
                 changedFiles[event.path] = event.isNew

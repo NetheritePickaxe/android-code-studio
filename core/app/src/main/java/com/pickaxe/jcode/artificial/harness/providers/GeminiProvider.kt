@@ -44,6 +44,7 @@ class GeminiProvider(
 ) : ChatProvider {
 
   override val supportsTools: Boolean = true
+  override val supportsStreaming: Boolean = false
 
   private val root: String = baseUrl.trimEnd('/')
 

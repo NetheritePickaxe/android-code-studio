@@ -22,6 +22,9 @@ sealed class HarnessEvent {
   /** Assistant text produced during a turn. */
   data class AssistantText(val text: String) : HarnessEvent()
 
+  /** Assistant text chunk produced incrementally. */
+  data class AssistantTextChunk(val text: String) : HarnessEvent()
+
   /** A tool is about to run. */
   data class ToolStarted(val name: String, val summary: String) : HarnessEvent()
 
@@ -33,6 +36,15 @@ sealed class HarnessEvent {
 
   /** A progress line. */
   data class Status(val message: String) : HarnessEvent()
+
+  /** Command execution output (expandable log). */
+  data class CommandOutput(
+    val command: String,
+    val exitCode: Int,
+    val output: String,
+    val timedOut: Boolean,
+    val workingDir: String,
+  ) : HarnessEvent()
 
   /** A non-fatal failure worth surfacing. */
   data class Failure(val message: String) : HarnessEvent()

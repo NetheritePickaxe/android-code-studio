@@ -23,6 +23,31 @@ interface ChatProvider {
   val providerName: String
   val supportsTools: Boolean
 
+  /** True when [chatStream] delivers the turn incrementally rather than in one piece. */
+  val supportsStreaming: Boolean
+    get() = false
+
   /** Send the conversation and return the next assistant turn. */
   suspend fun chat(messages: List<ChatMessage>, tools: List<ToolSpec>): ChatTurn
+
+  /**
+   * Stream the next assistant turn.
+   *
+   * Text arrives through [onToken], tool calls through [onToolCall] and the finished turn
+   * through [onDone]. Providers that cannot stream override neither this nor
+   * [supportsStreaming]: they fall back to [chat] and emit the whole turn at once, so callers
+   * only ever see one shape of output.
+   */
+  suspend fun chatStream(
+    messages: List<ChatMessage>,
+    tools: List<ToolSpec>,
+    onToken: suspend (String) -> Unit,
+    onToolCall: suspend (ToolCall) -> Unit,
+    onDone: suspend (ChatTurn) -> Unit,
+  ) {
+    val turn = chat(messages, tools)
+    turn.text?.let { onToken(it) }
+    turn.toolCalls.forEach { onToolCall(it) }
+    onDone(turn)
+  }
 }

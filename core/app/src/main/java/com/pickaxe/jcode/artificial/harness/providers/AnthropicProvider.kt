@@ -45,6 +45,7 @@ class AnthropicProvider(
 ) : ChatProvider {
 
   override val supportsTools: Boolean = true
+  override val supportsStreaming: Boolean = false
 
   private val endpoint: String = baseUrl.trimEnd('/') + "/messages"
 

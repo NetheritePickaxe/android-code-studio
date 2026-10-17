@@ -44,6 +44,7 @@ class OpenAiCompatProvider(
 ) : ChatProvider {
 
   override val supportsTools: Boolean = true
+  override val supportsStreaming: Boolean = true
 
   private val endpoint: String = baseUrl.trimEnd('/') + "/chat/completions"
 

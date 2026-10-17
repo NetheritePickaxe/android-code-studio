@@ -71,6 +71,15 @@ class RunCommandTool(private val context: ToolContext) : Tool {
 
     val header = "exit code: ${result.exitCode}"
     val text = if (body.isBlank()) header else "$header\n\n$body"
+    context.emit(
+      HarnessEvent.CommandOutput(
+        command = command,
+        exitCode = result.exitCode,
+        output = result.output.trimEnd(),
+        timedOut = result.timedOut,
+        workingDir = context.projectRoot.absolutePath,
+      )
+    )
     return if (result.exitCode == 0) ToolResult.Ok(text) else ToolResult.Failure(text)
   }
 

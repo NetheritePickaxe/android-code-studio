@@ -47,25 +47,46 @@ class AgentHarness(
     messages.add(ChatMessage(Role.USER, userMessage))
 
     var step = 0
-    var lastText = ""
+    var lastText = StringBuilder()
     while (step < maxSteps) {
       step++
-      val turn = provider.chat(messages, registry.specs())
+      var finalText = ""
+      val finalCalls = mutableListOf<ToolCall>()
+      val streamedChunks = StringBuilder()
 
-      if (!turn.text.isNullOrBlank()) {
-        lastText = turn.text
-        context.emit(HarnessEvent.AssistantText(turn.text!!))
+      provider.chatStream(
+        messages = messages,
+        tools = registry.specs(),
+        onToken = { token ->
+          if (token.isNotEmpty()) {
+            streamedChunks.append(token)
+            lastText.append(token)
+            context.emit(HarnessEvent.AssistantTextChunk(token))
+          }
+        },
+        onToolCall = { call -> finalCalls.add(call) },
+        onDone = { turn ->
+          finalText = turn.text ?: streamedChunks.toString()
+          if (finalCalls.isEmpty() && !turn.toolCalls.isEmpty()) {
+            finalCalls.addAll(turn.toolCalls)
+          }
+        }
+      )
+
+      val assistantText = finalText.ifBlank { streamedChunks.toString() }
+      if (assistantText.isNotBlank() && streamedChunks.isEmpty()) {
+        context.emit(HarnessEvent.AssistantText(assistantText))
       }
 
-      if (turn.toolCalls.isEmpty()) {
-        messages.add(ChatMessage(Role.ASSISTANT, turn.text))
-        return turn.text.orEmpty()
+      if (finalCalls.isEmpty()) {
+        messages.add(ChatMessage(Role.ASSISTANT, assistantText))
+        return assistantText
       }
 
-      context.emit(HarnessEvent.Status("step $step: ${turn.toolCalls.size} tool call(s)"))
-      messages.add(ChatMessage(Role.ASSISTANT, turn.text, toolCalls = turn.toolCalls))
+      context.emit(HarnessEvent.Status("step $step: ${finalCalls.size} tool call(s)"))
+      messages.add(ChatMessage(Role.ASSISTANT, assistantText, toolCalls = finalCalls))
 
-      for (call in turn.toolCalls) {
+      for (call in finalCalls) {
         val output = runTool(call)
         messages.add(
           ChatMessage(
@@ -79,7 +100,7 @@ class AgentHarness(
     }
 
     context.emit(HarnessEvent.Status("Reached the $maxSteps step limit."))
-    return lastText.ifBlank { "Stopped: reached the step limit without a final answer." }
+    return lastText.toString().ifBlank { "Stopped: reached the step limit without a final answer." }
   }
 
   private suspend fun runTool(call: ToolCall): String {
