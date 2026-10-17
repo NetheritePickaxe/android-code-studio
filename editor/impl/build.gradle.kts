@@ -43,7 +43,6 @@ dependencies {
     
     api(libs.androidide.ts)
     api(libs.androidide.ts.java)
-    api(libs.androidide.ts.cpp)
     api(libs.androidide.ts.json)
     api(libs.androidide.ts.kotlin)
     api(libs.androidide.ts.log)

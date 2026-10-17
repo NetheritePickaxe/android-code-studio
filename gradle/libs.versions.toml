@@ -57,7 +57,6 @@ androidide-ts = { module = "io.github.mohammed-baqer-null:android-tree-sitter", 
 androidide-ts-java = { module = "io.github.mohammed-baqer-null:tree-sitter-java", version.ref = "tree-sitter" }
 androidide-ts-json = { module = "io.github.mohammed-baqer-null:tree-sitter-json", version.ref = "tree-sitter" }
 androidide-ts-kotlin = { module = "io.github.mohammed-baqer-null:tree-sitter-kotlin", version.ref = "tree-sitter" }
-androidide-ts-cpp = { module = "io.github.mohammed-baqer-null:tree-sitter-cpp", version.ref = "tree-sitter" }
 androidide-ts-log = { module = "io.github.mohammed-baqer-null:tree-sitter-log", version.ref = "tree-sitter" }
 androidide-ts-xml = { module = "io.github.mohammed-baqer-null:tree-sitter-xml", version.ref = "tree-sitter" }
 jcodings = { module = "org.jruby.jcodings:jcodings", version = "1.0.63" }

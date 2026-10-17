@@ -697,7 +697,6 @@ constructor(
     val lang =
         when (FileUtils.getFileExtension(file)) {
           "gradle" -> GroovyLanguage()
-          // "c", "h", "cc", "cpp", "cxx" -> CppLanguage()
           else -> EmptyLanguage()
         }
 

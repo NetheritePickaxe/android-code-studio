@@ -40,7 +40,6 @@ import com.pickaxe.jcode.editor.language.treesitter.KotlinLanguage
 import com.pickaxe.jcode.editor.language.treesitter.LogLanguage
 import com.pickaxe.jcode.editor.language.treesitter.TSLanguageRegistry
 import com.pickaxe.jcode.editor.language.treesitter.XMLLanguage
-import com.pickaxe.jcode.editor.language.treesitter.CppLang
 import com.pickaxe.jcode.editor.schemes.IDEColorSchemeProvider
 import com.pickaxe.jcode.editor.ui.IDEEditor
 import com.pickaxe.jcode.eventbus.events.editor.DocumentChangeEvent
@@ -134,10 +133,6 @@ open class EditorHandlerActivity : ProjectHandlerActivity(), IEditorHandler {
       TSLanguageRegistry.instance.register(JavaLanguage.TS_TYPE, JavaLanguage.FACTORY)
       TSLanguageRegistry.instance.register(KotlinLanguage.TS_TYPE_KT, KotlinLanguage.FACTORY)
       TSLanguageRegistry.instance.register(KotlinLanguage.TS_TYPE_KTS, KotlinLanguage.FACTORY)
-      TSLanguageRegistry.instance.register(CppLang.TS_TYPE_CPP, CppLang.FACTORY)
-      TSLanguageRegistry.instance.register(CppLang.TS_TYPE_C, CppLang.FACTORY)
-      TSLanguageRegistry.instance.register(CppLang.TS_TYPE_H, CppLang.FACTORY)
-      TSLanguageRegistry.instance.register(CppLang.TS_TYPE_HPP, CppLang.FACTORY)
       TSLanguageRegistry.instance.register(LogLanguage.TS_TYPE, LogLanguage.FACTORY)
       TSLanguageRegistry.instance.register(JsonLanguage.TS_TYPE, JsonLanguage.FACTORY)
       TSLanguageRegistry.instance.register(XMLLanguage.TS_TYPE, XMLLanguage.FACTORY)

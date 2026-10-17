@@ -64,7 +64,6 @@
   "editor": "@editor.json",
   "languages": [
     "@java.json",
-    "@clang.json",
     "@json.json", 
     "@kotlin.json",
     "@xml.json",
