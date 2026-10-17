@@ -12,7 +12,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with AndroidIDE.  If not, see <https://www.gnu.org/licenses/>.
+ *   along with AndroidIDE.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.pickaxe.jcode.lsp.java.visitors;
@@ -30,8 +30,8 @@ import openjdk.source.tree.MemberReferenceTree;
 import openjdk.source.tree.MemberSelectTree;
 import openjdk.source.tree.MethodTree;
 import openjdk.source.tree.NewClassTree;
+import openjdk.source.tree.TypeParameterTree;
 import openjdk.source.tree.VariableTree;
-import openjdk.source.util.TreePath;
 import openjdk.source.util.TreePathScanner;
 import openjdk.source.util.Trees;
 
@@ -55,12 +55,14 @@ public class FindRenameRanges extends TreePathScanner<Void, List<Location>> {
 
   @Override
   public Void visitClass(ClassTree t, List<Location> list) {
-    ClassTree push = surroundingClass;
+    final ClassTree push = surroundingClass;
     surroundingClass = t;
+
     final Name name = t.getSimpleName();
     if (name.length() > 0 && check()) {
-      list.add(FindHelper.location(task, getCurrentPath(), name));
+      add(list, name);
     }
+
     super.visitClass(t, list);
     surroundingClass = push;
     return null;
@@ -70,10 +72,11 @@ public class FindRenameRanges extends TreePathScanner<Void, List<Location>> {
   public Void visitMethod(MethodTree t, List<Location> list) {
     Name name = t.getName();
     if (name.contentEquals("<init>")) {
-      name = surroundingClass.getSimpleName();
+      name = surroundingClass != null ? surroundingClass.getSimpleName() : name;
     }
+
     if (check()) {
-      list.add(FindHelper.location(task, getCurrentPath(), name));
+      add(list, name);
     }
     return super.visitMethod(t, list);
   }
@@ -81,20 +84,65 @@ public class FindRenameRanges extends TreePathScanner<Void, List<Location>> {
   @Override
   public Void visitVariable(VariableTree t, List<Location> list) {
     if (check()) {
-      list.add(FindHelper.location(task, getCurrentPath(), t.getName()));
+      add(list, t.getName());
     }
     return super.visitVariable(t, list);
   }
 
   @Override
+  public Void visitTypeParameter(TypeParameterTree t, List<Location> list) {
+    if (check()) {
+      add(list, t.getName());
+    }
+    return super.visitTypeParameter(t, list);
+  }
+
+  @Override
   public Void visitNewClass(NewClassTree t, List<Location> list) {
     if (check()) {
-      final String name = newClassIdentifier(t);
-      if (!name.isEmpty()) {
-        list.add(FindHelper.location(task, getCurrentPath(), name));
-      }
+      add(list, newClassIdentifier(t));
     }
     return super.visitNewClass(t, list);
+  }
+
+  @Override
+  public Void visitMemberSelect(MemberSelectTree t, List<Location> list) {
+    if (check()) {
+      add(list, t.getIdentifier());
+    }
+    return super.visitMemberSelect(t, list);
+  }
+
+  @Override
+  public Void visitMemberReference(MemberReferenceTree t, List<Location> list) {
+    if (check()) {
+      add(list, t.getName());
+    }
+    return super.visitMemberReference(t, list);
+  }
+
+  @Override
+  public Void visitIdentifier(IdentifierTree t, List<Location> list) {
+    if (check()) {
+      add(list, t.getName());
+    }
+    return super.visitIdentifier(t, list);
+  }
+
+  private void add(List<Location> list, CharSequence name) {
+    if (name == null || name.length() == 0) {
+      return;
+    }
+
+    final Location location = FindHelper.location(task, getCurrentPath(), name);
+    // FindHelper returns a location with a negative offset if the name could not be found within
+    // the range of the leaf. Skip such locations instead of producing a broken edit.
+    if (location.getRange().getStart().getLine() < 0
+        || location.getRange().getStart().getColumn() < 0) {
+      return;
+    }
+
+    list.add(location);
   }
 
   private String newClassIdentifier(NewClassTree t) {
@@ -106,30 +154,6 @@ public class FindRenameRanges extends TreePathScanner<Void, List<Location>> {
       return ((MemberSelectTree) identifier).getIdentifier().toString();
     }
     return identifier.toString();
-  }
-
-  @Override
-  public Void visitMemberSelect(MemberSelectTree t, List<Location> list) {
-    if (check()) {
-      list.add(FindHelper.location(task, getCurrentPath(), t.getIdentifier()));
-    }
-    return super.visitMemberSelect(t, list);
-  }
-
-  @Override
-  public Void visitMemberReference(MemberReferenceTree t, List<Location> list) {
-    if (check()) {
-      list.add(FindHelper.location(task, getCurrentPath(), t.getName()));
-    }
-    return super.visitMemberReference(t, list);
-  }
-
-  @Override
-  public Void visitIdentifier(IdentifierTree t, List<Location> list) {
-    if (check()) {
-      list.add(FindHelper.location(task, getCurrentPath(), t.getName()));
-    }
-    return super.visitIdentifier(t, list);
   }
 
   private boolean check() {

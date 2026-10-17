@@ -124,7 +124,8 @@ public class RenameProvider extends CancelableServiceProvider {
                 return () -> NOT_SUPPORTED;
               }
 
-              if (NavigationHelper.isLocal(element)) {
+              if (NavigationHelper.isLocal(element)
+                  || element.getKind() == ElementKind.RESOURCE_VARIABLE) {
                 final var locations = findRenameRanges(task);
                 return () -> locations;
               }
