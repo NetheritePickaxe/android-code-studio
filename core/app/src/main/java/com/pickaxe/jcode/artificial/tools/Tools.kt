@@ -23,6 +23,8 @@ import com.pickaxe.jcode.artificial.harness.ToolContext
 /** The default IDE tool set exposed to the agent. */
 fun defaultTools(context: ToolContext): List<Tool> =
   buildList {
+    add(SkillTool(context))
+    add(SubagentTool(context))
     add(ReadFileTool(context))
     add(WriteFileTool(context))
     add(EditFileTool(context))

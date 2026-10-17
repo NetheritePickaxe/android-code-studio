@@ -28,9 +28,26 @@ class ToolContext(
   val modifications: ModificationLog = ModificationLog(),
   val commands: CommandRunner? = null,
   val registers: EditRegisters = EditRegisters(),
+  /** Builds a provider for a subagent: blank id means "whatever is configured". Null disables subagents. */
+  val providerFactory: ((String?) -> ChatProvider?)? = null,
+  /** How many subagent layers deep the context already is, so nesting can be capped. */
+  val subagentDepth: Int = 0,
   private val onEvent: (HarnessEvent) -> Unit,
 ) : PatchWorkspace {
   fun emit(event: HarnessEvent) = onEvent(event)
+
+  /** Same context for a child harness, one layer deeper. */
+  fun childContext(): ToolContext =
+    ToolContext(
+      projectRoot,
+      fileWriter,
+      modifications,
+      commands,
+      registers,
+      providerFactory,
+      subagentDepth + 1,
+      onEvent,
+    )
 
   /** Resolve `path` against the project root when it is relative. */
   override fun resolve(path: String): File {

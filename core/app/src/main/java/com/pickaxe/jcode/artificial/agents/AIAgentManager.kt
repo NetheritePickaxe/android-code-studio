@@ -29,6 +29,7 @@ import com.pickaxe.jcode.artificial.file.AIFileWriter
 import com.pickaxe.jcode.artificial.file.FileWriteResult
 import com.pickaxe.jcode.artificial.harness.AgentHarness
 import com.pickaxe.jcode.artificial.harness.ChatMessage
+import com.pickaxe.jcode.artificial.harness.ChatProvider
 import com.pickaxe.jcode.artificial.harness.EditRegisters
 import com.pickaxe.jcode.artificial.harness.HarnessEvent
 import com.pickaxe.jcode.artificial.harness.ModificationLog
@@ -167,7 +168,14 @@ class AIAgentManager(private val context: Context) {
         val fileWriter = AIFileWriter(context)
         val changedFiles = LinkedHashMap<String, Boolean>()
         val toolContext =
-            ToolContext(root, fileWriter, modifications, TermuxCommandRunner(context), registers) { event ->
+            ToolContext(
+                root,
+                fileWriter,
+                modifications,
+                TermuxCommandRunner(context),
+                registers,
+                providerFactory = ::createProvider,
+            ) { event ->
                 handleEvent(event, callback, changedFiles)
             }
         val registry = ToolRegistry().registerAll(defaultTools(toolContext))
@@ -176,9 +184,7 @@ class AIAgentManager(private val context: Context) {
         var providerSwitched = false
 
         while (true) {
-            val provider =
-                ChatProviderFactory.create(context, providerId)
-                    ?: ChatProviderFactory.create(context, Agents(context).getProvider())
+            val provider = createProvider(providerId)
             if (provider == null) {
                 callback.onError(
                     "No API key configured for '$providerId'.\n\n" +
@@ -261,6 +267,13 @@ class AIAgentManager(private val context: Context) {
                 callback.onFileModified(event.path, name, true)
             }
         }
+    }
+
+    /** A provider for the given id, falling back to whatever the app has configured. */
+    private fun createProvider(providerId: String?): ChatProvider? {
+        val id = providerId ?: currentProviderId
+        return ChatProviderFactory.create(context, id)
+            ?: ChatProviderFactory.create(context, Agents(context).getProvider())
     }
 
     private fun isProviderSwitchError(error: Throwable): Boolean {
