@@ -28,6 +28,7 @@ import com.pickaxe.jcode.artificial.dialogs.ProviderSwitchDialog
 import com.pickaxe.jcode.artificial.file.AIFileWriter
 import com.pickaxe.jcode.artificial.file.FileWriteResult
 import com.pickaxe.jcode.artificial.harness.AgentHarness
+import com.pickaxe.jcode.artificial.harness.ChatMessage
 import com.pickaxe.jcode.artificial.harness.HarnessEvent
 import com.pickaxe.jcode.artificial.harness.ModificationLog
 import com.pickaxe.jcode.artificial.harness.ToolContext
@@ -55,6 +56,9 @@ class AIAgentManager(private val context: Context) {
     private var currentAgent: AIAgent? = null
     private val providerSwitchDialog = ProviderSwitchDialog(context)
     private val modifications = ModificationLog()
+
+    /** Conversation kept across requests, so a follow-up keeps the earlier context. */
+    private val conversation = mutableListOf<ChatMessage>()
 
     init {
         Gemini.registerAgent()
@@ -137,12 +141,14 @@ class AIAgentManager(private val context: Context) {
 
         currentAgent?.setProjectData(projectTree)
         permissionManager.addAllowedDirectory(projectRoot.absolutePath)
+        conversation.clear()
 
         return true
     }
 
     fun clearConversation() {
         currentAgent?.clearConversation()
+        conversation.clear()
     }
 
     suspend fun executeRequest(userRequest: String, callback: AIAgentCallback) {
@@ -178,7 +184,7 @@ class AIAgentManager(private val context: Context) {
 
             try {
                 callback.onProcessing("Working…")
-                val harness = AgentHarness(provider, registry, toolContext)
+                val harness = AgentHarness(provider, registry, toolContext, conversation)
                 val response = withContext(Dispatchers.IO) { harness.run(userRequest) }
                 finish(response, changedFiles, callback)
                 return

@@ -30,11 +30,10 @@ class AgentHarness(
   private val provider: ChatProvider,
   private val registry: ToolRegistry,
   private val context: ToolContext,
+  private val messages: MutableList<ChatMessage> = mutableListOf(),
   private val openFile: String? = null,
   private val maxSteps: Int = 40,
 ) {
-  private val messages = mutableListOf<ChatMessage>()
-
   /** Drop the conversation, keeping the agent usable for a new task. */
   fun reset() = messages.clear()
 
