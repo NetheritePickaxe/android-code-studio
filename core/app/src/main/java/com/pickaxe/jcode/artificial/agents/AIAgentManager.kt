@@ -29,6 +29,7 @@ import com.pickaxe.jcode.artificial.file.AIFileWriter
 import com.pickaxe.jcode.artificial.file.FileWriteResult
 import com.pickaxe.jcode.artificial.harness.AgentHarness
 import com.pickaxe.jcode.artificial.harness.HarnessEvent
+import com.pickaxe.jcode.artificial.harness.ModificationLog
 import com.pickaxe.jcode.artificial.harness.ToolContext
 import com.pickaxe.jcode.artificial.harness.ToolRegistry
 import com.pickaxe.jcode.artificial.harness.providers.ChatProviderFactory
@@ -52,6 +53,7 @@ class AIAgentManager(private val context: Context) {
     private var currentProviderId: String = "gemini"
     private var currentAgent: AIAgent? = null
     private val providerSwitchDialog = ProviderSwitchDialog(context)
+    private val modifications = ModificationLog()
 
     init {
         Gemini.registerAgent()
@@ -154,7 +156,9 @@ class AIAgentManager(private val context: Context) {
         val fileWriter = AIFileWriter(context)
         val changedFiles = LinkedHashMap<String, Boolean>()
         val toolContext =
-            ToolContext(root, fileWriter) { event -> handleEvent(event, callback, changedFiles) }
+            ToolContext(root, fileWriter, modifications) { event ->
+                handleEvent(event, callback, changedFiles)
+            }
         val registry = ToolRegistry().registerAll(defaultTools(toolContext))
 
         var providerId = currentProviderId
@@ -356,7 +360,20 @@ class AIAgentManager(private val context: Context) {
     }
 
     fun undoLastModification(): Boolean {
-        return currentAgent?.undoLastModification() ?: false
+        val entry = modifications.removeLast() ?: return false
+        return try {
+            val file = File(entry.filePath)
+            if (entry.previousContent == null) {
+                file.delete()
+            } else {
+                file.parentFile?.mkdirs()
+                file.writeText(entry.previousContent)
+            }
+            true
+        } catch (e: Exception) {
+            android.util.Log.e("AIAgentManager", "Undo failed: ${e.message}", e)
+            false
+        }
     }
 
     fun reinitializeWithSelectedModel() {
@@ -372,16 +389,16 @@ class AIAgentManager(private val context: Context) {
     }
     
     fun getConversationHistory(): List<UnifiedModificationAttempt> {
-        return currentAgent?.getModificationHistory()?.map {
+        return modifications.all().map {
             UnifiedModificationAttempt(
                 timestamp = it.timestamp,
                 filePath = it.filePath,
                 previousContent = it.previousContent,
                 newContent = it.newContent,
-                attemptNumber = it.attemptNumber,
-                success = it.success
+                attemptNumber = 0,
+                success = true
             )
-        } ?: emptyList()
+        }
     }
 
     interface AIAgentCallback {

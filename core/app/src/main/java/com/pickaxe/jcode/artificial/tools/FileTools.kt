@@ -97,12 +97,14 @@ class WriteFileTool(private val context: ToolContext) : Tool {
     val file = context.resolve(path)
     if (!context.withinProject(file)) return ToolResult.Failure("Refusing to write outside the project: $path")
 
-    val isNew = !file.exists()
+    val exists = file.exists()
+    val previousContent = if (exists) runCatching { file.readText() }.getOrNull() else null
     return when (val res = context.fileWriter.writeFile(file.absolutePath, content, createBackup = true)) {
       is FileWriteResult.Success -> {
         val relative = context.relative(file)
-        context.emit(HarnessEvent.FileChanged(file.absolutePath, relative, isNew))
-        ToolResult.Ok((if (isNew) "Created " else "Updated ") + relative + " (" + content.length + " chars)")
+        context.modifications.record(file.absolutePath, previousContent, content)
+        context.emit(HarnessEvent.FileChanged(file.absolutePath, relative, !exists))
+        ToolResult.Ok((if (!exists) "Created " else "Updated ") + relative + " (" + content.length + " chars)")
       }
       is FileWriteResult.PermissionDenied -> ToolResult.Failure("Write denied: ${res.reason}")
       is FileWriteResult.Error -> ToolResult.Failure(res.message)
@@ -160,6 +162,7 @@ class EditFileTool(private val context: ToolContext) : Tool {
     return when (val res = context.fileWriter.writeFile(file.absolutePath, updated, createBackup = true)) {
       is FileWriteResult.Success -> {
         val relative = context.relative(file)
+        context.modifications.record(file.absolutePath, content, updated)
         context.emit(HarnessEvent.FileChanged(file.absolutePath, relative, false))
         ToolResult.Ok("Edited $relative ($count replacement" + (if (count == 1) ")" else "s)"))
       }

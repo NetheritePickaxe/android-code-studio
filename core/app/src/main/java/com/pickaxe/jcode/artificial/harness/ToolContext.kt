@@ -24,6 +24,7 @@ import java.io.File
 class ToolContext(
   val projectRoot: File,
   val fileWriter: AIFileWriter,
+  val modifications: ModificationLog = ModificationLog(),
   private val onEvent: (HarnessEvent) -> Unit,
 ) {
   fun emit(event: HarnessEvent) = onEvent(event)
