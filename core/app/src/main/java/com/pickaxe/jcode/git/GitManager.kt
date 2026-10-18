@@ -35,6 +35,7 @@ import org.eclipse.jgit.attributes.AttributesNodeProvider
 import java.io.File
 import java.io.FileInputStream
 import com.pickaxe.jcode.utils.*
+import com.pickaxe.jcode.utils.PreferencesManager
 
 /**
  * @author Mohammed-baqer-null @ https://github.com/Mohammed-baqer-null
@@ -46,6 +47,10 @@ class GitManager(private val projectPath: String) {
     private var repository: Repository? = null
     private var ignoreNode: IgnoreNode? = null
     private var attributesNode: AttributesNode? = null
+
+    /** Message of the last failed operation, surfaced to the UI. */
+    var lastError: String? = null
+        private set
     
     fun initRepository(initialBranchName: String = "main"): Boolean {
         return try {
@@ -431,7 +436,13 @@ class GitManager(private val projectPath: String) {
         return remotes
     }
     
-    fun push(remoteName: String = "origin", branchName: String? = null, username: String? = null, password: String? = null): PushResult {
+    fun push(
+        remoteName: String = "origin",
+        branchName: String? = null,
+        username: String? = null,
+        password: String? = null,
+        prefs: PreferencesManager? = null
+    ): PushResult {
         return try {
             val pushCommand = git?.push()
             pushCommand?.setRemote(remoteName)
@@ -440,12 +451,12 @@ class GitManager(private val projectPath: String) {
                 pushCommand?.setRefSpecs(org.eclipse.jgit.transport.RefSpec("refs/heads/$branchName:refs/heads/$branchName"))
             }
             
-            pushCommand?.setCredentialsProvider(
-                org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider(
-                    username ?: "", 
-                    password ?: ""
-                )
-            )
+            credentialProviderFor(prefs, username, password)?.let { pushCommand?.setCredentialsProvider(it) }
+            if (prefs != null) {
+                GitConfigHelper.configureProxy(prefs)
+                GitSshSessionFactory.install(prefs)
+                pushCommand?.let { GitConfigHelper.setTimeouts(it, prefs) }
+            }
             
             val results = pushCommand?.call()
             val success = results?.all { result ->
@@ -462,7 +473,13 @@ class GitManager(private val projectPath: String) {
         }
     }
     
-    fun pull(remoteName: String = "origin", branchName: String? = null, username: String? = null, password: String? = null): PullResult {
+    fun pull(
+        remoteName: String = "origin",
+        branchName: String? = null,
+        username: String? = null,
+        password: String? = null,
+        prefs: PreferencesManager? = null
+    ): PullResult {
         return try {
             val pullCommand = git?.pull()
             pullCommand?.setRemote(remoteName)
@@ -471,12 +488,12 @@ class GitManager(private val projectPath: String) {
                 pullCommand?.setRemoteBranchName(branchName)
             }
             
-            pullCommand?.setCredentialsProvider(
-                org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider(
-                    username ?: "", 
-                    password ?: ""
-                )
-            )
+            credentialProviderFor(prefs, username, password)?.let { pullCommand?.setCredentialsProvider(it) }
+            if (prefs != null) {
+                GitConfigHelper.configureProxy(prefs)
+                GitSshSessionFactory.install(prefs)
+                pullCommand?.let { GitConfigHelper.setTimeouts(it, prefs) }
+            }
             
             val result = pullCommand?.call()
             val success = result?.isSuccessful ?: false
@@ -488,17 +505,22 @@ class GitManager(private val projectPath: String) {
         }
     }
     
-    fun fetch(remoteName: String = "origin", username: String? = null, password: String? = null): FetchResult {
+    fun fetch(
+        remoteName: String = "origin",
+        username: String? = null,
+        password: String? = null,
+        prefs: PreferencesManager? = null
+    ): FetchResult {
         return try {
             val fetchCommand = git?.fetch()
             fetchCommand?.setRemote(remoteName)
             
-            fetchCommand?.setCredentialsProvider(
-                org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider(
-                    username ?: "", 
-                    password ?: ""
-                )
-            )
+            credentialProviderFor(prefs, username, password)?.let { fetchCommand?.setCredentialsProvider(it) }
+            if (prefs != null) {
+                GitConfigHelper.configureProxy(prefs)
+                GitSshSessionFactory.install(prefs)
+                fetchCommand?.let { GitConfigHelper.setTimeouts(it, prefs) }
+            }
             
             fetchCommand?.call()
             FetchResult(true, "Fetch successful")
@@ -508,27 +530,153 @@ class GitManager(private val projectPath: String) {
         }
     }
     
-    fun clone(remoteUrl: String, localPath: String, username: String? = null, password: String? = null): Boolean {
+    /**
+     * Builds a CredentialsProvider: explicit args win, else fall back to globally
+     * stored credentials so private repos work without re-entering a token. When
+     * nothing is available we return null so JGit attempts anonymous access (an
+     * empty Basic auth header can break public repos on strict servers).
+     */
+    private fun credentialProviderFor(
+        prefs: PreferencesManager?,
+        username: String?,
+        password: String?
+    ): org.eclipse.jgit.transport.CredentialsProvider? {
+        if (!username.isNullOrBlank() || !password.isNullOrBlank()) {
+            return org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider(
+                username ?: "",
+                password ?: ""
+            )
+        }
+        return prefs?.let { GitConfigHelper.credentialsProvider(it) }
+    }
+    
+    fun clone(
+        remoteUrl: String,
+        localPath: String,
+        username: String? = null,
+        password: String? = null,
+        prefs: PreferencesManager? = null
+    ): Boolean {
+        lastError = null
+        val url = GitUrlUtils.normalizeCloneUrl(remoteUrl)
+        if (!GitUrlUtils.isValidRemoteUrl(url)) {
+            lastError = "Unsupported repository URL: $remoteUrl"
+            return false
+        }
         return try {
-            val cloneCommand = Git.cloneRepository()
-            cloneCommand.setURI(remoteUrl)
-            cloneCommand.setDirectory(File(localPath))
-            
+            val targetDir = File(localPath)
+            if (targetDir.exists() && targetDir.listFiles()?.isNotEmpty() == true) {
+                cloneIntoNonEmptyDir(url, targetDir, username, password, prefs)
+            } else {
+                targetDir.mkdirs()
+                git = buildCloneCommand(url, targetDir, username, password, prefs).call()
+                repository = git?.repository
+                loadGitIgnore()
+                loadGitAttributes()
+                true
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            lastError = e.message ?: e.javaClass.simpleName
+            false
+        }
+    }
+
+    /** Builds a clone command with the configured credentials/proxy/SSH. */
+    private fun buildCloneCommand(
+        url: String,
+        directory: File,
+        username: String?,
+        password: String?,
+        prefs: PreferencesManager?
+    ): org.eclipse.jgit.api.CloneCommand {
+        val cloneCommand = Git.cloneRepository()
+        var effectiveUrl = url
+        prefs?.let {
+            effectiveUrl = GitConfigHelper.applyGitHubMirror(effectiveUrl, it)
+        }
+        cloneCommand.setURI(effectiveUrl)
+        cloneCommand.setDirectory(directory)
+
+        if (prefs != null) {
+            GitConfigHelper.credentialsProvider(prefs)?.let { provider ->
+                cloneCommand.setCredentialsProvider(provider)
+            }
+            GitConfigHelper.configureProxy(prefs)
+            GitSshSessionFactory.install(prefs)
+            GitConfigHelper.setTimeouts(cloneCommand, prefs)
+        } else if (!username.isNullOrBlank() || !password.isNullOrBlank()) {
             cloneCommand.setCredentialsProvider(
                 org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider(
-                    username ?: "", 
+                    username ?: "",
                     password ?: ""
                 )
             )
-            
-            git = cloneCommand.call()
-            repository = git?.repository
-            loadGitIgnore()
-            loadGitAttributes()
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
+        }
+        return cloneCommand
+    }
+
+    /**
+     * Clones into a directory that already holds files (the sidebar clones into
+     * the currently open project). JGit refuses a non-empty destination, so we
+     * clone into a sibling temp directory, move the resulting `.git` into place
+     * and copy across any files that do not yet exist, leaving the project's own
+     * files untouched.
+     */
+    private fun cloneIntoNonEmptyDir(
+        url: String,
+        targetDir: File,
+        username: String?,
+        password: String?,
+        prefs: PreferencesManager?
+    ): Boolean {
+        if (File(targetDir, ".git").exists()) {
+            lastError = "The project already contains a Git repository"
+            return false
+        }
+        val parent = targetDir.parentFile ?: targetDir
+        val tempDir = File(parent, ".clone-${System.currentTimeMillis()}")
+        if (!tempDir.mkdirs()) {
+            lastError = "Cannot create a temporary clone directory"
+            return false
+        }
+        try {
+            val cloned = buildCloneCommand(url, tempDir, username, password, prefs).call()
+            cloned.close()
+
+            val tempGit = File(tempDir, ".git")
+            if (!tempGit.exists()) {
+                lastError = "Cloned repository has no .git directory"
+                return false
+            }
+            if (!tempGit.renameTo(File(targetDir, ".git"))) {
+                lastError = "Failed to move the cloned repository into the project"
+                return false
+            }
+
+            copyMissingFiles(tempDir, targetDir)
+        } finally {
+            tempDir.deleteRecursively()
+        }
+
+        git = Git.open(targetDir)
+        repository = git?.repository
+        loadGitIgnore()
+        loadGitAttributes()
+        return true
+    }
+
+    /** Copies files from [from] to [to], skipping paths that already exist. */
+    private fun copyMissingFiles(from: File, to: File) {
+        from.listFiles()?.forEach { source ->
+            val destination = File(to, source.name)
+            if (source.isDirectory) {
+                if (destination.mkdirs() || destination.isDirectory) {
+                    copyMissingFiles(source, destination)
+                }
+            } else if (!destination.exists()) {
+                runCatching { source.copyTo(destination, overwrite = false) }
+            }
         }
     }
     

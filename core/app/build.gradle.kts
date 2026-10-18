@@ -229,6 +229,7 @@ dependencies {
 
   // Git
   implementation(libs.git.jgit)
+  implementation(libs.git.jsch)
 
   // AndroidX
   implementation(libs.androidx.splashscreen)

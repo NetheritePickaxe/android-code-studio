@@ -30,6 +30,7 @@ import com.pickaxe.jcode.R
 import com.pickaxe.jcode.adapters.FileChangesAdapter
 import com.pickaxe.jcode.databinding.FragmentChangesBinding
 import com.pickaxe.jcode.viewmodel.GitViewModel
+import com.pickaxe.jcode.viewmodel.GitViewModelFactory
 import com.pickaxe.jcode.utils.*
 
 /**
@@ -41,7 +42,7 @@ class ChangesFragment : Fragment() {
     private var _binding: FragmentChangesBinding? = null
     private val binding get() = _binding!!
     
-    private val viewModel: GitViewModel by activityViewModels()
+    private val viewModel: GitViewModel by activityViewModels { GitViewModelFactory(requireContext()) }
     private lateinit var adapter: FileChangesAdapter
 
     private lateinit var progressDialog: ProgressDialogHelper

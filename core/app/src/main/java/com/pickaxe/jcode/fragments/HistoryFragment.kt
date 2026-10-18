@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.pickaxe.jcode.adapters.CommitHistoryAdapter
 import com.pickaxe.jcode.databinding.FragmentHistoryBinding
 import com.pickaxe.jcode.viewmodel.GitViewModel
+import com.pickaxe.jcode.viewmodel.GitViewModelFactory
 
 /**
  * @author Mohammed-baqer-null @ https://github.com/Mohammed-baqer-null
@@ -36,7 +37,7 @@ class HistoryFragment : Fragment() {
     private var _binding: FragmentHistoryBinding? = null
     private val binding get() = _binding!!
     
-    private val viewModel: GitViewModel by activityViewModels()
+    private val viewModel: GitViewModel by activityViewModels { GitViewModelFactory(requireContext()) }
     private lateinit var adapter: CommitHistoryAdapter
     
     override fun onCreateView(

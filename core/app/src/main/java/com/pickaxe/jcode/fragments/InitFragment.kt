@@ -22,6 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.pickaxe.jcode.utils.PreferencesManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
@@ -29,6 +30,7 @@ import com.pickaxe.jcode.R
 import com.pickaxe.jcode.configurations.GCProperties
 import com.pickaxe.jcode.databinding.FragmentInitBinding
 import com.pickaxe.jcode.viewmodel.GitViewModel
+import com.pickaxe.jcode.viewmodel.GitViewModelFactory
 import com.pickaxe.jcode.viewmodel.RepositoryStatus
 import com.pickaxe.jcode.utils.*
 import java.io.File
@@ -42,7 +44,8 @@ class InitFragment : Fragment() {
     private var _binding: FragmentInitBinding? = null
     private val binding get() = _binding!!
     
-    private val viewModel: GitViewModel by activityViewModels()
+    private val viewModel: GitViewModel by activityViewModels { GitViewModelFactory(requireContext()) }
+    private val prefsManager: PreferencesManager by lazy { PreferencesManager(requireContext()) }
     private lateinit var progressDialog: ProgressDialogHelper
     
     override fun onCreateView(
@@ -84,9 +87,15 @@ class InitFragment : Fragment() {
                     // Repository is ready, MainActivity will handle navigation
                 }
                 RepositoryStatus.ERROR -> {
-                    Snackbar.make(binding.root, "Failed to initialize repository", Snackbar.LENGTH_LONG).show()
+                    // The concrete failure reason is reported via operationResult.
                 }
                 else -> {}
+            }
+        }
+
+        viewModel.operationResult.observe(viewLifecycleOwner) { result ->
+            if (!result.success) {
+                Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
             }
         }
         
@@ -172,7 +181,10 @@ class InitFragment : Fragment() {
                 val password = editTextPassword.text.toString().takeIf { it.isNotBlank() }
                 
                 if (url.isNotBlank()) {
-                    viewModel.cloneRepository(url, GCProperties.userProject, username, password)
+                    if (username != null && password != null && prefsManager.shouldRememberCredentials()) {
+                        prefsManager.saveCredentials(username, password)
+                    }
+                    viewModel.cloneRepository(url, GCProperties.userProject, username, password, prefsManager)
                 } else {
                     Snackbar.make(binding.root, "URL cannot be empty", Snackbar.LENGTH_SHORT).show()
                 }

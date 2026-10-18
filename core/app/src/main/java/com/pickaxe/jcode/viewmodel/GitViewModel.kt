@@ -36,9 +36,10 @@ import com.pickaxe.jcode.utils.*
  * @author Mohammed-baqer-null @ https://github.com/Mohammed-baqer-null
  */
 
-class GitViewModel : ViewModel() {
+class GitViewModel(private val context: android.content.Context) : ViewModel() {
     
     private var gitManager: GitManager? = null
+    private val gitPrefs by lazy { PreferencesManager(context.applicationContext) }
     
     private val _changedFiles = MutableLiveData<List<FileChange>>()
     val changedFiles: LiveData<List<FileChange>> = _changedFiles
@@ -201,7 +202,7 @@ class GitViewModel : ViewModel() {
         viewModelScope.launch {
             _progressMessage.postValue("Fetching from remote...")
             withContext(Dispatchers.IO) {
-                val result = gitManager?.fetch(remoteName, username, password)
+                val result = gitManager?.fetch(remoteName, username, password, gitPrefs)
                     ?: FetchResult(false, "Git manager not initialized")
                 _pushPullResult.postValue(
                     RemoteOperationResult(
@@ -314,7 +315,7 @@ class GitViewModel : ViewModel() {
         viewModelScope.launch {
             _progressMessage.postValue("Pushing to remote...")
             withContext(Dispatchers.IO) {
-                val result = gitManager?.push(remoteName, branchName, username, password) 
+                val result = gitManager?.push(remoteName, branchName, username, password, gitPrefs) 
                     ?: PushResult(false, "Git manager not initialized")
                 _pushPullResult.postValue(
                     RemoteOperationResult(
@@ -332,7 +333,7 @@ class GitViewModel : ViewModel() {
         viewModelScope.launch {
             _progressMessage.postValue("Pulling from remote...")
             withContext(Dispatchers.IO) {
-                val result = gitManager?.pull(remoteName, branchName, username, password)
+                val result = gitManager?.pull(remoteName, branchName, username, password, gitPrefs)
                     ?: PullResult(false, "Git manager not initialized")
                 _pushPullResult.postValue(
                     RemoteOperationResult(
@@ -349,12 +350,12 @@ class GitViewModel : ViewModel() {
         }
     }
     
-    fun cloneRepository(remoteUrl: String, localPath: String, username: String? = null, password: String? = null) {
+    fun cloneRepository(remoteUrl: String, localPath: String, username: String? = null, password: String? = null, prefs: PreferencesManager? = null) {
         viewModelScope.launch {
             _progressMessage.postValue("Cloning repository...")
             withContext(Dispatchers.IO) {
                 gitManager = GitManager(localPath)
-                val success = gitManager?.clone(remoteUrl, localPath, username, password) ?: false
+                val success = gitManager?.clone(remoteUrl, localPath, username, password, prefs) ?: false
                 if (success) {
                     _repositoryStatus.postValue(RepositoryStatus.INITIALIZED)
                     refreshAll()
@@ -363,7 +364,7 @@ class GitViewModel : ViewModel() {
                     _operationResult.postValue(
                         OperationResult(
                             success = false,
-                            message = "Failed to clone repository"
+                            message = gitManager?.lastError ?: "Failed to clone repository"
                         )
                     )
                 }

@@ -12,6 +12,7 @@ import com.pickaxe.jcode.R
 import com.pickaxe.jcode.configurations.GCProperties
 import com.pickaxe.jcode.databinding.FragmentGitClientBinding
 import com.pickaxe.jcode.viewmodel.GitViewModel
+import com.pickaxe.jcode.viewmodel.GitViewModelFactory
 import com.pickaxe.jcode.viewmodel.RepositoryStatus
 import com.pickaxe.jcode.fragments.*
 import com.pickaxe.jcode.utils.EditorSidebarActions
@@ -21,7 +22,7 @@ class GitClientFragment : Fragment() {
     private var _binding: FragmentGitClientBinding? = null
     private val binding get() = _binding!!
     
-    private val viewModel: GitViewModel by activityViewModels()
+    private val viewModel: GitViewModel by activityViewModels { GitViewModelFactory(requireContext()) }
     
     private var hasInitialized = false
     

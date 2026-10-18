@@ -43,6 +43,9 @@ import com.pickaxe.jcode.app.BaseIDEActivity
 import com.pickaxe.jcode.common.databinding.LayoutDialogProgressBinding
 import com.pickaxe.jcode.databinding.BottomsheetGitCloneBinding
 import com.pickaxe.jcode.databinding.FragmentMainBinding
+import com.pickaxe.jcode.git.GitConfigHelper
+import com.pickaxe.jcode.git.GitSshSessionFactory
+import com.pickaxe.jcode.git.GitUrlUtils
 import com.pickaxe.jcode.models.MainScreenAction
 import com.pickaxe.jcode.resources.R.string
 import com.pickaxe.jcode.tasks.runOnUiThread
@@ -50,6 +53,7 @@ import com.pickaxe.jcode.templates.preferences.WizardPreferences
 import com.pickaxe.jcode.utils.DialogUtils
 import com.pickaxe.jcode.utils.Environment
 import com.pickaxe.jcode.utils.GeneralFileUtils
+import com.pickaxe.jcode.utils.PreferencesManager
 import com.pickaxe.jcode.utils.flashError
 import com.pickaxe.jcode.utils.flashSuccess
 import com.pickaxe.jcode.viewmodel.MainViewModel
@@ -65,6 +69,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ProgressMonitor
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.slf4j.LoggerFactory
 
 /*
@@ -610,6 +615,9 @@ class MainFragment : BaseFragment() {
       val branch = sheetBinding.etBranch.text?.toString()?.takeIf { it.isNotBlank() }
       val customOptions = sheetBinding.etCustomOptions.text?.toString()
 
+      val username = sheetBinding.etUsername.text?.toString()?.takeIf { it.isNotBlank() }
+      val password = sheetBinding.etPassword.text?.toString()?.takeIf { it.isNotBlank() }
+
       val selectedOptions = mutableListOf<String>()
       for (i in 0 until sheetBinding.chipGroup.childCount) {
         val chip = sheetBinding.chipGroup.getChildAt(i) as? Chip
@@ -623,7 +631,7 @@ class MainFragment : BaseFragment() {
       }
 
       bottomSheet.dismiss()
-      doClone(url, branch, selectedOptions)
+      doClone(url, branch, selectedOptions, username, password)
     }
 
     sheetBinding.btnCancel.setOnClickListener { bottomSheet.dismiss() }
@@ -632,17 +640,33 @@ class MainFragment : BaseFragment() {
     bottomSheet.show()
   }
 
-  private fun doClone(repo: String?, branch: String? = null, options: List<String> = emptyList()) {
+  private fun doClone(
+      repo: String?,
+      branch: String? = null,
+      options: List<String> = emptyList(),
+      username: String? = null,
+      password: String? = null,
+  ) {
     if (repo.isNullOrBlank()) {
       log.warn("Unable to clone repo. Invalid repo URL : {}'", repo)
       flashError(string.git_clone_invalid_url)
       return
     }
 
-    var url = repo.trim()
-    if (!url.endsWith(".git")) {
-      url += ".git"
+    val url = GitUrlUtils.normalizeCloneUrl(repo)
+
+    if (!GitUrlUtils.isValidRemoteUrl(url)) {
+      log.warn("Unable to clone repo. Unsupported repo URL : {}", repo)
+      flashError(string.git_clone_invalid_url)
+      return
     }
+
+    val prefs = PreferencesManager(requireContext())
+    // The mirror only rewrites the transport URL; the local directory name and
+    // the URL shown to the user come from the original remote.
+    val cloneUrl = GitConfigHelper.applyGitHubMirror(url, prefs)
+    val repoName = GitUrlUtils.deriveRepoName(url)
+    val targetDir = GitUrlUtils.uniqueTargetDir(Environment.PROJECTS_DIR, repoName)
 
     val builder = DialogUtils.newMaterialDialogBuilder(requireContext())
     val binding = LayoutDialogProgressBinding.inflate(layoutInflater)
@@ -654,11 +678,12 @@ class MainFragment : BaseFragment() {
     builder.setView(binding.root)
     builder.setCancelable(false)
 
-    val repoName = url.substringAfterLast('/').substringBeforeLast(".git")
-    val targetDir = File(Environment.PROJECTS_DIR, repoName)
-
     val progress = GitCloneProgressMonitor(binding.progress, binding.message)
     val coroutineScope = (activity as? BaseIDEActivity?)?.activityScope ?: viewLifecycleScope
+
+    if (!username.isNullOrBlank() && !password.isNullOrBlank() && prefs.shouldRememberCredentials()) {
+      prefs.saveCredentials(username, password)
+    }
 
     var getDialog: Function0<AlertDialog?>? = null
 
@@ -668,9 +693,21 @@ class MainFragment : BaseFragment() {
               try {
                 val cloneCommand =
                     Git.cloneRepository()
-                        .setURI(url)
+                        .setURI(cloneUrl)
                         .setDirectory(targetDir)
                         .setProgressMonitor(progress)
+
+                if (!username.isNullOrBlank() || !password.isNullOrBlank()) {
+                  cloneCommand.setCredentialsProvider(
+                      UsernamePasswordCredentialsProvider(username ?: "", password ?: ""))
+                } else {
+                  GitConfigHelper.credentialsProvider(prefs)?.let {
+                    cloneCommand.setCredentialsProvider(it)
+                  }
+                }
+                GitConfigHelper.configureProxy(prefs)
+                GitSshSessionFactory.install(prefs)
+                GitConfigHelper.setTimeouts(cloneCommand, prefs)
 
                 branch?.let { cloneCommand.setBranch(it) }
 
@@ -727,7 +764,18 @@ class MainFragment : BaseFragment() {
 
     val builder = DialogUtils.newMaterialDialogBuilder(requireContext())
     builder.setTitle(string.git_clone_failed)
-    builder.setMessage(error.localizedMessage)
+    val message = error.localizedMessage.orEmpty()
+    val authFailure = message.contains("Authentication", true) ||
+      message.contains("not authorized", true) ||
+      message.contains("401") ||
+      message.contains("403")
+    builder.setMessage(
+        if (authFailure && message.isNotBlank()) {
+          "$message\n\n${getString(string.hl_git_clone_private_hint)}"
+        } else {
+          message
+        }
+    )
     builder.setPositiveButton(android.R.string.ok, null)
     builder.show()
   }

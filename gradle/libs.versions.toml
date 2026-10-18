@@ -164,6 +164,7 @@ xml-jb-annotations = { module = "org.jetbrains:annotations", version = "24.1.0" 
 
 # GIT
 git-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "6.8.0.202311291450-r" }
+git-jsch = { module = "com.github.mwiede:jsch", version = "0.2.25" }
 
 # Tests
 tests-junit = { module = "junit:junit", version = "4.13.2" }

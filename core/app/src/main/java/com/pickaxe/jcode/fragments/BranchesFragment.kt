@@ -30,6 +30,7 @@ import com.pickaxe.jcode.R
 import com.pickaxe.jcode.adapters.BranchesAdapter
 import com.pickaxe.jcode.databinding.FragmentBranchesBinding
 import com.pickaxe.jcode.viewmodel.GitViewModel
+import com.pickaxe.jcode.viewmodel.GitViewModelFactory
 import com.pickaxe.jcode.utils.*
 
 /**
@@ -41,7 +42,7 @@ class BranchesFragment : Fragment() {
     private var _binding: FragmentBranchesBinding? = null
     private val binding get() = _binding!!
     
-    private val viewModel: GitViewModel by activityViewModels()
+    private val viewModel: GitViewModel by activityViewModels { GitViewModelFactory(requireContext()) }
     private lateinit var adapter: BranchesAdapter
     private var currentBranch: String = ""
     

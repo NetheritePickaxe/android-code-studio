@@ -58,6 +58,72 @@ class PreferencesManager(context: Context) {
         return normalPrefs.getString("git_user_email", "user@example.com") ?: "user@example.com"
     }
     
+    // Mirror & Proxy
+    fun setGitHubMirror(mirror: String) {
+        normalPrefs.edit().putString("git_mirror", mirror.trim()).apply()
+    }
+    
+    fun getGitHubMirror(): String? {
+        return normalPrefs.getString("git_mirror", null)
+    }
+    
+    fun setProxyHost(host: String) {
+        normalPrefs.edit().putString("git_proxy_host", host.trim()).apply()
+    }
+    
+    fun getProxyHost(): String? {
+        return normalPrefs.getString("git_proxy_host", null)
+    }
+    
+    fun setProxyPort(port: Int) {
+        normalPrefs.edit().putInt("git_proxy_port", port).apply()
+    }
+    
+    fun getProxyPort(): Int {
+        return normalPrefs.getInt("git_proxy_port", 0)
+    }
+    
+    fun setGitTimeout(seconds: Int) {
+        normalPrefs.edit().putInt("git_timeout", seconds).apply()
+    }
+    
+    fun getGitTimeout(): Int {
+        return normalPrefs.getInt("git_timeout", 60)
+    }
+    
+    // SSH
+    fun setSshKeyPath(path: String) {
+        normalPrefs.edit().putString("git_ssh_key_path", path.trim()).apply()
+    }
+    
+    fun getSshKeyPath(): String? {
+        return normalPrefs.getString("git_ssh_key_path", null)
+    }
+    
+    fun setSshKeyPassphrase(passphrase: String) {
+        encryptedPrefs.edit().putString("git_ssh_passphrase", passphrase).apply()
+    }
+    
+    fun getSshKeyPassphrase(): String? {
+        return encryptedPrefs.getString("git_ssh_passphrase", null)
+    }
+    
+    fun setSshKnownHostsPath(path: String) {
+        normalPrefs.edit().putString("git_ssh_known_hosts", path.trim()).apply()
+    }
+    
+    fun getSshKnownHostsPath(): String? {
+        return normalPrefs.getString("git_ssh_known_hosts", null)
+    }
+    
+    fun clearSshConfig() {
+        normalPrefs.edit()
+            .remove("git_ssh_key_path")
+            .remove("git_ssh_known_hosts")
+            .apply()
+        encryptedPrefs.edit().remove("git_ssh_passphrase").apply()
+    }
+    
     // Credentials
     fun setRememberCredentials(remember: Boolean) {
         normalPrefs.edit().putBoolean("remember_credentials", remember).apply()
