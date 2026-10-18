@@ -18,8 +18,11 @@
 package com.pickaxe.jcode.preferences
 
 import android.content.Context
+import androidx.fragment.app.FragmentActivity
 import androidx.preference.Preference
 import com.pickaxe.jcode.R
+import com.pickaxe.jcode.artificial.dialogs.LocalLLMConfigDialog
+import com.pickaxe.jcode.artificial.dialogs.OpenAiCompatConfigDialog
 import com.pickaxe.jcode.preferences.internal.prefManager
 import com.pickaxe.jcode.resources.R.string
 import kotlinx.parcelize.IgnoredOnParcel
@@ -51,6 +54,8 @@ private class AIAgentConfig(
   @IgnoredOnParcel private var openAIApiKeyPref: OpenAIApiKey? = null
   @IgnoredOnParcel private var anthropicApiKeyPref: AnthropicApiKey? = null
   @IgnoredOnParcel private var grokApiKeyPref: GrokApiKey? = null
+  @IgnoredOnParcel private var localLlmPref: LocalLLMConfigPreference? = null
+  @IgnoredOnParcel private var openAiCompatPref: OpenAiCompatConfigPreference? = null
 
   init {
     val aiAgentEnabled = AIAgentEnabled { isEnabled -> updateApiKeyPreferencesState(isEnabled) }
@@ -60,6 +65,8 @@ private class AIAgentConfig(
     openAIApiKeyPref = OpenAIApiKey()
     anthropicApiKeyPref = AnthropicApiKey()
     grokApiKeyPref = GrokApiKey()
+    localLlmPref = LocalLLMConfigPreference()
+    openAiCompatPref = OpenAiCompatConfigPreference()
 
     addPreference(aiAgentEnabled)
     addPreference(geminiApiKeyPref!!)
@@ -67,6 +74,8 @@ private class AIAgentConfig(
     addPreference(openAIApiKeyPref!!)
     addPreference(anthropicApiKeyPref!!)
     addPreference(grokApiKeyPref!!)
+    addPreference(localLlmPref!!)
+    addPreference(openAiCompatPref!!)
   }
 
   private fun updateApiKeyPreferencesState(isEnabled: Boolean) {
@@ -75,6 +84,8 @@ private class AIAgentConfig(
     openAIApiKeyPref?.setEnabled(isEnabled)
     anthropicApiKeyPref?.setEnabled(isEnabled)
     grokApiKeyPref?.setEnabled(isEnabled)
+    localLlmPref?.setEnabled(isEnabled)
+    openAiCompatPref?.setEnabled(isEnabled)
   }
 }
 
@@ -370,5 +381,92 @@ private class AnthropicApiKey(
   private fun getSummaryText(): String {
     val apiKey = prefManager.getString("ai_agent_anthropic_api_key", "")
     return if (apiKey.isBlank()) "Click to set API key" else "API Key: ${apiKey.take(8)}..."
+  }
+}
+
+@Parcelize
+private class LocalLLMConfigPreference(
+    override val key: String = "ai_agent_local_llm_config",
+    override val title: Int = R.string.ai_agent_local_llm_config,
+) : BasePreference() {
+
+  @IgnoredOnParcel private var preference: Preference? = null
+
+  override fun onCreatePreference(context: Context): Preference {
+    preference =
+        androidx.preference.Preference(context).apply {
+          key = "ai_agent_local_llm_config"
+          title = context.getString(R.string.ai_agent_local_llm_config)
+          summary = getSummaryText(context)
+          isEnabled = prefManager.getBoolean("ai_agent_enabled", false)
+        }
+    return preference!!
+  }
+
+  override fun onPreferenceClick(preference: Preference): Boolean {
+    val manager = (preference.context as? FragmentActivity)?.supportFragmentManager ?: return false
+    LocalLLMConfigDialog { _, _ ->
+      preference.summary = getSummaryText(preference.context)
+    }.show(manager, "LocalLLMConfigDialog")
+    return true
+  }
+
+  fun setEnabled(enabled: Boolean) {
+    preference?.isEnabled = enabled
+  }
+
+  private fun getSummaryText(context: Context): String {
+    val baseUrl = prefManager.getString("local_llm_base_url", null)
+    val model = prefManager.getString("local_llm_model_name", null)
+    return if (baseUrl.isNullOrBlank() || model.isNullOrBlank()) {
+      context.getString(R.string.ai_agent_provider_not_configured)
+    } else {
+      context.getString(R.string.ai_agent_provider_configured, "$baseUrl · $model")
+    }
+  }
+}
+
+@Parcelize
+private class OpenAiCompatConfigPreference(
+    override val key: String = "ai_agent_openai_compat_config",
+    override val title: Int = R.string.ai_agent_openai_compat_config,
+) : BasePreference() {
+
+  @IgnoredOnParcel private var preference: Preference? = null
+
+  override fun onCreatePreference(context: Context): Preference {
+    preference =
+        androidx.preference.Preference(context).apply {
+          key = "ai_agent_openai_compat_config"
+          title = context.getString(R.string.ai_agent_openai_compat_config)
+          summary = getSummaryText(context)
+          isEnabled = prefManager.getBoolean("ai_agent_enabled", false)
+        }
+    return preference!!
+  }
+
+  override fun onPreferenceClick(preference: Preference): Boolean {
+    val manager = (preference.context as? FragmentActivity)?.supportFragmentManager ?: return false
+    OpenAiCompatConfigDialog { _, _, _, _ ->
+      preference.summary = getSummaryText(preference.context)
+    }.show(manager, "OpenAiCompatConfigDialog")
+    return true
+  }
+
+  fun setEnabled(enabled: Boolean) {
+    preference?.isEnabled = enabled
+  }
+
+  private fun getSummaryText(context: Context): String {
+    val baseUrl = prefManager.getString("openai_compat_base_url", null)
+    val model = prefManager.getString("openai_compat_model", null)
+    val name = prefManager.getString("openai_compat_name", null)
+    return if (baseUrl.isNullOrBlank() || model.isNullOrBlank()) {
+      context.getString(R.string.ai_agent_provider_not_configured)
+    } else {
+      val label = name?.takeIf { it.isNotBlank() }
+          ?: context.getString(R.string.ai_agent_openai_compat_config)
+      context.getString(R.string.ai_agent_provider_configured, "$label · $model")
+    }
   }
 }

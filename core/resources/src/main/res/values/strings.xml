@@ -86,6 +86,15 @@
   <!-- AI Agent grok -->
   <string name="ai_agent_grok_api_key">Grok API Key</string>
 
+  <!-- AI Agent providers that need more than an API key -->
+  <string name="ai_agent_local_llm_config">Local LLM</string>
+  <string name="ai_agent_local_llm_config_summary">Base URL and model of a local OpenAI-compatible server</string>
+  <string name="ai_agent_openai_compat_config">OpenAI-compatible API</string>
+  <string name="ai_agent_openai_compat_config_summary">Base URL, API key and model of a custom provider</string>
+  <string name="ai_agent_provider_not_configured">Not configured</string>
+  <string name="ai_agent_provider_configured">Configured: %1$s</string>
+  <string name="ai_agent_provider_configure_in_settings">Please configure %1$s in Settings first</string>
+
   <string name="no_acs_title">ACS Components Missing</string>
   <string name="no_acs_summary">This application appears to be incomplete or unofficial, as it is missing the required ACS build system. For full functionality, please install the official jcode from a trusted source.</string>
 

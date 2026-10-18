@@ -86,6 +86,15 @@
   <!-- AI Agent grok -->
   <string name="ai_agent_grok_api_key">Grok API 密钥</string>
 
+  <!-- AI Agent 本地 / OpenAI 兼容服务商 -->
+  <string name="ai_agent_local_llm_config">本地模型</string>
+  <string name="ai_agent_local_llm_config_summary">本地 OpenAI 兼容服务的地址与模型</string>
+  <string name="ai_agent_openai_compat_config">OpenAI 兼容 API</string>
+  <string name="ai_agent_openai_compat_config_summary">自定义服务商的地址、API Key 与模型</string>
+  <string name="ai_agent_provider_not_configured">未配置</string>
+  <string name="ai_agent_provider_configured">已配置：%1$s</string>
+  <string name="ai_agent_provider_configure_in_settings">请先在设置中配置 %1$s</string>
+
   <string name="no_acs_title">ACS 组件缺失</string>
   <string name="no_acs_summary">该应用程序似乎不完整或非官方，因为它缺少所需的 ACS 构建系统。要获得完整功能，请从可信来源安装官方 jcode。</string>
 
