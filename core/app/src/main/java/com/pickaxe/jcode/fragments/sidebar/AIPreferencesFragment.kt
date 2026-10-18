@@ -22,6 +22,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.pickaxe.jcode.artificial.dialogs.LocalLLMConfigDialog
+import com.pickaxe.jcode.artificial.dialogs.OpenAiCompatConfigDialog
+import com.pickaxe.jcode.app.BaseApplication
 
 class AIPreferencesFragment(
     private val aiAgent: AIAgentManager,
@@ -89,34 +91,44 @@ class AIPreferencesFragment(
             "claude" to "Anthropic Claude",
             "deepseek" to "DeepSeek",
             "grok" to "xAI Grok",
-            "localllm" to "Local LLM"
+            "localllm" to "Local LLM",
+            "openai_compat" to "OpenAI 兼容 API"
         )
-        
-        val allProviderIds = listOf("gemini", "openai", "claude", "deepseek", "grok", "localllm")
+
+        val allProviderIds = listOf("gemini", "openai", "claude", "deepseek", "grok", "localllm", "openai_compat")
         val providerNames = allProviderIds.map { providerMap[it] ?: it }
-        
+
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, providerNames)
         providerDropdown.setAdapter(adapter)
-        
+
         updateProviderDropdownSelection()
-        
+
         providerDropdown.setOnItemClickListener { _, _, position, _ ->
             val selectedProviderId = allProviderIds[position]
             val selectedProviderName = providerNames[position]
-            
+
             if (selectedProviderId == "localllm") {
                 showLocalLLMConfigDialog(selectedProviderName)
+            } else if (selectedProviderId == "openai_compat") {
+                showOpenAiCompatConfigDialog()
             } else {
                 handleProviderChange(selectedProviderId, selectedProviderName)
             }
         }
     }
-    
+
     private fun showLocalLLMConfigDialog(providerName: String) {
         val dialog = LocalLLMConfigDialog { baseUrl, modelName ->
             handleProviderChange("localllm", providerName)
         }
         dialog.show(parentFragmentManager, "LocalLLMConfigDialog")
+    }
+
+    private fun showOpenAiCompatConfigDialog() {
+        val dialog = OpenAiCompatConfigDialog { _, _, _, _ ->
+            handleProviderChange("openai_compat", "OpenAI 兼容 API")
+        }
+        dialog.show(parentFragmentManager, "OpenAiCompatConfigDialog")
     }
     
     private fun updateProviderDropdownSelection() {
@@ -126,20 +138,21 @@ class AIPreferencesFragment(
             "claude" to "Anthropic Claude",
             "deepseek" to "DeepSeek",
             "grok" to "xAI Grok",
-            "localllm" to "Local LLM"
+            "localllm" to "Local LLM",
+            "openai_compat" to "OpenAI 兼容 API"
         )
-        
+
         val currentProviderId = agents.getProvider()
         val currentProviderName = providerMap[currentProviderId] ?: currentProviderId
         providerDropdown.setText(currentProviderName, false)
     }
-    
+
     private fun updateCurrentStatus() {
         val currentProvider = agents.getProvider()
         val currentModel = agents.getAgent()
-        
+
         android.util.Log.d("AIPreferences", "Current provider: $currentProvider, model: $currentModel")
-        
+
         val providerDisplayName = when(currentProvider) {
             "gemini" -> "Google Gemini"
             "openai" -> "OpenAI"
@@ -147,11 +160,25 @@ class AIPreferencesFragment(
             "deepseek" -> "DeepSeek"
             "grok" -> "xAI Grok"
             "localllm" -> "Local LLM"
+            "openai_compat" -> {
+                val prefs = BaseApplication.getBaseInstance().prefManager
+                prefs.getString("openai_compat_name", "OpenAI 兼容 API") ?: "OpenAI 兼容 API"
+            }
             else -> currentProvider.uppercase()
         }
-        
+
         currentProviderText.text = providerDisplayName
-        currentModelText.text = currentModel
+
+        val modelDisplay = if (currentProvider == "openai_compat") {
+            val prefs = BaseApplication.getBaseInstance().prefManager
+            prefs.getString("openai_compat_model", currentModel) ?: currentModel
+        } else if (currentProvider == "localllm") {
+            val prefs = BaseApplication.getBaseInstance().prefManager
+            prefs.getString("local_llm_model_name", currentModel) ?: currentModel
+        } else {
+            currentModel
+        }
+        currentModelText.text = modelDisplay
     }
 
     private fun setupModelDropdown() {
@@ -171,10 +198,30 @@ class AIPreferencesFragment(
     private fun updateModelDropdown() {
         val currentProvider = agents.getProvider()
         val models = agents.getModelsForProvider(currentProvider)
-        
+
+        if (currentProvider == "openai_compat") {
+            val prefs = BaseApplication.getBaseInstance().prefManager
+            val model = prefs.getString("openai_compat_model", "") ?: ""
+            val modelList = if (model.isNotEmpty()) listOf(model) else listOf("未配置")
+            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, modelList)
+            modelDropdown.setAdapter(adapter)
+            modelDropdown.setText(modelList[0], false)
+            return
+        }
+
+        if (currentProvider == "localllm") {
+            val prefs = BaseApplication.getBaseInstance().prefManager
+            val model = prefs.getString("local_llm_model_name", "local-model") ?: "local-model"
+            val modelList = listOf(model)
+            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, modelList)
+            modelDropdown.setAdapter(adapter)
+            modelDropdown.setText(modelList[0], false)
+            return
+        }
+
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, models.toList())
         modelDropdown.setAdapter(adapter)
-        
+
         val currentModel = agents.getAgent()
         if (currentModel in models) {
             modelDropdown.setText(currentModel, false)
@@ -276,24 +323,32 @@ class AIPreferencesFragment(
 
     private fun handleProviderChange(providerId: String, providerName: String) {
         android.util.Log.d("AIPreferences", "Switching to provider: $providerId")
-        
+
         val availableModels = agents.getModelsForProvider(providerId)
         android.util.Log.d("AIPreferences", "Available models for $providerId: ${availableModels.joinToString()}")
-        
-        if (availableModels.isNotEmpty()) {
+
+        if (providerId == "openai_compat") {
+            val prefs = BaseApplication.getBaseInstance().prefManager
+            val model = prefs.getString("openai_compat_model", null)
+            if (model != null && model.isNotEmpty()) {
+                agents.setAgent(model)
+            } else {
+                agents.setAgent("custom-model")
+            }
+        } else if (availableModels.isNotEmpty()) {
             val defaultModel = availableModels[0]
             agents.setAgent(defaultModel)
             android.util.Log.d("AIPreferences", "Set default model: $defaultModel")
         }
-        
+
         agents.setProvider(providerId)
-        
+
         updateModelDropdown()
-        
+
         if (aiAgent.setProvider(providerId)) {
             aiAgent.reinitializeWithSelectedModel()
             updateCurrentStatus()
-            
+
             lifecycleScope.launch {
                 if (isCompletionEnabled) {
                     delay(500)
@@ -301,10 +356,11 @@ class AIPreferencesFragment(
                     android.util.Log.d("AIPreferences", "Reattached completion after provider change")
                 }
             }
-            
-            showSnackbar("Switched to $providerName")
+
+            showSnackbar("已切换到 $providerName")
         } else {
-            showSnackbar("⚠️ No valid API key for $providerName")
+            val needsConfig = providerId == "openai_compat" || providerId == "localllm"
+            showSnackbar(if (needsConfig) "⚠️ 请先配置 $providerName" else "⚠️ $providerName 的 API Key 无效")
         }
     }
 

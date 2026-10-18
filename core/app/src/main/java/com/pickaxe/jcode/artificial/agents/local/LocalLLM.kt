@@ -40,7 +40,11 @@ import org.json.JSONObject
 import org.json.JSONArray
 import java.util.concurrent.TimeUnit
 
-class LocalLLM : AIAgent {
+class LocalLLM(
+    private val prefPrefix: String = "local_llm_",
+    private val pid: String = "localllm",
+    private val pname: String = "Local LLM",
+) : AIAgent {
 
   private var baseUrl: String? = null
   private var modelName: String? = null
@@ -57,8 +61,8 @@ class LocalLLM : AIAgent {
   private var currentAttemptCount = 0
   private val maxRetryAttempts = 3
   private var agents: Agents? = null
-  override val providerId = "localllm"
-  override val providerName = "Local LLM"
+  override val providerId = pid
+  override val providerName = pname
 
   companion object {
       fun registerAgent() {
@@ -66,7 +70,7 @@ class LocalLLM : AIAgent {
               override fun create(context: Context): AIAgent {
                   return LocalLLM()
               }
-              
+
               override fun hasValidApiKey(): Boolean {
                   val prefs = BaseApplication.getBaseInstance().prefManager
                   val url = prefs.getString("local_llm_base_url", null)
@@ -74,31 +78,52 @@ class LocalLLM : AIAgent {
                   android.util.Log.d("LocalLLM", "hasValidApiKey check: url=$url, model=$model")
                   return url != null && url.isNotEmpty() && model != null && model.isNotEmpty()
               }
-              
+
               override fun getApiKey(): String? {
                   return "local"
               }
           })
+          AIAgentRegistry.register("openai_compat", object : AIAgentRegistry.AgentFactory {
+              override fun create(context: Context): AIAgent {
+                  return LocalLLM(prefPrefix = "openai_compat_", pid = "openai_compat", pname = "OpenAI 兼容 API")
+              }
+
+              override fun hasValidApiKey(): Boolean {
+                  val prefs = BaseApplication.getBaseInstance().prefManager
+                  val url = prefs.getString("openai_compat_base_url", null)
+                  val model = prefs.getString("openai_compat_model", null)
+                  return url != null && url.isNotEmpty() && model != null && model.isNotEmpty()
+              }
+
+              override fun getApiKey(): String? {
+                  val prefs = BaseApplication.getBaseInstance().prefManager
+                  val key = prefs.getString("openai_compat_api_key", null)
+                  return if (key != null && key.isNotEmpty()) key else "local"
+              }
+          })
       }
   }
-  
+
   override fun initialize(apiKey: String, context: Context) {
       try {
           agents = Agents(context)
           val prefs = BaseApplication.getBaseInstance().prefManager
-          baseUrl = prefs.getString("local_llm_base_url", null)
-          modelName = prefs.getString("local_llm_model_name", null)
-          
+          baseUrl = prefs.getString("${prefPrefix}base_url", null)
+          modelName = prefs.getString("${prefPrefix}model", null)
+          if (prefPrefix == "local_llm_") {
+              modelName = prefs.getString("local_llm_model_name", null)
+          }
+
           android.util.Log.d("LocalLLM", "Initialized with baseUrl=$baseUrl, model=$modelName")
-          
+
           if (baseUrl == null || baseUrl!!.isEmpty() || modelName == null || modelName!!.isEmpty()) {
-              throw IllegalStateException("Local LLM not configured. Please set base URL and model name.")
+              throw IllegalStateException("$providerName not configured. Please set base URL and model name.")
           }
       } catch (e: Exception) {
           throw e
       }
   }
-  
+
   override fun isInitialized(): Boolean = baseUrl != null && baseUrl!!.isNotEmpty() && modelName != null && modelName!!.isNotEmpty()
   
 

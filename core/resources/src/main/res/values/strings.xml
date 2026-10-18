@@ -1081,6 +1081,9 @@ This AI agent is designed to assist you in developing Android applications direc
   <string name="hl_commit_message">Commit message</string>
   <string name="hl_compile_sdk">Compile SDK</string>
   <string name="hl_configure_local_llm">Configure Local LLM</string>
+  <string name="hl_configure_openai_compat">Configure OpenAI Compatible API</string>
+  <string name="hl_provider_display_name">Provider Display Name</string>
+  <string name="hl_api_key">API Key</string>
   <string name="hl_create_your_first_terminal_session">Create your first terminal session</string>
   <string name="hl_created_mainactivity_kt">Created MainActivity.kt</string>
   <string name="hl_credentials">Credentials</string>

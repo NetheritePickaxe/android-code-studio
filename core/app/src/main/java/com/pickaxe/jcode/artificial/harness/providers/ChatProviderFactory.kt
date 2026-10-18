@@ -81,6 +81,19 @@ object ChatProviderFactory {
         val model = prefManager.getString("local_llm_model_name", "local-model")
         OpenAiCompatProvider("localllm", "Local LLM", null, model, versioned)
       }
+      "openai_compat" -> {
+        val base = prefManager.getString("openai_compat_base_url", "").trimEnd('/')
+        val model = prefManager.getString("openai_compat_model", "")
+        if (base.isBlank() || model.isBlank()) null
+        else {
+          val versioned = if (base.endsWith("/v1")) base else "$base/v1"
+          val key = prefManager.getString("openai_compat_api_key", "")
+            ?.takeIf { it.isNotBlank() }
+          val name = prefManager.getString("openai_compat_name", "OpenAI 兼容 API")
+            ?.takeIf { it.isNotBlank() } ?: "OpenAI 兼容 API"
+          OpenAiCompatProvider("openai_compat", name, key, model, versioned)
+        }
+      }
       else -> null
     }
   }

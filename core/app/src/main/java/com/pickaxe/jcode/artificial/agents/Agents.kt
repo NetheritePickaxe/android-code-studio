@@ -143,9 +143,13 @@ class Agents(ctx: Context) {
   private val localllm_models = arrayOf(
     "local-model"
   )
-  
-  val ai_agents = openai_models + claude_models + gemini_models + deepseek_models + grok_models + localllm_models
-  
+
+  private val openai_compat_models = arrayOf(
+    "custom-model"
+  )
+
+  val ai_agents = openai_models + claude_models + gemini_models + deepseek_models + grok_models + localllm_models + openai_compat_models
+
   fun getModelsForProvider(providerId: String): Array<String> {
     return when(providerId) {
       "openai" -> openai_models
@@ -154,10 +158,11 @@ class Agents(ctx: Context) {
       "deepseek" -> deepseek_models
       "grok" -> grok_models
       "localllm" -> localllm_models
+      "openai_compat" -> openai_compat_models
       else -> gemini_models
     }
   }
-  
+
   fun getProviderForModel(modelName: String): String? {
     return when {
       modelName in openai_models -> "openai"

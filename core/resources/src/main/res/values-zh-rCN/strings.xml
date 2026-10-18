@@ -1047,6 +1047,9 @@
   <string name="hl_commit_message">提交信息</string>
   <string name="hl_compile_sdk">编译 SDK</string>
   <string name="hl_configure_local_llm">配置本地 LLM</string>
+  <string name="hl_configure_openai_compat">配置 OpenAI 兼容 API</string>
+  <string name="hl_provider_display_name">显示名称</string>
+  <string name="hl_api_key">API 密钥</string>
   <string name="hl_create_your_first_terminal_session">创建你的第一个终端会话</string>
   <string name="hl_created_mainactivity_kt">已创建 MainActivity.kt</string>
   <string name="hl_credentials">凭据</string>
