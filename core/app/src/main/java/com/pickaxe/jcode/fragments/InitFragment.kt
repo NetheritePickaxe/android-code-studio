@@ -105,7 +105,7 @@ class InitFragment : Fragment() {
             .gradle
     
             # Ignore ACS editor directory
-            .acside
+            .jcode
     
             # Ignore Kotlin directory
             .kotlin

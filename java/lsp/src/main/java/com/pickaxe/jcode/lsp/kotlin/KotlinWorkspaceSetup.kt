@@ -481,7 +481,7 @@ class KotlinWorkspaceSetup(private val context: Context, private val workspace: 
 
             val initOptions =
                 JsonObject().apply {
-                  addProperty("storagePath", workspace.getProjectDir().resolve(".acside").absolutePath)
+                  addProperty("storagePath", workspace.getProjectDir().resolve(".jcode").absolutePath)
 
                   addProperty("indexing", "auto")
                   addProperty("externalSources", "auto")

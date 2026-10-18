@@ -164,7 +164,15 @@ public final class Environment {
     }
 
     public static File getProjectCacheDir(File projectDir) {
-        return new File(projectDir, ".acside");
+        File cacheDir = new File(projectDir, ".jcode");
+
+        // Migrate the cache directory from the old name used before the rename.
+        File legacyDir = new File(projectDir, ".acside");
+        if (!cacheDir.exists() && legacyDir.exists()) {
+            legacyDir.renameTo(cacheDir);
+        }
+
+        return cacheDir;
     }
 
     @NonNull
