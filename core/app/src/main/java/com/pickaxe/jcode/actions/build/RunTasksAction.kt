@@ -21,10 +21,13 @@ import android.content.Context
 import androidx.core.content.ContextCompat
 import com.pickaxe.jcode.actions.ActionData
 import com.pickaxe.jcode.actions.BaseBuildAction
+import com.pickaxe.jcode.projects.BuildSystem
+import com.pickaxe.jcode.projects.BuildSystemDetector
+import com.pickaxe.jcode.projects.internal.ProjectManagerImpl
 import com.pickaxe.jcode.fragments.RunTasksDialogFragment
 import com.pickaxe.jcode.resources.R
 
-/** @author Akash Yadav */
+ /** @author Akash Yadav */
 class RunTasksAction(context: Context, override val order: Int) : BaseBuildAction() {
   override val id: String = "ide.editor.build.runTasks"
   private var dialog: RunTasksDialogFragment? = null
@@ -45,7 +48,6 @@ class RunTasksAction(context: Context, override val order: Int) : BaseBuildActio
     if (result !is RunTasksDialogFragment) {
       return
     }
-
     val activity = data.getActivity()!!
     result.show(activity.supportFragmentManager, this.id)
   }
@@ -58,5 +60,16 @@ class RunTasksAction(context: Context, override val order: Int) : BaseBuildActio
       // ignored
     }
     dialog = null
+  }
+
+  override fun prepare(data: ActionData) {
+    super.prepare(data)
+    // Hide for non-Gradle projects
+    val projectDir = ProjectManagerImpl.getInstance().projectDir
+    val buildSystem = BuildSystemDetector.detect(projectDir)
+    if (buildSystem != null && buildSystem != BuildSystem.GRADLE) {
+      visible = false
+      enabled = false
+    }
   }
 }

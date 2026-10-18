@@ -512,13 +512,20 @@ class MainFragment : BaseFragment() {
   private fun isValidAndroidProject(dir: File): Boolean {
     if (!dir.isDirectory) return false
 
+    // Check if it's a Gradle project
     val gradleWrapper = File(dir, "gradle/wrapper/gradle-wrapper.properties")
-    if (!gradleWrapper.exists()) return false
+    if (gradleWrapper.exists()) {
+      val buildGradle = File(dir, "build.gradle")
+      val buildGradleKts = File(dir, "build.gradle.kts")
+      if (buildGradle.exists() || buildGradleKts.exists()) return true
+    }
 
-    val buildGradle = File(dir, "build.gradle")
-    val buildGradleKts = File(dir, "build.gradle.kts")
+    // Check if it's a plain Java project (has .java files)
+    return hasJavaSources(dir)
+  }
 
-    return buildGradle.exists() || buildGradleKts.exists()
+  private fun hasJavaSources(dir: File): Boolean {
+    return dir.walkTopDown().any { it.extension == "java" }
   }
 
   private fun deleteProject(project: File, onDeleted: () -> Unit) {

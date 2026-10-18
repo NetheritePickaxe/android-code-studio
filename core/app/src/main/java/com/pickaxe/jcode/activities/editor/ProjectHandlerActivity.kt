@@ -39,6 +39,8 @@ import com.pickaxe.jcode.lookup.Lookup
 import com.pickaxe.jcode.lsp.IDELanguageClientImpl
 import com.pickaxe.jcode.lsp.java.utils.CancelChecker
 import com.pickaxe.jcode.preferences.internal.GeneralPreferences
+import com.pickaxe.jcode.projects.BuildSystem
+import com.pickaxe.jcode.projects.BuildSystemDetector
 import com.pickaxe.jcode.projects.GradleProject
 import com.pickaxe.jcode.projects.builder.BuildService
 import com.pickaxe.jcode.projects.internal.ProjectManagerImpl
@@ -363,7 +365,7 @@ fun initializeProject(buildVariants: Map<String, String>) {
     val manager = ProjectManagerImpl.getInstance()
     val projectDir = manager.projectDir
     if (!projectDir.exists()) {
-      log.error("GradleProject directory does not exist. Cannot initialize project")
+      log.error("Project directory does not exist. Cannot initialize project")
       return
     }
 
@@ -374,6 +376,20 @@ fun initializeProject(buildVariants: Map<String, String>) {
 
     if (editorViewModel.isBuildInProgress) {
       log.warn("Build is already in progress. Cannot initialize project now.")
+      return
+    }
+
+    // Detect build system
+    val buildSystem = BuildSystemDetector.detect(projectDir)
+    log.debug("Detected build system: {}", buildSystem)
+
+    // For non-Gradle projects, skip Tooling API initialization
+    if (buildSystem != BuildSystem.GRADLE) {
+      log.info("Non-Gradle project detected ({}). Skipping Tooling API initialization.", buildSystem)
+      ThreadUtils.runOnUiThread { preProjectInit() }
+      manager.projectInitialized = true
+      manager.cachedInitResult = InitializeResult(true)
+      ThreadUtils.runOnUiThread { postProjectInit(true, null) }
       return
     }
 
@@ -405,7 +421,7 @@ fun initializeProject(buildVariants: Map<String, String>) {
         } else {
           log.debug("Using cached initialize result as the project is already initialized")
           CompletableFuture.supplyAsync {
-            log.warn("GradleProject has already been initialized. Skipping initialization process.")
+            log.warn("Project has already been initialized. Skipping initialization process.")
             manager.cachedInitResult
           }
         }
