@@ -27,7 +27,6 @@ import com.pickaxe.jcode.actions.build.RunTasksAction
 import com.pickaxe.jcode.actions.editor.CopyAction
 import com.pickaxe.jcode.actions.editor.CutAction
 import com.pickaxe.jcode.actions.editor.ExpandSelectionAction
-import com.pickaxe.jcode.actions.editor.ExtractAction
 import com.pickaxe.jcode.actions.editor.LongSelectAction
 import com.pickaxe.jcode.actions.editor.PasteAction
 import com.pickaxe.jcode.actions.editor.SelectAllAction
@@ -81,12 +80,10 @@ class EditorActivityActions {
       registry.registerAction(DisconnectLogSendersAction(context, order++))
 
       // editor text actions
-      registry.registerAction(ExtractAction(context, order++))
       registry.registerAction(ExpandSelectionAction(context, order++))
       registry.registerAction(SelectAllAction(context, order++))
       registry.registerAction(LongSelectAction(context, order++))
       registry.registerAction(CutAction(context, order++))
-      registry.registerAction(ExtractAction(context, order++))
       registry.registerAction(CopyAction(context, order++))
       registry.registerAction(PasteAction(context, order++))
       registry.registerAction(FormatCodeAction(context, order++))

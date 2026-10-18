@@ -383,9 +383,6 @@
   <string name="idepref_editor_keyboard_sugg_title">显示键盘建议</string>
   <string name="idepref_editor_keyboard_sugg_summary">在编辑器中键入时启用或禁用键盘建议。</string>
 
-  <string name="idepref_editor_string_ext_helper_title">字符串提取器</string>
-  <string name="idepref_editor_string_ext_helper_summary">提供上下文菜单，用于从源代码中自动提取字符串资源。通过将硬编码文本直接移动到“strings.xml”中来简化本地化。与 Kotlin、Java 和 XML 文件兼容。</string>
-
   <string name="yes">是</string>
   <string name="no">否</string>
   <string name="msg_viewaction_add_attr">添加属性</string>
@@ -565,7 +562,6 @@
   <string name="msg_package_not_valid_char_2">Android 应用的包名中不允许使用字符 “%1$s”</string>
   <string name="msg_package_mus_have_dot">包名中必须至少有一个“.”分隔</string>
 
-  <string name="extract">将字符串提取到 strings.xml</string>
   <string name="action_import_classes">导入类</string>
   <string name="action_generate_setters_getters">生成 setter/getter</string>
   <string name="action_add_throws">添加“throws”</string>

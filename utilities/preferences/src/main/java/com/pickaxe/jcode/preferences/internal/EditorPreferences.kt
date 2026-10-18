@@ -38,7 +38,6 @@ object EditorPreferences {
   const val AUTO_SAVE = "idepref_editor_autoSave"
   const val KEYBOARD_SUGGESTIONS = "idepref_editor_show_keyboard_suggestions"
   const val AUTO_SAVE_TWO = "auto_save_enabled"
-  const val KEY_STRING_EXT_HELPER = "editor_stringExtHelper"
   const val FONT_LIGATURES = "idepref_editor_fontLigatures"
   const val FLAG_PASSWORD = "idepref_editor_flagPassword"
   const val WORD_WRAP = "idepref_editor_word_wrap"
@@ -141,12 +140,6 @@ object EditorPreferences {
     get() = prefManager.getBoolean(KEYBOARD_SUGGESTIONS, true)
     set(value) {
       prefManager.putBoolean(KEYBOARD_SUGGESTIONS, value)
-    }
-
-  var stringExtHelper: Boolean
-    get() = prefManager.getBoolean(KEY_STRING_EXT_HELPER, false)
-    set(value) {
-      prefManager.putBoolean(KEY_STRING_EXT_HELPER, value)
     }
 
   var visiblePasswordFlag: Boolean

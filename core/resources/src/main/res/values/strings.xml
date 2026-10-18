@@ -413,9 +413,6 @@
   <string name="idepref_editor_keyboard_sugg_title">Show keyboard suggestion</string>
   <string name="idepref_editor_keyboard_sugg_summary">Enable or disable keyboard suggestions while typing in the editor.</string>
 
-  <string name="idepref_editor_string_ext_helper_title">String extractor</string>
-  <string name="idepref_editor_string_ext_helper_summary">Provides a contextual menu for automatic string resource extraction from source code. Streamlines localization by moving hardcoded text directly into `strings.xml`. Compatible with Kotlin, Java, and XML files.</string>
-
   <string name="yes">Yes</string>
   <string name="no">No</string>
   <string name="msg_viewaction_add_attr">Add attribute</string>
@@ -598,7 +595,6 @@
   <string name="msg_package_not_valid_char_2">The character "%1$s" is not allowed in Android application package names</string>
   <string name="msg_package_mus_have_dot">The package must have at least one \'.\' separator</string>
 
-  <string name="extract">Extract string to strings.xml</string>
   <string name="action_import_classes">Import class(es)</string>
   <string name="action_generate_setters_getters">Generate setters/getters</string>
   <string name="action_add_throws">Add \'throws\'</string>

@@ -292,7 +292,6 @@ abstract class BaseEditorActivity :
 
     const val EDITOR_CONTAINER_SCALE_FACTOR = 0.87f
     const val KEY_BOTTOM_SHEET_SHOWN = "editor_bottomSheetShown"
-    const val KEY_STRING_EXT_HELPER = "editor_stringExtHelper"
     const val KEY_PROJECT_PATH = "saved_projectPath"
     const val KEY_AUTO_SAVE_ENABLED = "auto_save_enabled"
     private const val BOTTOM_SHEET_HIDE_REASON_EDITOR_SEARCH = "editor_search_overlay"
@@ -319,11 +318,6 @@ abstract class BaseEditorActivity :
   /** Check if auto-save is enabled in preferences */
   protected open fun isAutoSaveEnabled(): Boolean {
     return app.prefManager.getBoolean(KEY_AUTO_SAVE_ENABLED, true)
-  }
-
-  /** Check if string extractor helper is enabled */
-  private fun isStringExtHelperEnabled(): Boolean {
-    return app.prefManager.getBoolean(KEY_STRING_EXT_HELPER)
   }
 
   /** Auto-save TextWatcher implementation */

@@ -36,7 +36,6 @@ import com.pickaxe.jcode.preferences.internal.EditorPreferences.DELETE_TABS_ON_B
 import com.pickaxe.jcode.preferences.internal.EditorPreferences.FLAG_PASSWORD
 import com.pickaxe.jcode.preferences.internal.EditorPreferences.FONT_LIGATURES
 import com.pickaxe.jcode.preferences.internal.EditorPreferences.FONT_SIZE
-import com.pickaxe.jcode.preferences.internal.EditorPreferences.KEY_STRING_EXT_HELPER
 import com.pickaxe.jcode.preferences.internal.EditorPreferences.PIN_LINE_NUMBERS
 import com.pickaxe.jcode.preferences.internal.EditorPreferences.PRINTABLE_CHARS
 import com.pickaxe.jcode.preferences.internal.EditorPreferences.STICKY_SCROLL_ENABLED
@@ -174,18 +173,6 @@ private class keyboardSuggestions(
     SwitchPreference(
         setValue = EditorPreferences::keyboardSuggestions::set,
         getValue = EditorPreferences::keyboardSuggestions::get,
-    )
-
-@Parcelize
-private class stringExtHelper(
-    override val key: String = KEY_STRING_EXT_HELPER,
-    override val title: Int = string.idepref_editor_string_ext_helper_title,
-    override val summary: Int? = string.idepref_editor_string_ext_helper_summary,
-    override val icon: Int? = drawable.ic_move_down,
-) :
-    SwitchPreference(
-        setValue = EditorPreferences::stringExtHelper::set,
-        getValue = EditorPreferences::stringExtHelper::get,
     )
 
 @Parcelize
