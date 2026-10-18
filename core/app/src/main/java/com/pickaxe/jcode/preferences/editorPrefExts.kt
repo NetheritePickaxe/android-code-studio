@@ -25,7 +25,6 @@ import com.pickaxe.jcode.databinding.LayoutTextSizeSliderBinding
 import com.pickaxe.jcode.editor.schemes.IDEColorScheme
 import com.pickaxe.jcode.editor.schemes.IDEColorSchemeProvider
 import com.pickaxe.jcode.preferences.internal.EditorPreferences
-import com.pickaxe.jcode.preferences.internal.EditorPreferences.AUTO_SAVE
 import com.pickaxe.jcode.preferences.internal.EditorPreferences.AUTO_SAVE_TWO
 import com.pickaxe.jcode.preferences.internal.EditorPreferences.KEYBOARD_SUGGESTIONS
 import com.pickaxe.jcode.preferences.internal.EditorPreferences.COLOR_SCHEME
@@ -92,7 +91,6 @@ private class CommonConfigurations(
     addPreference(WordWrap())
     addPreference(UseMagnifier())
     addPreference(UseICU())
-    addPreference(AutoSave())
     addPreference(VisibiblePasswordFlag())
     addPreference(DeleteEmptyLines())
     addPreference(DeleteTabs())
@@ -292,18 +290,6 @@ private class UseMagnifier(
     SwitchPreference(
         setValue = EditorPreferences::useMagnifier::set,
         getValue = EditorPreferences::useMagnifier::get,
-    )
-
-@Parcelize
-private class AutoSave(
-    override val key: String = AUTO_SAVE,
-    override val title: Int = string.idepref_editor_autoSave_title,
-    override val summary: Int? = string.idepref_editor_autoSave_summary,
-    override val icon: Int? = drawable.ic_save,
-) :
-    SwitchPreference(
-        setValue = EditorPreferences::autoSave::set,
-        getValue = EditorPreferences::autoSave::get,
     )
 
 @Parcelize

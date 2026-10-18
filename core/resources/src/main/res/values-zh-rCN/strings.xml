@@ -371,14 +371,9 @@
   <string name="title_common">常规</string>
   <string name="title_files_unsaved">未保存文件</string>
   <string name="msg_files_unsaved">部分文件并未保存，是否在关闭项目之前保存？未保存的文件：%s</string>
-  <string name="idepref_editor_autoSave_title">关闭文件前自动保存</string>
-  <string name="idepref_editor_autoSave_summary">在关闭文件之前自动保存文件。这是一个实验性功能，您应该自己保存这些文件。</string>
   <string name="idepref_java_matchLower_summary">若启用，输入大小写字母都将提示类名及其作用域成员</string>
   <string name="idepref_editor_ligatures_title">连体字</string>
   <string name="idepref_editor_ligatures_summary">启用或禁用连体字</string>
-
-  <string name="idepref_editor_autosave_title">自动保存</string>
-  <string name="idepref_editor_autosave_summary">每 2 秒自动保存一次所有编辑，以防止应用程序意外终止时丢失数据。</string>
 
   <string name="idepref_editor_keyboard_sugg_title">显示键盘建议</string>
   <string name="idepref_editor_keyboard_sugg_summary">在编辑器中键入时启用或禁用键盘建议。</string>
@@ -1020,6 +1015,7 @@
   <string name="hl_auto_switch_off">自动切换：关闭</string>
   <string name="hl_auto_switch_provider">自动切换提供商</string>
   <string name="hl_automatically_switch_provider_on_errors">出错时自动切换提供商</string>
+  <string name="hl_auto_saved">已自动保存：%1$s</string>
   <string name="hl_background_color">背景颜色</string>
   <string name="hl_backup_my_project">备份我的项目</string>
   <string name="hl_base_url">基础 URL</string>

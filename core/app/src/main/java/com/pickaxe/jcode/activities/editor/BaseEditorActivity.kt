@@ -341,7 +341,7 @@ abstract class BaseEditorActivity :
           val currentHash = currentContent.hashCode()
           val lastHash = editorContentHashes[editor] ?: 0
 
-          if (currentHash != lastHash && currentContent.isNotEmpty()) {
+          if (currentHash != lastHash) {
             editorContentHashes[editor] = currentHash
             pendingSaveFiles[file] = true
             log.debug("Content changed, marked for auto-save: ${file.absolutePath}")
@@ -408,55 +408,23 @@ abstract class BaseEditorActivity :
           val editor = withContext(Dispatchers.Main) { findEditorForFile(file) }
 
           if (editor != null && !isDestroying) {
-            val currentContent =
-                withContext(Dispatchers.Main) { editor.editor?.text?.toString() ?: "" }
+            // Route the save through the regular save pipeline so that the editor is marked
+            // unmodified, the tab's modified marker is cleared and the language server is
+            // notified of the save. Writing the file directly (as this used to do) left the
+            // editor in a permanently "modified" state.
+            val saveSuccess = doSaveFile(editor)
 
-            if (currentContent.isNotEmpty()) {
-              val fileContent =
-                  withContext(Dispatchers.IO) {
-                    try {
-                      if (file.exists()) file.readText() else ""
-                    } catch (e: Exception) {
-                      ""
-                    }
-                  }
-
-              if (currentContent != fileContent) {
-                val saveSuccess =
-                    withContext(Dispatchers.IO) {
-                      try {
-                        file.writeText(currentContent)
-                        true
-                      } catch (e: Exception) {
-                        log.error("Failed to auto-save file: ${file.absolutePath}", e)
-                        false
-                      }
-                    }
-
-                if (saveSuccess) {
-                  withContext(Dispatchers.Main) { showAutoSaveIndicator(file.name) }
-                }
-              }
+            if (saveSuccess) {
+              withContext(Dispatchers.Main) { showAutoSaveIndicator(file.name) }
+            } else {
+              // Keep the file pending so the save is retried on the next tick.
+              pendingSaveFiles[file] = true
             }
           }
         } catch (e: Exception) {
           log.error("Error processing auto-save for file: ${file.absolutePath}", e)
         }
       }
-    }
-  }
-
-  /** Fallback method to save file directly when SaveFileAction fails */
-  private fun fallbackSaveFile(editor: CodeEditorView, content: String) {
-    try {
-      val file = editor.file
-      if (file != null && file.exists() && file.canWrite()) {
-        file.writeText(content)
-        log.debug("Fallback save successful for: ${file.absolutePath}")
-        showAutoSaveIndicator(file.name)
-      }
-    } catch (e: Exception) {
-      log.error("Fallback save failed for: ${editor.file?.absolutePath}", e)
     }
   }
 
@@ -484,7 +452,7 @@ abstract class BaseEditorActivity :
   /** Show a subtle indicator that a file was auto-saved */
   private fun showAutoSaveIndicator(fileName: String) {
     // Update status to show auto-save happened
-    val statusText = "Auto-saved: $fileName"
+    val statusText = getString(string.hl_auto_saved, fileName)
     doSetStatus(statusText, android.view.Gravity.CENTER)
 
     // Clear the status after a short delay

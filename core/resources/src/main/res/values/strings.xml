@@ -401,8 +401,6 @@
     translatable="false">Java</string>
   <string name="title_files_unsaved">Unsaved files</string>
   <string name="msg_files_unsaved">Some files are not saved. Would you like to save them before closing? Unsaved files are: \n%s</string>
-  <string name="idepref_editor_autoSave_title">Save before closing files</string>
-  <string name="idepref_editor_autoSave_summary">Save files before closing them. This is an EXPERIMENTAL feature. You are expected to save the files yourself.</string>
   <string name="idepref_java_matchLower_summary">If enabled, then typing a lower case or upper case letters will suggest class names as well as scope members.</string>
   <string name="idepref_editor_ligatures_title">Font ligatures</string>
   <string name="idepref_editor_ligatures_summary">Enable/disable font ligatures</string>
@@ -1054,6 +1052,7 @@ This AI agent is designed to assist you in developing Android applications direc
   <string name="hl_auto_switch_off">Auto-Switch: OFF</string>
   <string name="hl_auto_switch_provider">Auto-Switch Provider</string>
   <string name="hl_automatically_switch_provider_on_errors">Automatically switch provider on errors</string>
+  <string name="hl_auto_saved">Auto-saved: %1$s</string>
   <string name="hl_background_color">Background Color</string>
   <string name="hl_backup_my_project">Backup my project</string>
   <string name="hl_base_url">Base URL</string>

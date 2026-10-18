@@ -35,7 +35,6 @@ object EditorPreferences {
   const val FONT_SIZE = "idepref_editor_fontSize"
   const val PRINTABLE_CHARS = "idepref_editor_nonPrintableFlags"
   const val TAB_SIZE = "idepref_editor_tabSize"
-  const val AUTO_SAVE = "idepref_editor_autoSave"
   const val KEYBOARD_SUGGESTIONS = "idepref_editor_show_keyboard_suggestions"
   const val AUTO_SAVE_TWO = "auto_save_enabled"
   const val FONT_LIGATURES = "idepref_editor_fontLigatures"
@@ -116,12 +115,6 @@ object EditorPreferences {
     get() = prefManager.getInt(TAB_SIZE, 4)
     set(value) {
       prefManager.putInt(TAB_SIZE, value)
-    }
-
-  var autoSave: Boolean
-    get() = prefManager.getBoolean(AUTO_SAVE, false)
-    set(value) {
-      prefManager.putBoolean(AUTO_SAVE, value)
     }
 
   var fontLigatures: Boolean
