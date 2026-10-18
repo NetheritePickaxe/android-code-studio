@@ -599,19 +599,13 @@ class GitManager(private val projectPath: String) {
         cloneCommand.setDirectory(directory)
 
         if (prefs != null) {
-            GitConfigHelper.credentialsProvider(prefs)?.let { provider ->
-                cloneCommand.setCredentialsProvider(provider)
-            }
             GitConfigHelper.configureProxy(prefs)
             GitSshSessionFactory.install(prefs)
             GitConfigHelper.setTimeouts(cloneCommand, prefs)
-        } else if (!username.isNullOrBlank() || !password.isNullOrBlank()) {
-            cloneCommand.setCredentialsProvider(
-                org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider(
-                    username ?: "",
-                    password ?: ""
-                )
-            )
+        }
+        // Explicit credentials from the clone dialog win over anything stored.
+        credentialProviderFor(prefs, username, password)?.let { provider ->
+            cloneCommand.setCredentialsProvider(provider)
         }
         return cloneCommand
     }
