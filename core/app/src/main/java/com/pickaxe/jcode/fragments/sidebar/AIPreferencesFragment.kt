@@ -21,8 +21,6 @@ import com.pickaxe.jcode.managers.CodeCompletionManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import com.pickaxe.jcode.artificial.dialogs.LocalLLMConfigDialog
-import com.pickaxe.jcode.artificial.dialogs.OpenAiCompatConfigDialog
 import com.pickaxe.jcode.app.BaseApplication
 
 class AIPreferencesFragment(
@@ -106,29 +104,8 @@ class AIPreferencesFragment(
         providerDropdown.setOnItemClickListener { _, _, position, _ ->
             val selectedProviderId = allProviderIds[position]
             val selectedProviderName = providerNames[position]
-
-            if (selectedProviderId == "localllm") {
-                showLocalLLMConfigDialog(selectedProviderName)
-            } else if (selectedProviderId == "openai_compat") {
-                showOpenAiCompatConfigDialog()
-            } else {
-                handleProviderChange(selectedProviderId, selectedProviderName)
-            }
+            handleProviderChange(selectedProviderId, selectedProviderName)
         }
-    }
-
-    private fun showLocalLLMConfigDialog(providerName: String) {
-        val dialog = LocalLLMConfigDialog { baseUrl, modelName ->
-            handleProviderChange("localllm", providerName)
-        }
-        dialog.show(parentFragmentManager, "LocalLLMConfigDialog")
-    }
-
-    private fun showOpenAiCompatConfigDialog() {
-        val dialog = OpenAiCompatConfigDialog { _, _, _, _ ->
-            handleProviderChange("openai_compat", "OpenAI 兼容 API")
-        }
-        dialog.show(parentFragmentManager, "OpenAiCompatConfigDialog")
     }
     
     private fun updateProviderDropdownSelection() {
