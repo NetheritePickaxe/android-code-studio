@@ -16,16 +16,25 @@
 */
 package com.pickaxe.jcode.fragments
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.InputType
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.pickaxe.jcode.viewmodel.GitViewModelFactory
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -33,8 +42,12 @@ import com.google.android.material.textfield.TextInputEditText
 import com.pickaxe.jcode.R
 import com.pickaxe.jcode.databinding.FragmentSettingsBinding
 import com.pickaxe.jcode.git.GitConfigHelper
+import com.pickaxe.jcode.git.GitHubOAuth
 import com.pickaxe.jcode.utils.PreferencesManager
 import com.pickaxe.jcode.viewmodel.GitViewModel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 
@@ -55,6 +68,8 @@ class SettingsFragment : Fragment() {
     ) { uri ->
         if (uri != null) importSshKey(uri)
     }
+
+    private var oauthJob: Job? = null
     
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -85,7 +100,20 @@ class SettingsFragment : Fragment() {
         val port = prefsManager.getProxyPort()
         binding.editProxyPort.setText(if (port > 0) port.toString() else "")
 
+        binding.editOAuthClientId.setText(prefsManager.getOAuthClientId() ?: "")
+
         updateSshKeyStatus()
+        updateOAuthStatus()
+    }
+
+    private fun updateOAuthStatus() {
+        val signedIn = !prefsManager.getOAuthToken().isNullOrBlank()
+        val login = prefsManager.getOAuthLogin()
+        binding.textOAuthStatus.text = when {
+            !signedIn -> getString(R.string.hl_git_oauth_not_signed_in)
+            login.isNullOrBlank() -> getString(R.string.hl_git_oauth_signed_in)
+            else -> getString(R.string.hl_git_oauth_signed_in_as, login)
+        }
     }
 
     private fun updateSshKeyStatus() {
@@ -156,6 +184,151 @@ class SettingsFragment : Fragment() {
                 .setNegativeButton(R.string.cancel, null)
                 .show()
         }
+
+        binding.buttonGitHubSignIn.setOnClickListener {
+            startGitHubSignIn()
+        }
+
+        binding.buttonGitHubSignOut.setOnClickListener {
+            oauthJob?.cancel()
+            prefsManager.clearOAuth()
+            updateOAuthStatus()
+            Snackbar.make(binding.root, R.string.hl_git_oauth_signed_out, Snackbar.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * Starts the GitHub device flow. The OAuth App client ID is taken from the
+     * field (and saved) or, when empty, requested in a dialog first.
+     */
+    private fun startGitHubSignIn() {
+        if (oauthJob?.isActive == true) return
+
+        val typed = binding.editOAuthClientId.text?.toString()?.trim().orEmpty()
+        val clientId = typed.takeIf { it.isNotBlank() } ?: prefsManager.getOAuthClientId()
+        if (clientId.isNullOrBlank()) {
+            promptOAuthClientId { id ->
+                prefsManager.setOAuthClientId(id)
+                binding.editOAuthClientId.setText(id)
+                beginOAuthSignIn(id)
+            }
+            return
+        }
+
+        prefsManager.setOAuthClientId(clientId)
+        beginOAuthSignIn(clientId)
+    }
+
+    private fun beginOAuthSignIn(clientId: String) {
+        GitConfigHelper.configureProxy(prefsManager)
+        var deviceDialog: AlertDialog? = null
+
+        oauthJob = viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val device = GitHubOAuth.requestDeviceCode(clientId)
+                deviceDialog = showDeviceCodeDialog(device) { oauthJob?.cancel() }
+
+                val token = GitHubOAuth.awaitToken(clientId, device)
+                val login = GitHubOAuth.fetchLogin(token)
+                prefsManager.saveOAuth(token, login.orEmpty())
+
+                deviceDialog?.dismiss()
+                updateOAuthStatus()
+                Snackbar.make(binding.root, R.string.hl_git_oauth_success, Snackbar.LENGTH_SHORT).show()
+            } catch (e: CancellationException) {
+                deviceDialog?.dismiss()
+                throw e
+            } catch (e: Exception) {
+                deviceDialog?.dismiss()
+                val message = when ((e as? GitHubOAuth.OAuthException)?.code) {
+                    "expired_token" -> getString(R.string.hl_git_oauth_expired)
+                    "access_denied" -> getString(R.string.hl_git_oauth_denied)
+                    else -> getString(
+                        R.string.hl_git_oauth_failed,
+                        e.message ?: e.javaClass.simpleName
+                    )
+                }
+                Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun showDeviceCodeDialog(
+        device: GitHubOAuth.DeviceCode,
+        onCancel: () -> Unit
+    ): AlertDialog {
+        val view = layoutInflater.inflate(R.layout.dialog_github_device_code, null)
+        view.findViewById<TextView>(R.id.textDeviceInstructions).text =
+            getString(R.string.hl_git_oauth_device_instructions, device.verificationUri)
+        view.findViewById<TextView>(R.id.textDeviceCode).text = device.userCode
+        view.findViewById<TextView>(R.id.textDeviceStatus).text =
+            getString(R.string.hl_git_oauth_waiting)
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.hl_git_oauth_device_title)
+            .setView(view)
+            .setPositiveButton(R.string.hl_git_oauth_open_browser, null)
+            .setNeutralButton(R.string.hl_git_oauth_copy_code, null)
+            .setNegativeButton(R.string.cancel, null)
+            .create()
+
+        dialog.setOnCancelListener { onCancel() }
+        dialog.show()
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            openBrowser(device.verificationUri)
+        }
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+            copyToClipboard(device.userCode)
+            Snackbar.make(binding.root, R.string.hl_git_oauth_copied, Snackbar.LENGTH_SHORT).show()
+        }
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
+            onCancel()
+            dialog.dismiss()
+        }
+        return dialog
+    }
+
+    private fun promptOAuthClientId(onSave: (String) -> Unit) {
+        val container = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            val pad = (16 * resources.displayMetrics.density).toInt()
+            setPadding(pad, pad, pad, pad)
+        }
+        val field = EditText(requireContext()).apply {
+            hint = getString(R.string.hl_git_oauth_client_id_hint)
+            inputType = InputType.TYPE_CLASS_TEXT
+        }
+        container.addView(field)
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.hl_git_oauth_title)
+            .setMessage(R.string.hl_git_oauth_client_id_required)
+            .setView(container)
+            .setPositiveButton(R.string.save) { _, _ ->
+                val id = field.text?.toString()?.trim()
+                if (!id.isNullOrBlank()) onSave(id)
+            }
+            .setNeutralButton(R.string.hl_git_oauth_create_app) { _, _ ->
+                openBrowser(GitHubOAuth.CREATE_APP_URL)
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun openBrowser(url: String) {
+        runCatching {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        }.onFailure {
+            Snackbar.make(binding.root, R.string.hl_git_oauth_open_browser_failed, Snackbar.LENGTH_LONG)
+                .show()
+        }
+    }
+
+    private fun copyToClipboard(text: String) {
+        val clipboard =
+            requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText("github-device-code", text))
     }
     
     private fun importSshKey(uri: Uri) {
@@ -237,6 +410,8 @@ class SettingsFragment : Fragment() {
     }
     
     override fun onDestroyView() {
+        oauthJob?.cancel()
+        oauthJob = null
         super.onDestroyView()
         _binding = null
     }

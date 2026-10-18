@@ -160,4 +160,40 @@ class PreferencesManager(context: Context) {
             .remove("password")
             .apply()
     }
+    
+    // OAuth (GitHub device flow)
+    fun setOAuthClientId(clientId: String) {
+        normalPrefs.edit().putString("git_oauth_client_id", clientId.trim()).apply()
+    }
+    
+    fun getOAuthClientId(): String? {
+        return normalPrefs.getString("git_oauth_client_id", null)
+    }
+    
+    /**
+     * Stores the token obtained through the OAuth device flow. Kept separately
+     * from [saveCredentials] so it does not depend on the "remember credentials"
+     * switch, and so signing out falls back to any saved username/password.
+     */
+    fun saveOAuth(token: String, login: String) {
+        encryptedPrefs.edit()
+            .putString("oauth_token", token)
+            .putString("oauth_login", login)
+            .apply()
+    }
+    
+    fun getOAuthToken(): String? {
+        return encryptedPrefs.getString("oauth_token", null)
+    }
+    
+    fun getOAuthLogin(): String? {
+        return encryptedPrefs.getString("oauth_login", null)
+    }
+    
+    fun clearOAuth() {
+        encryptedPrefs.edit()
+            .remove("oauth_token")
+            .remove("oauth_login")
+            .apply()
+    }
 }

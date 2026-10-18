@@ -58,12 +58,19 @@ object GitConfigHelper {
     }
 
     /**
-     * Returns a CredentialsProvider built from the stored username/token, or
-     * null when nothing is stored. Sending an empty Basic auth header breaks
-     * some servers, so anonymous access is preferred until the user configures
-     * credentials in the Git settings.
+     * Returns a CredentialsProvider built from the signed-in OAuth token, then
+     * from the stored username/token, or null when nothing is stored. Sending an
+     * empty Basic auth header breaks some servers, so anonymous access is
+     * preferred until the user configures credentials in the Git settings.
      */
     fun credentialsProvider(prefs: PreferencesManager): CredentialsProvider? {
+        val oauthToken = prefs.getOAuthToken()
+        if (!oauthToken.isNullOrBlank()) {
+            // GitHub accepts the OAuth token as the HTTPS password; any username
+            // works, but the real login reads best in server logs.
+            val login = prefs.getOAuthLogin()?.takeIf { it.isNotBlank() } ?: "x-access-token"
+            return UsernamePasswordCredentialsProvider(login, oauthToken)
+        }
         val username = prefs.getUsername()
         val password = prefs.getPassword()
         if (username.isNullOrBlank() && password.isNullOrBlank()) return null
