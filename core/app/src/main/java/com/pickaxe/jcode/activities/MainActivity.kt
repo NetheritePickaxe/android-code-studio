@@ -36,6 +36,7 @@ import com.pickaxe.jcode.preferences.internal.GeneralPreferences
 import com.pickaxe.jcode.projects.IProjectManager
 import com.pickaxe.jcode.resources.R.string
 import com.pickaxe.jcode.templates.ITemplateProvider
+import com.pickaxe.jcode.templates.preferences.WizardPreferences
 import com.pickaxe.jcode.utils.DialogUtils
 import com.pickaxe.jcode.utils.flashInfo
 import com.pickaxe.jcode.R
@@ -199,6 +200,8 @@ class MainActivity : EdgeToEdgeIDEActivity() {
   }
 
   internal fun openProject(root: File) {
+    // Remember every project that is opened, so it shows up in the project list.
+    WizardPreferences.addRecentProject(this, root.absolutePath)
     IProjectManager.getInstance().openProject(root)
     startActivity(Intent(this, EditorActivityKt::class.java))
   }

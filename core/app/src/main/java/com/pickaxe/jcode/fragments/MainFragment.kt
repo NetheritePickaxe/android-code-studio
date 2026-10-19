@@ -47,6 +47,7 @@ import com.pickaxe.jcode.git.GitConfigHelper
 import com.pickaxe.jcode.git.GitSshSessionFactory
 import com.pickaxe.jcode.git.GitUrlUtils
 import com.pickaxe.jcode.models.MainScreenAction
+import com.pickaxe.jcode.projects.BuildSystemDetector
 import com.pickaxe.jcode.resources.R.string
 import com.pickaxe.jcode.tasks.runOnUiThread
 import com.pickaxe.jcode.templates.preferences.WizardPreferences
@@ -170,7 +171,7 @@ class MainFragment : BaseFragment() {
     val recentProjectFiles =
         recentProjectPaths.mapNotNull { path ->
           val file = File(path)
-          if (file.exists() && file.isDirectory && isValidAndroidProject(file)) file else null
+          if (file.exists() && file.isDirectory) file else null
         }
 
     val allProjectsMap = mutableMapOf<String, File>()
@@ -217,8 +218,7 @@ class MainFragment : BaseFragment() {
                   val updatedRecentProjectFiles =
                       updatedRecentProjectPaths.mapNotNull { path ->
                         val file = File(path)
-                        if (file.exists() && file.isDirectory && isValidAndroidProject(file)) file
-                        else null
+                        if (file.exists() && file.isDirectory) file else null
                       }
 
                   val updatedAllProjectsMap = mutableMapOf<String, File>()
@@ -512,20 +512,11 @@ class MainFragment : BaseFragment() {
   private fun isValidAndroidProject(dir: File): Boolean {
     if (!dir.isDirectory) return false
 
-    // Check if it's a Gradle project
-    val gradleWrapper = File(dir, "gradle/wrapper/gradle-wrapper.properties")
-    if (gradleWrapper.exists()) {
-      val buildGradle = File(dir, "build.gradle")
-      val buildGradleKts = File(dir, "build.gradle.kts")
-      if (buildGradle.exists() || buildGradleKts.exists()) return true
-    }
+    // Any directory with Gradle build scripts counts as a project.
+    if (BuildSystemDetector.hasBuildScript(dir)) return true
 
-    // Check if it's a plain Java project (has .java files)
-    return hasJavaSources(dir)
-  }
-
-  private fun hasJavaSources(dir: File): Boolean {
-    return dir.walkTopDown().any { it.extension == "java" }
+    // Plain Java/Kotlin projects are detected by their sources.
+    return BuildSystemDetector.hasSources(dir)
   }
 
   private fun deleteProject(project: File, onDeleted: () -> Unit) {

@@ -45,19 +45,30 @@ object WizardPreferences {
   // Add a project to recent projects list
   fun addRecentProject(context: Context, projectPath: String) {
     val prefs = getPrefs(context)
+    val path = canonicalPath(projectPath)
     val recentProjects = getRecentProjects(context).toMutableList()
 
-    // Remove if already exists (we'll add it to the front)
-    recentProjects.remove(projectPath)
+    // Remove if already exists (we'll add it to the front). Compare canonical paths so the same
+    // project is not added twice when it is opened through different entry points.
+    recentProjects.removeAll { it == path || canonicalPath(it) == path }
 
     // Add to front
-    recentProjects.add(0, projectPath)
+    recentProjects.add(0, path)
 
     // Keep only MAX_RECENT_PROJECTS
     val trimmedList = recentProjects.take(MAX_RECENT_PROJECTS)
 
     // Save as comma-separated string
     prefs.edit().putString(KEY_RECENT_PROJECTS, trimmedList.joinToString(",")).apply()
+  }
+
+  /** Returns the canonical path of [path], or [path] itself if it cannot be resolved. */
+  private fun canonicalPath(path: String): String {
+    return try {
+      java.io.File(path).canonicalPath
+    } catch (e: Exception) {
+      path
+    }
   }
 
   // Get list of recent project paths
