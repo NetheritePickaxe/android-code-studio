@@ -269,25 +269,29 @@ class JavaBuildBackend(
 
     // ─── JDK binary resolution ────────────────────────────────────────────
 
-    private fun javacBinary(): File? {
+    private fun javacBinary(): File? = jdkBinary("javac")
+
+    private fun javaBinary(): File? = jdkBinary("java")
+
+    private fun jarBinary(): File? = jdkBinary("jar")
+
+    /**
+     * Resolves a JDK tool from `$JAVA_HOME/bin`. The executable bit is restored if it was lost when
+     * the JDK was extracted.
+     */
+    private fun jdkBinary(name: String): File? {
         val home = Environment.JAVA_HOME ?: return null
-        val javac = File(home, "bin/javac")
-        return if (javac.exists() && javac.canExecute()) javac else null
+        val file = File(home, "bin/$name")
+        if (!file.exists()) return null
+        if (!file.canExecute()) file.setExecutable(true)
+        return file
     }
 
-    private fun javaBinary(): File? {
-        val java = Environment.JAVA ?: return null
-        return if (java.exists() && java.canExecute()) java else null
+    private fun javacNotFoundMessage(): String {
+        val home = Environment.JAVA_HOME
+        val location = if (home != null) " (looked in ${home.absolutePath})" else ""
+        return "JDK not found$location. Open the terminal and run: pkg install openjdk-17"
     }
-
-    private fun jarBinary(): File? {
-        val home = Environment.JAVA_HOME ?: return null
-        val jar = File(home, "bin/jar")
-        return if (jar.exists() && jar.canExecute()) jar else null
-    }
-
-    private fun javacNotFoundMessage(): String =
-        "JDK not found. Install OpenJDK in Termux with: pkg install openjdk-17"
 
     // ─── Source scanning ──────────────────────────────────────────────────
 
