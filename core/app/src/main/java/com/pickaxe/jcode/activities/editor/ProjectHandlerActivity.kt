@@ -383,7 +383,9 @@ fun initializeProject(buildVariants: Map<String, String>) {
     val buildSystem = BuildSystemDetector.detect(projectDir)
     log.debug("Detected build system: {}", buildSystem)
 
-    // For non-Gradle projects, skip Tooling API initialization
+    // Only projects that need the Gradle Tooling API (Android projects, or Gradle projects without
+    // plain Java sources) are initialized through the build service. Everything else (single file
+    // Java projects, plain Java/Gradle-Java projects) is set up locally.
     if (buildSystem != BuildSystem.GRADLE) {
       log.info("Non-Gradle project detected ({}). Skipping Tooling API initialization.", buildSystem)
       ThreadUtils.runOnUiThread { preProjectInit() }
@@ -406,11 +408,15 @@ fun initializeProject(buildVariants: Map<String, String>) {
     val buildService = Lookup.getDefault().lookup(BuildService.KEY_BUILD_SERVICE)
     if (buildService == null) {
       log.error("No build service found. Cannot initialize project.")
+      resetInitializationState(manager)
       return
     }
 
     if (!buildService.isToolingServerStarted()) {
+      log.warn("Gradle Tooling API server is not available. Cannot initialize the project.")
       flashError(string.msg_tooling_server_unavailable)
+      // Do not leave the editor stuck in the 'initializing' state.
+      resetInitializationState(manager)
       return
     }
 
@@ -439,6 +445,31 @@ fun initializeProject(buildVariants: Map<String, String>) {
       }
 
       onProjectInitialized(result)
+    }
+  }
+
+  /**
+   * Returns `true` if the opened project must be initialized through the Gradle Tooling API.
+   */
+  private fun requiresToolingApi(): Boolean {
+    return try {
+      val projectDir = ProjectManagerImpl.getInstance().projectDir
+      BuildSystemDetector.detect(projectDir) == BuildSystem.GRADLE
+    } catch (e: Exception) {
+      log.warn("Could not determine the project build system. Assuming Gradle.", e)
+      true
+    }
+  }
+
+  /**
+   * Resets the project initialization state so the editor is not left stuck in the
+   * "initializing" state when initialization cannot be performed (e.g. when the Gradle Tooling API
+   * server is not available).
+   */
+  private fun resetInitializationState(manager: ProjectManagerImpl) {
+    ThreadUtils.runOnUiThread {
+      editorViewModel.isInitializing = false
+      manager.projectInitialized = false
     }
   }
 
@@ -491,6 +522,14 @@ fun initializeProject(buildVariants: Map<String, String>) {
     editorViewModel.isBoundToBuildSerice = true
     Lookup.getDefault().update(BuildService.KEY_BUILD_SERVICE, service)
     service.setEventListener(mBuildEventListener)
+
+    // Projects that do not need the Tooling API (single file Java projects and plain Java projects)
+    // are initialized right away, without waiting for the Tooling API server to start.
+    if (!requiresToolingApi()) {
+      log.info("Project does not require the Gradle Tooling API. Initializing immediately.")
+      initializeProject()
+      return
+    }
 
     if (!service.isToolingServerStarted()) {
       service.startToolingServer { pid ->

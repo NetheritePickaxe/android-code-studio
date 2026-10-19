@@ -63,14 +63,12 @@ class RunJavaAction(context: Context, override val order: Int) : BaseBuildAction
     }
     visible = true
 
-    // For non-Gradle projects, enable even if the Gradle build service is not available
+    // Java sources can always be compiled directly with javac/java, even when the Gradle
+    // Tooling API is unavailable.
     val projectDir = safeProjectDir()
-    if (projectDir != null) {
-      val buildSystem = BuildSystemDetector.detect(projectDir)
-      if (buildSystem != null && buildSystem != BuildSystem.GRADLE) {
-        enabled = true
-        return
-      }
+    if (projectDir != null && BuildSystemDetector.hasJavaSources(projectDir)) {
+      enabled = true
+      return
     }
 
     enabled = buildService?.let { !it.isBuildInProgress } == true
@@ -87,7 +85,19 @@ class RunJavaAction(context: Context, override val order: Int) : BaseBuildAction
 
     when (buildSystem) {
       BuildSystem.JAVA_SINGLE, BuildSystem.JAVA_JAR -> runJavaProject(data, projectDir)
-      BuildSystem.GRADLE -> runGradleProject()
+      BuildSystem.GRADLE -> {
+        val service = buildService
+        if (service != null && service.isToolingServerStarted()) {
+          runGradleProject()
+        } else if (BuildSystemDetector.hasJavaSources(projectDir)) {
+          // The Gradle Tooling API server is not running. Projects that only contain plain Java
+          // sources (e.g. the "Java Application" template) can still be built and run directly.
+          log.info("Gradle Tooling API unavailable. Falling back to a direct javac/java run.")
+          runJavaProject(data, projectDir, ignoreGradle = true)
+        } else {
+          flashError(R.string.msg_tooling_server_unavailable)
+        }
+      }
       null -> flashError("Could not determine the project type.")
     }
     return ""
@@ -97,7 +107,11 @@ class RunJavaAction(context: Context, override val order: Int) : BaseBuildAction
    * Runs a non-Gradle Java project using [JavaBuildBackend].
    * Output is streamed to the build output sheet.
    */
-  private suspend fun runJavaProject(data: ActionData, projectDir: java.io.File) {
+  private suspend fun runJavaProject(
+      data: ActionData,
+      projectDir: java.io.File,
+      ignoreGradle: Boolean = false,
+  ) {
     val activity = data.getActivity() ?: run {
       flashError("Cannot access editor activity.")
       return
@@ -111,7 +125,7 @@ class RunJavaAction(context: Context, override val order: Int) : BaseBuildAction
       activity.appendBuildOutput(line)
     }
 
-    val result = backend.buildAndRun(projectDir)
+    val result = backend.buildAndRun(projectDir, ignoreGradle)
     if (result.success) {
       activity.appendBuildOutput(result.message)
       flashInfo("Run completed.")
