@@ -120,10 +120,14 @@ class RunJavaAction(context: Context, override val order: Int) : BaseBuildAction
     // Clear the build output and show the sheet
     activity.content.bottomSheet.clearBuildOutput()
     activity.appendBuildOutput("Building Java project (${projectDir.name})...")
+    activity.appendBuildOutput("Project: ${projectDir.absolutePath}")
+    activity.appendBuildOutput("Build system: ${BuildSystemDetector.detect(projectDir)}")
 
     val backend = JavaBuildBackend { line ->
       activity.appendBuildOutput(line)
     }
+
+    backend.describeEnvironment().forEach { activity.appendBuildOutput(it) }
 
     val result = backend.buildAndRun(projectDir, ignoreGradle)
     if (result.success) {

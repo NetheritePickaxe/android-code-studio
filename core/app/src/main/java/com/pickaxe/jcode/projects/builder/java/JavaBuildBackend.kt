@@ -16,6 +16,8 @@
  */
 package com.pickaxe.jcode.projects.builder.java
 
+import com.pickaxe.jcode.dependencies.DependencyScope
+import com.pickaxe.jcode.dependencies.DependencyStore
 import com.pickaxe.jcode.projects.BuildSystem
 import com.pickaxe.jcode.projects.BuildSystemDetector
 import com.pickaxe.jcode.utils.Environment
@@ -117,18 +119,23 @@ class JavaBuildBackend(
         val javac = javacBinary() ?: return@withContext Result(false, javacNotFoundMessage())
         val java = javaBinary() ?: return@withContext Result(false, javacNotFoundMessage())
 
+        val dependencies = resolveDependencies(projectDir)
+
         val outputDir = File(projectDir, ".jcode/classes")
         outputDir.mkdirs()
 
         val mainClass = findMainClass(javaFile) ?: javaFile.nameWithoutExtension
 
         outputCallback("Compiling ${javaFile.name}...")
-        val compileCmd = listOf(
+        val compileCmd = mutableListOf(
             javac.absolutePath,
             "-encoding", "UTF-8",
             "-d", outputDir.absolutePath,
-            javaFile.absolutePath,
         )
+        if (dependencies.isNotEmpty()) {
+            compileCmd.addAll(listOf("-cp", dependencies.joinToString(File.pathSeparator)))
+        }
+        compileCmd.add(javaFile.absolutePath)
         val compileResult = runProcess(compileCmd, projectDir)
         if (!compileResult.success) {
             outputCallback("Compilation failed.")
@@ -140,7 +147,7 @@ class JavaBuildBackend(
         val runCmd = listOf(
             java.absolutePath,
             "-Dfile.encoding=UTF-8",
-            "-cp", outputDir.absolutePath,
+            "-cp", (listOf(outputDir) + dependencies).joinToString(File.pathSeparator),
             mainClass,
         )
         val runResult = runProcess(runCmd, projectDir)
@@ -161,6 +168,8 @@ class JavaBuildBackend(
             return@withContext Result(false, "No .java source files found.")
         }
 
+        val dependencies = resolveDependencies(projectDir)
+
         val outputDir = File(projectDir, ".jcode/classes")
         outputDir.mkdirs()
         val buildDir = File(projectDir, ".jcode/build")
@@ -180,6 +189,9 @@ class JavaBuildBackend(
             "-encoding", "UTF-8",
             "-d", outputDir.absolutePath,
         )
+        if (dependencies.isNotEmpty()) {
+            compileCmd.addAll(listOf("-cp", dependencies.joinToString(File.pathSeparator)))
+        }
         // Add source root as sourcepath so inner classes resolve
         compileCmd.addAll(sourceFiles.map { it.absolutePath })
         val compileResult = runProcess(compileCmd, projectDir)
@@ -217,7 +229,8 @@ class JavaBuildBackend(
         val runCmd = listOf(
             java.absolutePath,
             "-Dfile.encoding=UTF-8",
-            "-jar", jarFile.absolutePath,
+            "-cp", (listOf(jarFile) + dependencies).joinToString(File.pathSeparator),
+            mainClass,
         )
         val runResult = runProcess(runCmd, projectDir)
         outputCallback("Process exited with code ${runResult.exitCode}.")
@@ -268,6 +281,36 @@ class JavaBuildBackend(
     private data class ProcessResult(val exitCode: Int, val success: Boolean)
 
     // ─── JDK binary resolution ────────────────────────────────────────────
+
+    /** A short description of the Java environment used to compile and run projects. */
+    fun describeEnvironment(): List<String> {
+        val home = Environment.JAVA_HOME
+        val javac = home?.let { File(it, "bin/javac") }
+        val java = Environment.JAVA
+
+        fun describe(file: File?): String {
+            if (file == null) return "missing"
+            return "${file.absolutePath} (${if (file.exists()) "found" else "missing"})"
+        }
+
+        return listOf(
+            "JAVA_HOME: ${home?.absolutePath ?: "missing"}",
+            "javac: ${describe(javac)}",
+            "java: ${describe(java)}",
+        )
+    }
+
+    /** Resolves the dependencies configured in the settings and keeps the user informed. */
+    private fun resolveDependencies(projectDir: File): List<File> {
+        val jars =
+            DependencyStore.resolveJars(DependencyScope.JAVA, projectDir) { message ->
+                outputCallback("  $message")
+            }
+        if (jars.isNotEmpty()) {
+            outputCallback("Using ${jars.size} dependency JAR(s).")
+        }
+        return jars
+    }
 
     private fun javacBinary(): File? = jdkBinary("javac")
 
