@@ -236,6 +236,7 @@
   <string name="idepref_kotlin_indexing_notif_summary">
       Display a notification banner when a Kotlin project is being indexed by the Kotlin Language Server.
   </string>
+  <string name="closing_project">Closing project</string>
 
   <string name="include_test_str">Include android tests</string>
   <string name="use_cmake">Use CMake build system</string>
@@ -590,6 +591,8 @@
   <string name="lsp_server_success_title">Download Complete</string>
 
   <string name="title_gradle_service_notification_channel">jcode Gradle build service</string>
+  <string name="title_dependency_download_notification_channel">Dependency download</string>
+  <string name="title_dependency_download_notification">Downloading dependencies</string>
   <string name="msg_hex_color_code">Hex color code</string>
   <string name="msg_color_picker_pick">Pick</string>
   <string name="msg_chmod_exec">Setting executable permissions…</string>

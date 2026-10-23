@@ -554,6 +554,8 @@
   <string name="lsp_server_success_title">下载完成</string>
 
   <string name="title_gradle_service_notification_channel">jcode Gradle 构建服务</string>
+  <string name="title_dependency_download_notification_channel">依赖下载</string>
+  <string name="title_dependency_download_notification">正在下载依赖</string>
   <string name="msg_hex_color_code">十六进制颜色代码</string>
   <string name="msg_color_picker_pick">选择</string>
   <string name="msg_chmod_exec">正在设置可执行权限…</string>

@@ -16,7 +16,10 @@
  */
 package com.pickaxe.jcode.dependencies
 
+import com.pickaxe.jcode.app.BaseApplication
 import com.pickaxe.jcode.preferences.internal.prefManager
+import com.pickaxe.jcode.resources.R.string
+import com.pickaxe.jcode.utils.DownloadNotificationManager
 import com.pickaxe.jcode.utils.Environment
 import java.io.File
 import java.net.HttpURLConnection
@@ -136,15 +139,59 @@ object DependencyStore {
     val entries = allDependencies(scope, projectDir)
     if (entries.isEmpty()) return emptyList()
 
+    // Try to get app context for notifications
+    val context = BaseApplication.getBaseInstance()
+
+    // Start download notification if context is available
+    val notificationActive = context != null
+    if (notificationActive) {
+      DownloadNotificationManager.startDownload(
+          context,
+          context.getString(string.title_dependency_download_notification),
+      )
+    }
+
     val jars = mutableListOf<File>()
     for (entry in entries) {
-      val jar = resolveEntry(entry, projectDir, getRepositories(scope), onMessage)
+      val jar =
+          resolveEntry(
+              entry,
+              projectDir,
+              getRepositories(scope),
+              onMessage = { msg ->
+                onMessage(msg)
+                if (notificationActive && context != null) {
+                  DownloadNotificationManager.updateDownload(context, msg)
+                }
+              },
+              onProgress = { percent ->
+                if (notificationActive && context != null) {
+                  DownloadNotificationManager.updateDownload(context, "$entry: $percent%")
+                }
+              },
+          )
       if (jar != null) {
         jars.add(jar)
       } else {
         onMessage("Dependency not available: $entry")
       }
     }
+
+    // Complete or cancel the notification
+    if (notificationActive && context != null) {
+      if (jars.isNotEmpty()) {
+        DownloadNotificationManager.completeDownload(
+            context,
+            "Downloaded ${jars.size} artifact(s)",
+        )
+      } else {
+        DownloadNotificationManager.failDownload(
+            context,
+            "No dependencies could be downloaded",
+        )
+      }
+    }
+
     return jars.distinct()
   }
 
@@ -154,6 +201,7 @@ object DependencyStore {
       projectDir: File?,
       repositories: List<String> = DEFAULT_REPOSITORIES,
       onMessage: (String) -> Unit = {},
+      onProgress: ((Int) -> Unit)? = null,
   ): File? {
     val coordinates = parseCoordinates(entry)
     if (coordinates == null) {
@@ -170,7 +218,9 @@ object DependencyStore {
       val url = artifactUrl(repository, group, artifact, version)
       onMessage("Downloading $entry from $repository ...")
       try {
-        download(url, cached)
+        download(url, cached) { percent ->
+          onProgress?.invoke(percent)
+        }
         if (cached.isFile && cached.length() > 0) {
           onMessage("Downloaded $entry")
           return cached
@@ -213,7 +263,7 @@ object DependencyStore {
     return "$base/${group.replace('.', '/')}/$artifact/$version/$artifact-$version.jar"
   }
 
-  private fun download(url: String, target: File) {
+  private fun download(url: String, target: File, onProgress: (Int) -> Unit = {}) {
     target.parentFile?.mkdirs()
     val connection = URL(url).openConnection() as HttpURLConnection
     connection.connectTimeout = CONNECT_TIMEOUT_MS
@@ -225,9 +275,31 @@ object DependencyStore {
       if (code !in 200..299) {
         throw IllegalStateException("HTTP $code for $url")
       }
+      val contentLength = connection.contentLength
       val temp = File(target.parentFile, "${target.name}.part")
+      var lastPercent = -1
       connection.inputStream.use { input ->
-        temp.outputStream().use { output -> input.copyTo(output) }
+        temp.outputStream().use { output ->
+          val buffer = ByteArray(8192)
+          var totalRead = 0
+          var read: Int
+          while (input.read(buffer).also { read = it } != -1) {
+            output.write(buffer, 0, read)
+            totalRead += read
+            val percent =
+                if (contentLength > 0) {
+                  (totalRead * 100 / contentLength).coerceIn(0, 100)
+                } else {
+                  0
+                }
+            // Only report when the integer percentage changes to avoid flooding
+            // the notification with thousands of updates for large files.
+            if (percent != lastPercent) {
+              lastPercent = percent
+              onProgress(percent)
+            }
+          }
+        }
       }
       if (!temp.renameTo(target)) {
         temp.copyTo(target, overwrite = true)
