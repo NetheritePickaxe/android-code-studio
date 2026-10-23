@@ -26,6 +26,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.pickaxe.jcode.dependencies.DependencyScope
 import com.pickaxe.jcode.dependencies.DependencyStore
 import com.pickaxe.jcode.dependencies.GradleDependencyApplier
+import com.pickaxe.jcode.dependencies.JdkSetupLauncher
 import com.pickaxe.jcode.projects.internal.ProjectManagerImpl
 import com.pickaxe.jcode.resources.R.string
 import com.pickaxe.jcode.utils.Environment
@@ -79,6 +80,7 @@ private class JavaDependencyScreen(
         )
     )
     addPreference(JdkStatusPreference())
+    addPreference(InstallJdkPreference())
   }
 }
 
@@ -332,5 +334,28 @@ private class ProjectDependenciesFilePreference(
 
   override fun onCreatePreference(context: Context): Preference {
     return Preference(context)
+  }
+}
+
+/** Opens the terminal and runs the `idesetup` script to install the JDK and Gradle. */
+@Parcelize
+private class InstallJdkPreference(
+    override val key: String = "idepref_deps_java_install_jdk",
+    override val title: Int = string.dependency_install_jdk_title,
+    override val summary: Int? = string.dependency_install_jdk_summary,
+) : BasePreference() {
+
+  override fun onCreatePreference(context: Context): Preference {
+    return Preference(context)
+  }
+
+  override fun onPreferenceClick(preference: Preference): Boolean {
+    val activity = preference.context as? android.app.Activity
+    if (activity != null) {
+      JdkSetupLauncher.launch(activity)
+    } else {
+      flashError("Cannot start the terminal from here.")
+    }
+    return true
   }
 }

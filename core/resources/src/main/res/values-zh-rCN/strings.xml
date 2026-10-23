@@ -1285,4 +1285,10 @@
   <string name="dependency_jdk_dialog_missing">JAVA_HOME：%1$s\n\n未找到 JDK，Java 项目无法编译或运行。\n\n请在终端中执行：\npkg install openjdk-17</string>
   <string name="dependency_project_file_title">项目级依赖</string>
   <string name="dependency_project_file_summary">可以在 .jcode/dependencies.txt 中追加仅属于该项目的依赖</string>
+  <string name="dependency_install_jdk_title">安装 JDK / 工具链</string>
+  <string name="dependency_install_jdk_summary">打开终端运行 idesetup 脚本，安装 JDK 与 Gradle</string>
+  <string name="jdk_missing_dialog_title">未安装 JDK</string>
+  <string name="jdk_missing_dialog_message">编译和运行 Java 项目需要 JDK，当前尚未安装。是否现在打开终端，运行 idesetup 脚本自动安装？</string>
+  <string name="jdk_missing_dialog_install">现在安装</string>
+  <string name="jdk_missing_dialog_later">稍后</string>
 </resources>

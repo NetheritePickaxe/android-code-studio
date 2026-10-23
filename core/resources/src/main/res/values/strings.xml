@@ -1322,4 +1322,10 @@ This AI agent is designed to assist you in developing Android applications direc
   <string name="dependency_jdk_dialog_missing">JAVA_HOME: %1$s\n\nNo JDK was found, so Java projects cannot be compiled or run.\n\nOpen the terminal and run:\npkg install openjdk-17</string>
   <string name="dependency_project_file_title">Project dependencies</string>
   <string name="dependency_project_file_summary">Extra dependencies can be listed in .jcode/dependencies.txt</string>
+  <string name="dependency_install_jdk_title">Install JDK / toolchain</string>
+  <string name="dependency_install_jdk_summary">Opens the terminal and runs the idesetup script to install the JDK and Gradle</string>
+  <string name="jdk_missing_dialog_title">JDK not installed</string>
+  <string name="jdk_missing_dialog_message">Compiling and running Java projects requires a JDK, which is not installed yet. Open the terminal now and run the idesetup script to install it automatically?</string>
+  <string name="jdk_missing_dialog_install">Install now</string>
+  <string name="jdk_missing_dialog_later">Later</string>
 </resources>
