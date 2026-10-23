@@ -1290,4 +1290,36 @@ This AI agent is designed to assist you in developing Android applications direc
   <string name="hl_warning_enabling_file_writing_allows_ai_to_modif">Warning: Enabling file writing allows AI to modify your project files. Always review changes before applying.</string>
   <string name="hl_what_would_you_like_me_to_do">What would you like me to do?</string>
   <string name="hl_xml_files_xml">XML Files (.xml)</string>
+
+  <!-- Dependency management -->
+  <string name="dependency_management_title">Dependency management</string>
+  <string name="dependency_management_summary">Repositories and dependencies for Java, Kotlin and Gradle</string>
+  <string name="dependency_management_java">Java dependencies</string>
+  <string name="dependency_management_java_summary">JARs used when compiling and running plain Java projects</string>
+  <string name="dependency_management_kotlin">Kotlin dependencies</string>
+  <string name="dependency_management_kotlin_summary">JARs used when compiling and running Kotlin projects</string>
+  <string name="dependency_management_gradle">Gradle dependencies</string>
+  <string name="dependency_management_gradle_summary">Repositories and dependencies applied to the opened Gradle project</string>
+  <string name="dependency_repositories_title">Repositories</string>
+  <string name="dependency_repositories_summary">One Maven repository URL per line</string>
+  <string name="dependency_list_title">Dependencies</string>
+  <string name="dependency_list_summary">One entry per line: group:artifact:version, or a path to a local JAR</string>
+  <string name="dependency_list_summary_gradle">One entry per line: group:artifact:version, optionally prefixed with implementation, api, compileOnly or runtimeOnly</string>
+  <string name="dependency_summary_empty">Not configured</string>
+  <string name="dependency_summary_count">%1$d entries</string>
+  <string name="dependency_dialog_hint_coordinates">group:artifact:version or /path/to/library.jar</string>
+  <string name="dependency_dialog_hint_repository">https://repo1.maven.org/maven2</string>
+  <string name="dependency_apply_gradle_title">Apply to the current project</string>
+  <string name="dependency_apply_gradle_summary">Writes the repositories and dependencies into the project build script</string>
+  <string name="dependency_apply_success">Dependencies written to %1$s</string>
+  <string name="dependency_apply_no_project">Open a project first</string>
+  <string name="dependency_apply_no_build_script">No build.gradle or build.gradle.kts found</string>
+  <string name="dependency_apply_failed">Failed to apply dependencies: %1$s</string>
+  <string name="dependency_jdk_title">JDK environment</string>
+  <string name="dependency_jdk_missing">javac/java not found</string>
+  <string name="dependency_jdk_found">JDK available</string>
+  <string name="dependency_jdk_dialog_ok">JAVA_HOME: %1$s\njavac: %2$s\njava: %3$s</string>
+  <string name="dependency_jdk_dialog_missing">JAVA_HOME: %1$s\n\nNo JDK was found, so Java projects cannot be compiled or run.\n\nOpen the terminal and run:\npkg install openjdk-17</string>
+  <string name="dependency_project_file_title">Project dependencies</string>
+  <string name="dependency_project_file_summary">Extra dependencies can be listed in .jcode/dependencies.txt</string>
 </resources>

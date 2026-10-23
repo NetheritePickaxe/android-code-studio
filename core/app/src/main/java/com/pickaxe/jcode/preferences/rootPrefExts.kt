@@ -38,6 +38,7 @@ class ConfigurationPreferences(
     addPreference(GeneralPreferencesScreen())
     addPreference(EditorPreferencesScreen())
     addPreference(AIAgentPreferencesScreen())
+    addPreference(DependencyManagementPreferences())
     addPreference(BuildAndRunPreferences())
     addPreference(TermuxPreferences())
   }

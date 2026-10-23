@@ -1253,4 +1253,36 @@
   <string name="hl_warning_enabling_file_writing_allows_ai_to_modif">警告：启用文件写入将允许 AI 修改你的项目文件。应用前请务必检查更改。</string>
   <string name="hl_what_would_you_like_me_to_do">你想让我做什么？</string>
   <string name="hl_xml_files_xml">XML 文件 (.xml)</string>
+
+  <!-- Dependency management -->
+  <string name="dependency_management_title">依赖管理</string>
+  <string name="dependency_management_summary">管理 Java、Kotlin 和 Gradle 的仓库与依赖</string>
+  <string name="dependency_management_java">Java 依赖</string>
+  <string name="dependency_management_java_summary">编译和运行普通 Java 项目时使用的 JAR</string>
+  <string name="dependency_management_kotlin">Kotlin 依赖</string>
+  <string name="dependency_management_kotlin_summary">编译和运行 Kotlin 项目时使用的 JAR</string>
+  <string name="dependency_management_gradle">Gradle 依赖</string>
+  <string name="dependency_management_gradle_summary">写入当前 Gradle 项目的仓库与依赖</string>
+  <string name="dependency_repositories_title">仓库</string>
+  <string name="dependency_repositories_summary">每行一个 Maven 仓库地址</string>
+  <string name="dependency_list_title">依赖列表</string>
+  <string name="dependency_list_summary">每行一项：group:artifact:version，或本地 JAR 路径</string>
+  <string name="dependency_list_summary_gradle">每行一项：group:artifact:version，可在前面加 implementation、api、compileOnly 或 runtimeOnly</string>
+  <string name="dependency_summary_empty">未配置</string>
+  <string name="dependency_summary_count">%1$d 项</string>
+  <string name="dependency_dialog_hint_coordinates">group:artifact:version 或 /path/to/library.jar</string>
+  <string name="dependency_dialog_hint_repository">https://repo1.maven.org/maven2</string>
+  <string name="dependency_apply_gradle_title">应用到当前项目</string>
+  <string name="dependency_apply_gradle_summary">把仓库与依赖写入项目构建脚本</string>
+  <string name="dependency_apply_success">已写入 %1$s</string>
+  <string name="dependency_apply_no_project">请先打开一个项目</string>
+  <string name="dependency_apply_no_build_script">项目中没有 build.gradle 或 build.gradle.kts</string>
+  <string name="dependency_apply_failed">应用依赖失败：%1$s</string>
+  <string name="dependency_jdk_title">JDK 环境</string>
+  <string name="dependency_jdk_missing">未找到 javac/java</string>
+  <string name="dependency_jdk_found">JDK 可用</string>
+  <string name="dependency_jdk_dialog_ok">JAVA_HOME：%1$s\njavac：%2$s\njava：%3$s</string>
+  <string name="dependency_jdk_dialog_missing">JAVA_HOME：%1$s\n\n未找到 JDK，Java 项目无法编译或运行。\n\n请在终端中执行：\npkg install openjdk-17</string>
+  <string name="dependency_project_file_title">项目级依赖</string>
+  <string name="dependency_project_file_summary">可以在 .jcode/dependencies.txt 中追加仅属于该项目的依赖</string>
 </resources>
