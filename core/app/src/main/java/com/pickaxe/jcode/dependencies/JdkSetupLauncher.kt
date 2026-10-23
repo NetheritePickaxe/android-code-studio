@@ -44,11 +44,38 @@ object JdkSetupLauncher {
 
   /** Opens the terminal and runs the `idesetup` script with [IDESETUP_ARGS]. */
   fun launch(activity: Activity) {
+    // The Termux prefix binaries may have lost their executable permission
+    // during bootstrap extraction (especially on Android 12+ where execute permission
+    // is not preserved by default). Fix them before launching the terminal so that
+    // bash, pkg, apt, and the idesetup script itself can actually run.
+    fixExecutablePermissions()
+
     val intent =
         Intent(activity, TerminalActivity::class.java).apply {
           putExtra(TerminalActivity.EXTRA_ONBOARDING_RUN_IDESETUP, true)
           putExtra(TerminalActivity.EXTRA_ONBOARDING_RUN_IDESETUP_ARGS, IDESETUP_ARGS)
         }
     activity.startActivity(intent)
+  }
+
+  /**
+   * Sets the executable permission on every file in the Termux prefix's bin directory.
+   *
+   * Without this, the idesetup script fails with "Permission denied: .../usr/bin/bash"
+   * because bash (and pkg, apt, etc.) cannot be executed.
+   */
+  private fun fixExecutablePermissions() {
+    val binDir = Environment.BIN_DIR ?: return
+    if (!binDir.isDirectory) return
+
+    binDir.listFiles()?.forEach { file ->
+      if (file.isFile) {
+        Environment.setExecutable(file)
+      }
+    }
+
+    // Also fix the login shell and bash specifically
+    Environment.BASH_SHELL?.let { Environment.setExecutable(it) }
+    Environment.LOGIN_SHELL?.let { Environment.setExecutable(it) }
   }
 }
