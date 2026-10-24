@@ -28,12 +28,10 @@ import androidx.core.graphics.Insets
 import androidx.core.view.isVisible
 import androidx.transition.TransitionManager
 import androidx.transition.doOnEnd
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.transition.MaterialSharedAxis
 import com.pickaxe.jcode.activities.editor.EditorActivityKt
 import com.pickaxe.jcode.app.EdgeToEdgeIDEActivity
 import com.pickaxe.jcode.databinding.ActivityMainBinding
-import com.pickaxe.jcode.dependencies.JdkSetupLauncher
 import com.pickaxe.jcode.preferences.internal.GeneralPreferences
 import com.pickaxe.jcode.projects.IProjectManager
 import com.pickaxe.jcode.resources.R.string
@@ -81,11 +79,6 @@ class MainActivity : EdgeToEdgeIDEActivity() {
   private val binding: ActivityMainBinding
     get() = checkNotNull(_binding)
 
-  companion object {
-    /** Guards the first-run JDK install prompt so it is shown at most once per process. */
-    @Volatile private var jdkPromptShown = false
-  }
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -109,28 +102,6 @@ class MainActivity : EdgeToEdgeIDEActivity() {
     onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
     val updater = KotlinLspUpdater(this)
     updater.checkForUpdates(LSPProperties.kotlinLspVersion)
-
-    binding.root.post { maybePromptJdkInstall() }
-  }
-
-  /** When no JDK is installed, offers to run the `idesetup` script in the terminal. */
-  private fun maybePromptJdkInstall() {
-    if (jdkPromptShown || isFinishing || isDestroyed) {
-      return
-    }
-    jdkPromptShown = true
-    if (JdkSetupLauncher.isJdkAvailable()) {
-      return
-    }
-
-    MaterialAlertDialogBuilder(this)
-        .setTitle(string.jdk_missing_dialog_title)
-        .setMessage(string.jdk_missing_dialog_message)
-        .setPositiveButton(string.jdk_missing_dialog_install) { _, _ ->
-          JdkSetupLauncher.launch(this)
-        }
-        .setNegativeButton(string.jdk_missing_dialog_later, null)
-        .show()
   }
 
   override fun onApplySystemBarInsets(insets: Insets) {

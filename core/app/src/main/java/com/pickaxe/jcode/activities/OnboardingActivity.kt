@@ -30,10 +30,12 @@ import com.pickaxe.jcode.R
 import com.pickaxe.jcode.R.string
 import com.pickaxe.jcode.app.configuration.IDEBuildConfigProvider
 import com.pickaxe.jcode.app.configuration.IJdkDistributionProvider
+import com.pickaxe.jcode.dependencies.JdkSetupLauncher
 import com.pickaxe.jcode.fragments.onboarding.GreetingFragment
 import com.pickaxe.jcode.fragments.onboarding.OnboardingInfoFragment
 import com.pickaxe.jcode.fragments.onboarding.PermissionsFragment
 import com.pickaxe.jcode.fragments.onboarding.StatisticsFragment
+import com.pickaxe.jcode.fragments.onboarding.ToolchainSetupFragment
 import com.pickaxe.jcode.models.JdkDistribution
 import com.pickaxe.jcode.preferences.internal.StatPreferences
 import com.pickaxe.jcode.preferences.internal.prefManager
@@ -122,6 +124,13 @@ class OnboardingActivity : AppIntro2() {
     if (!PermissionsFragment.areAllPermissionsGranted(this)) {
       addSlide(PermissionsFragment.newInstance(this))
     }
+
+    // Install JDK / toolchain during onboarding (the original app did this on the
+    // welcome screen). The JDK is not bundled — it is installed into the app's
+    // Termux prefix by the `idesetup` script. Skip this slide if already installed.
+    if (!JdkSetupLauncher.isJdkAvailable()) {
+      addSlide(ToolchainSetupFragment.newInstance(this))
+    }
   }
 
   override fun onResume() {
@@ -150,10 +159,12 @@ class OnboardingActivity : AppIntro2() {
   }
 
   private fun isSetupCompleted(): Boolean {
-    // The JDK/toolchain is no longer installed during onboarding (that step was removed as part of
-    // the de-Android refactor). It is provisioned later from within the app's terminal via the
-    // `idesetup` script. So onboarding only needs the stats consent + granted permissions.
-    return StatPreferences.statConsentDialogShown && PermissionsFragment.areAllPermissionsGranted(this)
+    // The JDK is installed during onboarding via the idesetup script launched from the
+    // ToolchainSetupFragment. Setup is complete once the user has consented to stats,
+    // granted permissions, and a JDK is available on the device.
+    return StatPreferences.statConsentDialogShown &&
+        PermissionsFragment.areAllPermissionsGranted(this) &&
+        JdkSetupLauncher.isJdkAvailable()
   }
 
   private fun tryNavigateToMainIfSetupIsCompleted(): Boolean {

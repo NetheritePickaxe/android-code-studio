@@ -995,6 +995,11 @@ This AI agent is designed to assist you in developing Android applications direc
   <string name="onboarding_title_permissions">Permissions</string>
   <string name="onboarding_subtitle_permissions">AndroidCS requires the following permissions</string>
   <string name="msg_grant_permissions">Please grant the permissions to continue.</string>
+  <string name="onboarding_title_toolchain">Install JDK / toolchain</string>
+  <string name="onboarding_subtitle_toolchain">Java and Kotlin projects require a JDK, which is not bundled with the app. Tap the button below to install it automatically via the idesetup script.</string>
+  <string name="onboarding_toolchain_install">Install now</string>
+  <string name="onboarding_toolchain_installed">JDK installed ✓</string>
+  <string name="onboarding_toolchain_required">Please install the JDK to continue.</string>
   <string name="msg_no_internet">It seems you\'re offline. Check your internet connection.</string>
   <string name="msg_connected_to_cellular">Heads up! You\'re using cellular data.</string>
   <string name="msg_connected_to_metered_connection">Heads up! You\'re on a metered network.</string>
@@ -1327,8 +1332,4 @@ This AI agent is designed to assist you in developing Android applications direc
   <string name="dependency_project_file_summary">Extra dependencies can be listed in .jcode/dependencies.txt</string>
   <string name="dependency_install_jdk_title">Install JDK / toolchain</string>
   <string name="dependency_install_jdk_summary">Opens the terminal and runs the idesetup script to install the JDK and Gradle</string>
-  <string name="jdk_missing_dialog_title">JDK not installed</string>
-  <string name="jdk_missing_dialog_message">Compiling and running Java projects requires a JDK, which is not installed yet. Open the terminal now and run the idesetup script to install it automatically?</string>
-  <string name="jdk_missing_dialog_install">Install now</string>
-  <string name="jdk_missing_dialog_later">Later</string>
 </resources>

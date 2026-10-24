@@ -954,6 +954,11 @@
   <string name="onboarding_title_permissions">权限</string>
   <string name="onboarding_subtitle_permissions">jcode 需要以下权限</string>
   <string name="msg_grant_permissions">请授予权限以继续。</string>
+  <string name="onboarding_title_toolchain">安装 JDK / 工具链</string>
+  <string name="onboarding_subtitle_toolchain">Java 和 Kotlin 项目需要 JDK，但 JDK 不包含在应用中。点击下方按钮，通过 idesetup 脚本自动安装。</string>
+  <string name="onboarding_toolchain_install">现在安装</string>
+  <string name="onboarding_toolchain_installed">JDK 已安装 ✓</string>
+  <string name="onboarding_toolchain_required">请先安装 JDK 以继续。</string>
   <string name="msg_no_internet">您似乎已离线，检查您的网络连接。</string>
   <string name="msg_connected_to_cellular">注意！您正在使用蜂窝移动数据。</string>
   <string name="msg_connected_to_metered_connection">注意！您使用的是按流量计费的网络。</string>
@@ -1289,8 +1294,4 @@
   <string name="dependency_project_file_summary">可以在 .jcode/dependencies.txt 中追加仅属于该项目的依赖</string>
   <string name="dependency_install_jdk_title">安装 JDK / 工具链</string>
   <string name="dependency_install_jdk_summary">打开终端运行 idesetup 脚本，安装 JDK 与 Gradle</string>
-  <string name="jdk_missing_dialog_title">未安装 JDK</string>
-  <string name="jdk_missing_dialog_message">编译和运行 Java 项目需要 JDK，当前尚未安装。是否现在打开终端，运行 idesetup 脚本自动安装？</string>
-  <string name="jdk_missing_dialog_install">现在安装</string>
-  <string name="jdk_missing_dialog_later">稍后</string>
 </resources>
