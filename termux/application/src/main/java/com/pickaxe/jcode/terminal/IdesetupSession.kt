@@ -68,7 +68,11 @@ private constructor(
       }
 
       // make it readable and executable
-      FileUtils.setFilePermissions("idesetupScript", script.absolutePath, "rwx")
+      runCatching { FileUtils.setFilePermissions("idesetupScript", script.absolutePath, "rwxr-xr-x") }
+      runCatching { script.setReadable(true, false) }
+      runCatching { script.setWritable(true, false) }
+      runCatching { script.setExecutable(true, false) }
+      runCatching { Runtime.getRuntime().exec(arrayOf("chmod", "755", script.absolutePath)).waitFor() }
 
       return script
     }
