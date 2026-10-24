@@ -105,6 +105,12 @@ class JavaBuildBackend(
                             "This is a Gradle project — use the Gradle build actions instead.",
                         )
                     }
+                BuildSystem.KOTLIN_SINGLE,
+                BuildSystem.KOTLIN_JAR ->
+                    Result(
+                        false,
+                        "This is a Kotlin project — use the Kotlin build backend.",
+                    )
             }
         }
 

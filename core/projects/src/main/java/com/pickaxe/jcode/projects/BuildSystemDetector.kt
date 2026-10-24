@@ -60,7 +60,10 @@ object BuildSystemDetector {
             // Plain Java sources (with or without a Gradle wrapper) are built directly.
             hasJavaSources(projectDir) ->
                 if (isSingleJavaFile(projectDir)) BuildSystem.JAVA_SINGLE else BuildSystem.JAVA_JAR
-            // Gradle projects without Java sources (e.g. Kotlin only) keep using Gradle.
+            // Plain Kotlin sources (with or without a Gradle wrapper) are built directly with kotlinc.
+            hasKotlinSources(projectDir) ->
+                if (isSingleKotlinFile(projectDir)) BuildSystem.KOTLIN_SINGLE else BuildSystem.KOTLIN_JAR
+            // Gradle projects without Java/Kotlin sources keep using Gradle.
             isGradleProject(projectDir) -> BuildSystem.GRADLE
             else -> null
         }
@@ -111,6 +114,15 @@ object BuildSystemDetector {
      */
     fun isSingleJavaFile(projectDir: File): Boolean {
         val sources = collectSourceFiles(projectDir, "java")
+        return sources.size == 1 && sources[0].parentFile == projectDir
+    }
+
+    /**
+     * Returns `true` if [projectDir] contains exactly one `.kt` file at the root level and no
+     * other source file. This is the "single file test project" case.
+     */
+    fun isSingleKotlinFile(projectDir: File): Boolean {
+        val sources = collectSourceFiles(projectDir, "kt")
         return sources.size == 1 && sources[0].parentFile == projectDir
     }
 
@@ -205,5 +217,11 @@ enum class BuildSystem {
     JAVA_JAR,
 
     /** A single `.java` file that should be compiled and run directly. */
-    JAVA_SINGLE
+    JAVA_SINGLE,
+
+    /** A plain Kotlin project that should be compiled with kotlinc to a JAR and run. */
+    KOTLIN_JAR,
+
+    /** A single `.kt` file that should be compiled and run directly with kotlinc. */
+    KOTLIN_SINGLE
 }

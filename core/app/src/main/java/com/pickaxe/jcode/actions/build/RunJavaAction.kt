@@ -24,6 +24,7 @@ import com.pickaxe.jcode.actions.BaseBuildAction
 import com.pickaxe.jcode.projects.BuildSystem
 import com.pickaxe.jcode.projects.BuildSystemDetector
 import com.pickaxe.jcode.projects.builder.java.JavaBuildBackend
+import com.pickaxe.jcode.projects.builder.kotlin.KotlinBuildBackend
 import com.pickaxe.jcode.projects.internal.ProjectManagerImpl
 import com.pickaxe.jcode.resources.R
 import com.pickaxe.jcode.utils.flashError
@@ -31,14 +32,16 @@ import com.pickaxe.jcode.utils.flashInfo
 import org.slf4j.LoggerFactory
 
 /**
- * Runs the current project as a Java application.
+ * Runs the current project as a Java or Kotlin application.
  *
  * For Gradle projects, this executes the `application` plugin's `run` task (i.e. `gradle run`).
  * Build output is streamed to the build output sheet via the Gradle Tooling API.
  *
- * For non-Gradle projects ([BuildSystem.JAVA_SINGLE] and [BuildSystem.JAVA_JAR]), this compiles
+ * For non-Gradle Java projects ([BuildSystem.JAVA_SINGLE] and [BuildSystem.JAVA_JAR]), this compiles
  * the Java sources directly with `javac` and runs the main class with `java`, without requiring
- * the Gradle Tooling API. Output is streamed to the build output sheet via [JavaBuildBackend].
+ * the Gradle Tooling API. For non-Gradle Kotlin projects ([BuildSystem.KOTLIN_SINGLE] and
+ * [BuildSystem.KOTLIN_JAR]), it uses `kotlinc` + `java` via [KotlinBuildBackend].
+ * Output is streamed to the build output sheet.
  */
 class RunJavaAction(context: Context, override val order: Int) : BaseBuildAction() {
 
@@ -63,10 +66,12 @@ class RunJavaAction(context: Context, override val order: Int) : BaseBuildAction
     }
     visible = true
 
-    // Java sources can always be compiled directly with javac/java, even when the Gradle
-    // Tooling API is unavailable.
+    // Java/Kotlin sources can be compiled directly with the JDK/Kotlin compiler, even when the
+    // Gradle Tooling API is unavailable.
     val projectDir = safeProjectDir()
-    if (projectDir != null && BuildSystemDetector.hasJavaSources(projectDir)) {
+    if (projectDir != null &&
+        (BuildSystemDetector.hasJavaSources(projectDir) ||
+            BuildSystemDetector.hasKotlinSources(projectDir))) {
       enabled = true
       return
     }
@@ -85,6 +90,7 @@ class RunJavaAction(context: Context, override val order: Int) : BaseBuildAction
 
     when (buildSystem) {
       BuildSystem.JAVA_SINGLE, BuildSystem.JAVA_JAR -> runJavaProject(data, projectDir)
+      BuildSystem.KOTLIN_SINGLE, BuildSystem.KOTLIN_JAR -> runKotlinProject(data, projectDir)
       BuildSystem.GRADLE -> {
         val service = buildService
         if (service != null && service.isToolingServerStarted()) {
@@ -94,6 +100,9 @@ class RunJavaAction(context: Context, override val order: Int) : BaseBuildAction
           // sources (e.g. the "Java Application" template) can still be built and run directly.
           log.info("Gradle Tooling API unavailable. Falling back to a direct javac/java run.")
           runJavaProject(data, projectDir, ignoreGradle = true)
+        } else if (BuildSystemDetector.hasKotlinSources(projectDir)) {
+          log.info("Gradle Tooling API unavailable. Falling back to a direct kotlinc/java run.")
+          runKotlinProject(data, projectDir)
         } else {
           flashError(R.string.msg_tooling_server_unavailable)
         }
@@ -130,6 +139,41 @@ class RunJavaAction(context: Context, override val order: Int) : BaseBuildAction
     backend.describeEnvironment().forEach { activity.appendBuildOutput(it) }
 
     val result = backend.buildAndRun(projectDir, ignoreGradle)
+    if (result.success) {
+      activity.appendBuildOutput(result.message)
+      flashInfo("Run completed.")
+    } else {
+      activity.appendBuildOutput("ERROR: ${result.message}")
+      flashError(result.message)
+    }
+  }
+
+  /**
+   * Runs a non-Gradle Kotlin project using [KotlinBuildBackend].
+   * Output is streamed to the build output sheet.
+   */
+  private suspend fun runKotlinProject(
+      data: ActionData,
+      projectDir: java.io.File,
+  ) {
+    val activity = data.getActivity() ?: run {
+      flashError("Cannot access editor activity.")
+      return
+    }
+
+    // Clear the build output and show the sheet
+    activity.content.bottomSheet.clearBuildOutput()
+    activity.appendBuildOutput("Building Kotlin project (${projectDir.name})...")
+    activity.appendBuildOutput("Project: ${projectDir.absolutePath}")
+    activity.appendBuildOutput("Build system: ${BuildSystemDetector.detect(projectDir)}")
+
+    val backend = KotlinBuildBackend { line ->
+      activity.appendBuildOutput(line)
+    }
+
+    backend.describeEnvironment().forEach { activity.appendBuildOutput(it) }
+
+    val result = backend.buildAndRun(projectDir)
     if (result.success) {
       activity.appendBuildOutput(result.message)
       flashInfo("Run completed.")
